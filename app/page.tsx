@@ -8,6 +8,8 @@ import { SignUpUserSteps } from "@/components/tutorial/sign-up-user-steps";
 import { hasEnvVars } from "@/lib/utils";
 import Link from "next/link";
 import { Suspense } from "react";
+import { AuthModal } from "@/components/auth/auth-modal";
+import { Button } from "@/components/ui/button";
 
 export default function Home() {
   return (
@@ -24,9 +26,14 @@ export default function Home() {
             {!hasEnvVars ? (
               <EnvVarWarning />
             ) : (
-              <Suspense>
-                <AuthButton />
-              </Suspense>
+              <div className="flex gap-2">
+                <Suspense>
+                  <AuthButton />
+                </Suspense>
+                <AuthModal>
+                  <Button variant="default">Test Auth Modal</Button>
+                </AuthModal>
+              </div>
             )}
           </div>
         </nav>

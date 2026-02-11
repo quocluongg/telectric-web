@@ -19,6 +19,8 @@ const geistSans = Geist({
   subsets: ["latin"],
 });
 
+import { Toaster } from "@/components/ui/toaster";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -34,6 +36,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           {children}
+          <Toaster />
         </ThemeProvider>
       </body>
     </html>
