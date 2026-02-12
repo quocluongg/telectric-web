@@ -285,7 +285,7 @@ export function RegisterForm({ onSwitchToLogin, onClose }: RegisterFormProps) {
 
                     <Button
                         type="submit"
-                        className="w-full bg-[#00b4d8] hover:bg-[#0096c7] text-white font-bold py-2"
+                        className="w-full bg-electric-orange hover:bg-[#E66D00] text-white font-bold py-2"
                         disabled={isLoading}
                     >
                         {isLoading ? (
@@ -302,7 +302,7 @@ export function RegisterForm({ onSwitchToLogin, onClose }: RegisterFormProps) {
                         <span className="text-slate-500 dark:text-gray-400">Đã có tài khoản?</span>
                         <button
                             type="button"
-                            className="text-[#00b4d8] hover:text-[#0096c7] transition-colors"
+                            className="text-electric-orange hover:text-[#E66D00] transition-colors"
                             onClick={onSwitchToLogin}
                             disabled={isLoading}
                         >

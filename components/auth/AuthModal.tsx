@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import {
     Dialog,
     DialogContent,
@@ -25,6 +25,13 @@ export function AuthModal({ children, defaultView = "login", open: controlledOpe
 
     const isOpen = controlledOpen !== undefined ? controlledOpen : internalOpen
     const setIsOpen = setControlledOpen || setInternalOpen
+
+    // Sync view with defaultView when modal opens or defaultView changes
+    useEffect(() => {
+        if (isOpen) {
+            setView(defaultView)
+        }
+    }, [defaultView, isOpen])
 
     const handleOpenChange = (newOpen: boolean) => {
         setIsOpen(newOpen)
