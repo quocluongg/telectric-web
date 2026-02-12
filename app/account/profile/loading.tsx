@@ -1,5 +1,5 @@
 import { GlobalLoading } from "@/components/common/GlobalLoading";
 
-export default function Loading() {
+export default function AccountLoading() {
     return <GlobalLoading />;
 }
