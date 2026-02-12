@@ -25,9 +25,9 @@ const formSchema = z.object({
 })
 
 interface LoginFormProps {
-    onSwitchToRegister: () => void
-    onSwitchToForgotPassword: () => void
-    onClose: () => void
+    onSwitchToRegister?: () => void
+    onSwitchToForgotPassword?: () => void
+    onClose?: () => void
 }
 
 export function LoginForm({
@@ -73,7 +73,8 @@ export function LoginForm({
             })
 
             router.refresh()
-            onClose()
+            router.refresh()
+            onClose?.()
         } catch (error) {
             toast({
                 variant: "destructive",

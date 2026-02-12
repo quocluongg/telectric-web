@@ -31,8 +31,8 @@ const formSchema = z
     })
 
 interface RegisterFormProps {
-    onSwitchToLogin: () => void
-    onClose: () => void
+    onSwitchToLogin?: () => void
+    onClose?: () => void
 }
 
 export function RegisterForm({ onSwitchToLogin, onClose }: RegisterFormProps) {
@@ -81,14 +81,14 @@ export function RegisterForm({ onSwitchToLogin, onClose }: RegisterFormProps) {
                     title: "Đăng ký và đăng nhập thành công",
                     description: "Chào mừng bạn đến với TELECTRIC!",
                 })
-                onClose()
+                onClose?.()
             } else {
                 // Email confirmation required
                 toast({
                     title: "Đăng ký thành công",
                     description: "Vui lòng kiểm tra email để xác nhận tài khoản.",
                 })
-                onSwitchToLogin()
+                onSwitchToLogin?.()
             }
 
         } catch (error) {

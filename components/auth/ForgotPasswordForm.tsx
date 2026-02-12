@@ -36,8 +36,8 @@ const passwordSchema = z.object({
 })
 
 interface ForgotPasswordFormProps {
-    onSwitchToLogin: () => void
-    onClose: () => void
+    onSwitchToLogin?: () => void
+    onClose?: () => void
 }
 
 type Step = "EMAIL" | "OTP" | "PASSWORD"
@@ -134,7 +134,7 @@ export function ForgotPasswordForm({ onSwitchToLogin, onClose }: ForgotPasswordF
                 title: "Đổi mật khẩu thành công",
                 description: "Bạn có thể đăng nhập bằng mật khẩu mới",
             })
-            onClose()
+            onClose?.()
         } catch (error: any) {
             toast({
                 variant: "destructive",
