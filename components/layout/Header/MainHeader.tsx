@@ -22,6 +22,14 @@ export const MainHeader = () => {
     const supabase = createClient();
     const router = useRouter();
 
+    const [authModalOpen, setAuthModalOpen] = useState(false);
+    const [authDefaultView, setAuthDefaultView] = useState<"login" | "register">("login");
+
+    const openAuthModal = (view: "login" | "register") => {
+        setAuthDefaultView(view);
+        setAuthModalOpen(true);
+    };
+
     useEffect(() => {
         const getUser = async () => {
             const { data: { user } } = await supabase.auth.getUser();
@@ -40,6 +48,7 @@ export const MainHeader = () => {
     const handleLogout = async () => {
         await supabase.auth.signOut();
         router.refresh();
+        router.push("/");
     };
 
     return (
@@ -118,27 +127,29 @@ export const MainHeader = () => {
                             <DropdownMenuContent className="w-56 bg-white dark:bg-[#1e2330] border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200" align="end">
                                 <DropdownMenuLabel>Khách</DropdownMenuLabel>
                                 <DropdownMenuSeparator className="bg-slate-200 dark:bg-slate-700" />
-                                <AuthModal defaultView="login">
-                                    <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="focus:bg-slate-100 dark:focus:bg-[#2a3040] focus:text-slate-900 dark:focus:text-white cursor-pointer">
-                                        <div className="flex items-center gap-2 w-full">
-                                            <LogOut className="mr-2 h-4 w-4 rotate-180" /> {/* Simulate Login Icon */}
-                                            <span>Đăng nhập</span>
-                                        </div>
-                                    </DropdownMenuItem>
-                                </AuthModal>
-                                <AuthModal defaultView="register">
-                                    <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="focus:bg-slate-100 dark:focus:bg-[#2a3040] focus:text-slate-900 dark:focus:text-white cursor-pointer">
-                                        <div className="flex items-center gap-2 w-full">
-                                            <UserCircle className="mr-2 h-4 w-4" />
-                                            <span>Đăng ký</span>
-                                        </div>
-                                    </DropdownMenuItem>
-                                </AuthModal>
+                                <DropdownMenuItem onClick={() => openAuthModal("login")} className="focus:bg-slate-100 dark:focus:bg-[#2a3040] focus:text-slate-900 dark:focus:text-white cursor-pointer">
+                                    <div className="flex items-center gap-2 w-full">
+                                        <LogOut className="mr-2 h-4 w-4 rotate-180" /> {/* Simulate Login Icon */}
+                                        <span>Đăng nhập</span>
+                                    </div>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => openAuthModal("register")} className="focus:bg-slate-100 dark:focus:bg-[#2a3040] focus:text-slate-900 dark:focus:text-white cursor-pointer">
+                                    <div className="flex items-center gap-2 w-full">
+                                        <UserCircle className="mr-2 h-4 w-4" />
+                                        <span>Đăng ký</span>
+                                    </div>
+                                </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
                     )}
                 </div>
             </div>
+
+            <AuthModal
+                open={authModalOpen}
+                onOpenChange={setAuthModalOpen}
+                defaultView={authDefaultView}
+            />
         </div>
     );
 };
