@@ -1,20 +1,23 @@
-import { Hero } from "@/components/demo/Hero";
-import { ConnectSupabaseSteps } from "@/components/tutorial/connect-supabase-steps"; import { SignUpUserSteps } from "@/components/tutorial/sign-up-user-steps";
-import { hasEnvVars } from "@/lib/utils";
-
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 export default function Home() {
   return (
-    <main className="min-h-screen flex flex-col items-center">
-      <div className="flex-1 w-full flex flex-col gap-20 items-center">
-        <div className="flex-1 flex flex-col gap-20 max-w-5xl p-5">
-          <Hero />
-          <main className="flex-1 flex flex-col gap-6 px-4">
-            <h2 className="font-medium text-xl mb-4">Next steps</h2>
-            {hasEnvVars ? <SignUpUserSteps /> : <ConnectSupabaseSteps />}
-          </main>
-        </div>
+    <div className="flex flex-col items-center justify-center min-h-[60vh] py-20 px-4 text-center">
+      <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-industrial-black mb-6">
+        Industrial Electrical Equipment
+      </h1>
+      <p className="text-lg text-slate-gray max-w-2xl mb-8">
+        Providing high-precision measuring instruments, automation solutions, and electrical components for industrial applications.
+      </p>
+      <div className="flex gap-4">
+        <Button asChild className="bg-electric-orange hover:bg-orange-600 text-white font-semibold px-8 py-6 rounded-md">
+          <Link href="/products">View Products</Link>
+        </Button>
+        <Button asChild variant="outline" className="border-slate-200 text-industrial-black hover:bg-slate-50 font-semibold px-8 py-6 rounded-md">
+          <Link href="/contact">Contact Sales</Link>
+        </Button>
       </div>
-    </main>
+    </div>
   );
 }

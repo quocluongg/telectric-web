@@ -6,25 +6,26 @@ import {
     DialogContent,
     DialogTrigger,
 } from "@/components/ui/dialog"
-import { LoginForm } from "@/components/auth/login-form"
-import { RegisterForm } from "@/components/auth/register-form"
-import { ForgotPasswordForm } from "@/components/auth/forgot-password-form"
+import { LoginForm } from "@/components/auth/LoginForm"
+import { RegisterForm } from "@/components/auth/RegisterForm"
+import { ForgotPasswordForm } from "@/components/auth/ForgotPasswordForm"
 
 interface AuthModalProps {
     children?: React.ReactNode
+    defaultView?: "login" | "register" | "forgot-password"
 }
 
 type AuthView = "login" | "register" | "forgot-password"
 
-export function AuthModal({ children }: AuthModalProps) {
-    const [view, setView] = useState<AuthView>("login")
+export function AuthModal({ children, defaultView = "login" }: AuthModalProps) {
+    const [view, setView] = useState<AuthView>(defaultView)
     const [open, setOpen] = useState(false)
 
     const handleOpenChange = (newOpen: boolean) => {
         setOpen(newOpen)
         if (!newOpen) {
-            // Reset to login view when closed (optional, but good UX usually)
-            setTimeout(() => setView("login"), 200)
+            // Reset to default view when closed
+            setTimeout(() => setView(defaultView), 200)
         }
     }
 
