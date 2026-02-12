@@ -32,11 +32,14 @@ export function SidebarNav({ className, items, ...props }: SidebarNavProps) {
                     className={cn(
                         buttonVariants({ variant: "ghost" }),
                         pathname === item.href
-                            ? "bg-[#1e2330] hover:bg-[#1e2330]"
-                            : "hover:bg-transparent hover:underline",
-                        "justify-start"
+                            ? "bg-slate-50 dark:bg-[#2a3040] text-electric-orange dark:text-electric-orange font-medium"
+                            : "hover:bg-slate-50 dark:hover:bg-[#2a3040] text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200",
+                        "justify-start transition-all px-3 py-2 h-auto relative overflow-hidden"
                     )}
                 >
+                    {pathname === item.href && (
+                        <span className="absolute left-0 top-0 bottom-0 w-1 bg-electric-orange" />
+                    )}
                     {item.icon && <span className="mr-2">{item.icon}</span>}
                     {item.title}
                 </Link>

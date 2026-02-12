@@ -8,7 +8,7 @@ import { useTheme } from "next-themes";
 export const NavBar = () => {
     return (
         <div className="w-full bg-white dark:bg-industrial-black border-b border-slate-200 dark:border-white/5 relative z-10 transition-colors duration-300">
-            <div className="container mx-auto px-4 flex items-center justify-between h-12">
+            <div className="container mx-auto max-w-7xl px-4 flex items-center justify-between h-12">
 
                 {/* Main Navigation */}
                 <nav className="flex items-center h-full">

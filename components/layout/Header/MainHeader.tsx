@@ -44,7 +44,7 @@ export const MainHeader = () => {
 
     return (
         <div className="w-full bg-white dark:bg-industrial-black py-4 border-b border-slate-200 dark:border-white/5 relative z-20 transition-colors duration-300">
-            <div className="container mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className="container mx-auto max-w-7xl px-4 flex flex-col md:flex-row items-center justify-between gap-4">
 
                 {/* Logo */}
                 <Link href="/" className="flex items-center gap-2 group">
@@ -80,15 +80,17 @@ export const MainHeader = () => {
                                     <div className="bg-electric-orange rounded-full p-1">
                                         <User size={14} className="text-white" />
                                     </div>
-                                    <span className="max-w-[150px] truncate">{user.email?.split('@')[0]}</span>
+                                    <span className="max-w-[150px] truncate">{user.user_metadata?.full_name || user.email?.split('@')[0]}</span>
                                 </button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent className="w-56 bg-white dark:bg-[#1e2330] border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200" align="end">
                                 <DropdownMenuLabel>Tài khoản của tôi</DropdownMenuLabel>
                                 <DropdownMenuSeparator className="bg-slate-200 dark:bg-slate-700" />
-                                <DropdownMenuItem className="focus:bg-slate-100 dark:focus:bg-[#2a3040] focus:text-slate-900 dark:focus:text-white cursor-pointer">
-                                    <UserCircle className="mr-2 h-4 w-4" />
-                                    <span>Hồ sơ</span>
+                                <DropdownMenuItem asChild>
+                                    <Link href="/account" className="focus:bg-slate-100 dark:focus:bg-[#2a3040] focus:text-slate-900 dark:focus:text-white cursor-pointer w-full flex items-center">
+                                        <UserCircle className="mr-2 h-4 w-4" />
+                                        <span>Hồ sơ</span>
+                                    </Link>
                                 </DropdownMenuItem>
                                 <DropdownMenuItem className="focus:bg-slate-100 dark:focus:bg-[#2a3040] focus:text-slate-900 dark:focus:text-white cursor-pointer">
                                     <Settings className="mr-2 h-4 w-4" />
