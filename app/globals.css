@@ -66,3 +66,12 @@
     @apply bg-background text-foreground;
   }
 }
+
+@keyframes progress {
+  from { width: 100%; }
+  to { width: 0%; }
+}
+
+.toast-progress {
+  animation: progress 5000ms linear forwards;
+}

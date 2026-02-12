@@ -13,6 +13,10 @@ export default {
       colors: {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
+        "electric-orange": "#FF7A00",
+        "industrial-black": "#0F172A",
+        "slate-gray": "#94A3B8",
+        "pure-white": "#FFFFFF",
         card: {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
@@ -51,6 +55,10 @@ export default {
           "4": "hsl(var(--chart-4))",
           "5": "hsl(var(--chart-5))",
         },
+      },
+      fontFamily: {
+        sans: ["var(--font-inter)", "sans-serif"],
+        heading: ["var(--font-outfit)", "sans-serif"],
       },
       borderRadius: {
         lg: "var(--radius)",
