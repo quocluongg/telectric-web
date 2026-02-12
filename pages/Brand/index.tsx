@@ -49,7 +49,7 @@ export default function BrandPage() {
                         </span>
                     </div>
 
-                    <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight font-heading">
+                    <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white mb-6 leading-tight tracking-tight">
                         TELECTRIC
                         <span className="block text-electric-orange mt-2">
                             ĐIỂM TỰA KỸ THUẬT
@@ -73,7 +73,7 @@ export default function BrandPage() {
                             { value: "1 Đổi 1", label: "Bảo Hành" },
                         ].map((stat) => (
                             <div key={stat.label} className="text-center">
-                                <p className="text-2xl md:text-3xl font-bold text-electric-orange font-heading">
+                                <p className="text-2xl md:text-3xl font-extrabold text-electric-orange tracking-tight">
                                     {stat.value}
                                 </p>
                                 <p className="text-xs text-slate-500 mt-1 uppercase tracking-wider">
@@ -100,7 +100,7 @@ export default function BrandPage() {
                                     Về Chúng Tôi
                                 </span>
                             </div>
-                            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-4 font-heading">
+                            <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900 dark:text-white mb-4 tracking-tight">
                                 Câu Chuyện TELECTRIC
                             </h2>
                             <div className="w-16 h-1 bg-electric-orange mx-auto rounded-full" />
@@ -173,7 +173,7 @@ export default function BrandPage() {
                                 Lý Do Lựa Chọn
                             </span>
                         </div>
-                        <h2 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-4 font-heading">
+                        <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900 dark:text-white mb-4 tracking-tight">
                             Tại Sao Giới Kỹ Thuật Chọn TELECTRIC?
                         </h2>
                         <div className="w-16 h-1 bg-electric-orange mx-auto rounded-full" />
@@ -215,7 +215,7 @@ export default function BrandPage() {
                                 Hướng Dẫn Mua Hàng
                             </span>
                         </div>
-                        <h2 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-2 font-heading">
+                        <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900 dark:text-white mb-2 tracking-tight">
                             Quy Trình &quot;Rước&quot; Hàng Tại TELECTRIC
                         </h2>
                         <p className="text-slate-500 dark:text-slate-400 text-lg">
@@ -270,7 +270,7 @@ export default function BrandPage() {
 
                 <div className="relative container mx-auto max-w-7xl px-4 py-16 md:py-20 text-center">
                     <Zap className="w-12 h-12 text-white/80 mx-auto mb-6" />
-                    <h2 className="text-3xl md:text-4xl font-bold text-white mb-4 font-heading">
+                    <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-4 tracking-tight">
                         TELECTRIC — Nơi Mua Sắm Thiết Bị Đo Không Lo Về Giá
                     </h2>
                     <p className="text-lg text-white/80 max-w-2xl mx-auto mb-2">
@@ -357,7 +357,7 @@ function WhyChooseCard({
                         {icon}
                     </div>
                 </div>
-                <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-3 font-heading">
+                <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-3">
                     {title}
                 </h3>
                 <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed mb-4">
