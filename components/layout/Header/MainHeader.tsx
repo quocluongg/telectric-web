@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Search, Zap, User, LogOut, Settings, UserCircle } from "lucide-react";
+import { Search, Zap, User, LogOut, Settings, UserCircle, ChevronDown } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { AuthModal } from "@/components/auth/AuthModal";
 import { createClient } from "@/lib/supabase/client";
@@ -81,6 +81,7 @@ export const MainHeader = () => {
                                         <User size={14} className="text-white" />
                                     </div>
                                     <span className="max-w-[150px] truncate">{user.user_metadata?.full_name || user.email?.split('@')[0]}</span>
+                                    <ChevronDown size={14} className="text-slate-500 dark:text-slate-400" />
                                 </button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent className="w-56 bg-white dark:bg-[#1e2330] border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200" align="end">
@@ -111,6 +112,7 @@ export const MainHeader = () => {
                                         <User size={14} className="text-slate-500 dark:text-slate-300" />
                                     </div>
                                     <span>Đăng nhập</span>
+                                    <ChevronDown size={14} className="text-slate-500 dark:text-slate-400" />
                                 </button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent className="w-56 bg-white dark:bg-[#1e2330] border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200" align="end">
