@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation"
 
 import { createClient } from "@/lib/supabase/server"
+import { Profile } from "@/lib/types"
 import {
     Card,
     CardContent,
@@ -22,6 +23,12 @@ export default async function ProfilePage() {
     if (!user) {
         redirect("/auth/login")
     }
+
+    const { data: profile } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", user.id)
+        .single()
 
     // Format date
     const joinDate = new Date(user.created_at).toLocaleDateString("vi-VN", {
@@ -50,6 +57,12 @@ export default async function ProfilePage() {
                     <div className="space-y-1">
                         <p className="text-xs font-medium text-slate-500 dark:text-gray-500">Ngày tham gia</p>
                         <p className="text-sm font-medium text-slate-900 dark:text-white">{joinDate}</p>
+                    </div>
+                    <div className="space-y-1">
+                        <p className="text-xs font-medium text-slate-500 dark:text-gray-500">Nhóm tài khoản</p>
+                        <Badge variant="outline" className="bg-orange-50 dark:bg-orange-900/20 text-electric-orange border-electric-orange hover:bg-orange-100 dark:hover:bg-orange-900/30 transition-colors">
+                            {profile?.role === "admin" ? "Quản trị viên" : profile?.role === "moderator" ? "Điều phối viên" : "Người dùng"}
+                        </Badge>
                     </div>
                 </CardContent>
             </Card>

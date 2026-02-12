@@ -60,6 +60,7 @@ export function UpdatePasswordForm({
                   id="password"
                   type="password"
                   placeholder="New password"
+                  className="bg-slate-100 dark:bg-[#1e2330] border-transparent focus:bg-white dark:focus:bg-[#1e2330] focus:border-electric-orange focus:ring-1 focus:ring-electric-orange text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-gray-500 transition-all duration-200"
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
