@@ -60,7 +60,7 @@ export default async function ProfilePage() {
                     </div>
                     <div className="space-y-1">
                         <p className="text-xs font-medium text-slate-500 dark:text-gray-500">Nhóm tài khoản</p>
-                        <Badge variant="outline" className="bg-slate-100 dark:bg-[#2a3040] text-slate-900 dark:text-white border-slate-200 dark:border-0">
+                        <Badge variant="outline" className="bg-orange-50 dark:bg-orange-900/20 text-electric-orange border-electric-orange hover:bg-orange-100 dark:hover:bg-orange-900/30 transition-colors">
                             {profile?.role === "admin" ? "Quản trị viên" : profile?.role === "moderator" ? "Điều phối viên" : "Người dùng"}
                         </Badge>
                     </div>
