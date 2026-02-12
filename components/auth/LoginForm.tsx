@@ -89,10 +89,10 @@ export function LoginForm({
     return (
         <div className="w-full space-y-6">
             <div className="space-y-2 text-center">
-                <h1 className="text-2xl font-bold tracking-tight text-white">
+                <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
                     ĐĂNG NHẬP
                 </h1>
-                <p className="text-sm text-muted-foreground">Chào mừng trở lại</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400">Chào mừng trở lại</p>
             </div>
 
             <Form {...form}>
@@ -102,14 +102,14 @@ export function LoginForm({
                         name="identifier"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel className="text-white">
+                                <FormLabel className="text-slate-700 dark:text-white">
                                     Email <span className="text-red-500">*</span>
                                 </FormLabel>
                                 <FormControl>
                                     <div className="relative">
                                         <Input
                                             placeholder="Nhập email"
-                                            className="bg-[#1e2330] border-gray-700 pl-8 text-white placeholder:text-gray-500"
+                                            className="bg-slate-100 dark:bg-[#1e2330] border-transparent focus:bg-white dark:focus:bg-[#1e2330] focus:border-electric-orange focus:ring-1 focus:ring-electric-orange pl-8 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-gray-500 transition-all duration-200"
                                             {...field}
                                             disabled={isLoading}
                                         />
@@ -121,7 +121,7 @@ export function LoginForm({
                                             strokeWidth="2"
                                             strokeLinecap="round"
                                             strokeLinejoin="round"
-                                            className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500"
+                                            className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-400 dark:text-gray-500"
                                         >
                                             <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
                                             <circle cx="12" cy="7" r="4" />
@@ -138,7 +138,7 @@ export function LoginForm({
                         name="password"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel className="text-white">
+                                <FormLabel className="text-slate-700 dark:text-white">
                                     Mật khẩu <span className="text-red-500">*</span>
                                 </FormLabel>
                                 <FormControl>
@@ -146,7 +146,7 @@ export function LoginForm({
                                         <Input
                                             type={showPassword ? "text" : "password"}
                                             placeholder="••••••••••••"
-                                            className="bg-[#1e2330] border-gray-700 pl-8 pr-10 text-white placeholder:text-gray-500"
+                                            className="bg-slate-100 dark:bg-[#1e2330] border-transparent focus:bg-white dark:focus:bg-[#1e2330] focus:border-electric-orange focus:ring-1 focus:ring-electric-orange pl-8 pr-10 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-gray-500 transition-all duration-200"
                                             {...field}
                                             disabled={isLoading}
                                         />
@@ -158,7 +158,7 @@ export function LoginForm({
                                             strokeWidth="2"
                                             strokeLinecap="round"
                                             strokeLinejoin="round"
-                                            className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500"
+                                            className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-400 dark:text-gray-500"
                                         >
                                             <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
                                             <path d="M7 11V7a5 5 0 0 1 10 0v4" />
@@ -166,7 +166,7 @@ export function LoginForm({
                                         <button
                                             type="button"
                                             onClick={() => setShowPassword(!showPassword)}
-                                            className="absolute right-3 top-2.5 text-gray-500 hover:text-white"
+                                            className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600 dark:text-gray-500 dark:hover:text-white transition-colors"
                                             disabled={isLoading}
                                         >
                                             {showPassword ? (
@@ -184,7 +184,7 @@ export function LoginForm({
 
                     <Button
                         type="submit"
-                        className="w-full bg-[#00b4d8] hover:bg-[#0096c7] text-white font-bold py-2"
+                        className="w-full bg-electric-orange hover:bg-orange-600 text-white font-bold py-2"
                         disabled={isLoading}
                     >
                         {isLoading ? (
@@ -200,7 +200,7 @@ export function LoginForm({
                     <div className="flex items-center justify-between text-sm">
                         <button
                             type="button"
-                            className="text-gray-400 hover:text-white transition-colors"
+                            className="text-slate-500 hover:text-slate-800 dark:text-gray-400 dark:hover:text-white transition-colors"
                             onClick={onSwitchToForgotPassword}
                             disabled={isLoading}
                         >
@@ -208,7 +208,7 @@ export function LoginForm({
                         </button>
                         <button
                             type="button"
-                            className="text-gray-400 hover:text-white transition-colors"
+                            className="text-slate-500 hover:text-slate-800 dark:text-gray-400 dark:hover:text-white transition-colors"
                             onClick={onSwitchToRegister}
                             disabled={isLoading}
                         >
@@ -220,10 +220,10 @@ export function LoginForm({
 
             <div className="relative">
                 <div className="absolute inset-0 flex items-center">
-                    <span className="w-full border-t border-gray-700" />
+                    <span className="w-full border-t border-slate-200 dark:border-gray-700" />
                 </div>
                 <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-[#0f111a] px-2 text-gray-400">
+                    <span className="bg-white dark:bg-[#0f111a] px-2 text-slate-500 dark:text-gray-400">
                         HOẶC ĐĂNG NHẬP BẰNG
                     </span>
                 </div>
@@ -232,7 +232,7 @@ export function LoginForm({
             <div className="flex justify-center gap-4">
                 <Button
                     variant="outline"
-                    className="rounded-full bg-[#1e2330] border-0 hover:bg-[#2a3040] w-12 h-12 p-0 flex items-center justify-center"
+                    className="rounded-full bg-slate-100 hover:bg-slate-200 border-slate-200 dark:bg-[#1e2330] dark:border-0 dark:hover:bg-[#2a3040] w-12 h-12 p-0 flex items-center justify-center text-slate-900 dark:text-white"
                     disabled={isLoading}
                 >
                     {/* Google Icon Placeholder or SVG */}
@@ -240,7 +240,7 @@ export function LoginForm({
                 </Button>
                 <Button
                     variant="outline"
-                    className="rounded-full bg-[#1e2330] border-0 hover:bg-[#2a3040] w-12 h-12 p-0 flex items-center justify-center"
+                    className="rounded-full bg-slate-100 hover:bg-slate-200 border-slate-200 dark:bg-[#1e2330] dark:border-0 dark:hover:bg-[#2a3040] w-12 h-12 p-0 flex items-center justify-center text-slate-900 dark:text-white"
                     disabled={isLoading}
                 >
                     {/* Discord Icon Placeholder or SVG */}
