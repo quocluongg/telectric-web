@@ -3,6 +3,7 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
+import { useRouter } from "next/navigation";
 import DefaultLayout from "@/components/layout/DefaultLayout";
 import Link from "next/link";
 import {
@@ -13,6 +14,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { addToCart } from "@/lib/cart";
 
 // Types matching Supabase schema
 interface ProductVariant {
@@ -59,6 +61,7 @@ function getAttributeGroups(variants: ProductVariant[]) {
 export default function ProductDetailPage({ productId }: { productId: string }) {
     const supabase = createClient();
     const { toast } = useToast();
+    const router = useRouter();
 
     const [product, setProduct] = useState<Product | null>(null);
     const [variants, setVariants] = useState<ProductVariant[]>([]);
@@ -122,7 +125,22 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
 
     // Handlers
     const handleSelectAttribute = (key: string, value: string) => {
-        setSelectedAttributes(prev => ({ ...prev, [key]: value }));
+        const nextAttrs = { ...selectedAttributes, [key]: value };
+
+        // Check if the exact combination exists
+        const exactMatch = variants.find(v =>
+            Object.entries(nextAttrs).every(([k, vVal]) => v.attributes[k] === vVal)
+        );
+
+        if (exactMatch) {
+            setSelectedAttributes(nextAttrs);
+        } else {
+            // If doesn't exist, find the first variant that has the clicked value
+            const fallback = variants.find(v => v.attributes[key] === value);
+            if (fallback) {
+                setSelectedAttributes(fallback.attributes);
+            }
+        }
         setQuantity(1);
     };
 
@@ -336,18 +354,29 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
                                                     <button
                                                         key={opt}
                                                         onClick={() => handleSelectAttribute(attrKey, opt)}
-                                                        disabled={!isAvailable}
                                                         className={cn(
-                                                            "px-4 py-2 rounded border text-sm font-medium transition-all min-w-[60px]",
+                                                            "group relative px-4 py-2 rounded-lg border-2 text-sm font-semibold transition-all duration-200 min-w-[70px]",
                                                             isActive
-                                                                ? "border-electric-orange bg-orange-50 text-electric-orange font-bold"
+                                                                ? "border-orange-500 bg-orange-50 text-orange-600 shadow-sm ring-2 ring-orange-100"
                                                                 : isAvailable
-                                                                    ? "border-gray-300 text-industrial-black hover:border-electric-orange hover:text-electric-orange"
-                                                                    : "border-gray-100 text-gray-300 cursor-not-allowed line-through bg-gray-50"
+                                                                    ? "border-slate-200 bg-white text-slate-700 hover:border-orange-300 hover:text-orange-500 hover:bg-orange-50/30"
+                                                                    : "border-slate-100 bg-slate-50 text-slate-400 hover:border-slate-200"
                                                         )}
                                                     >
-                                                        {isActive && <Check className="inline h-3 w-3 mr-1" />}
-                                                        {opt}
+                                                        {isActive && (
+                                                            <div className="absolute -top-1.5 -right-1.5 h-4 w-4 bg-orange-500 rounded-full flex items-center justify-center text-white ring-2 ring-white">
+                                                                <Check className="h-2.5 w-2.5 stroke-[4px]" />
+                                                            </div>
+                                                        )}
+                                                        <span className={cn(
+                                                            "relative z-10",
+                                                            !isAvailable && !isActive && "text-slate-400 line-through decoration-slate-300/50"
+                                                        )}>
+                                                            {opt}
+                                                        </span>
+                                                        {!isAvailable && !isActive && (
+                                                            <div className="absolute inset-0 bg-slate-50/40 pointer-events-none rounded-lg" />
+                                                        )}
                                                     </button>
                                                 );
                                             })}
@@ -404,8 +433,22 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
                         <div className="flex gap-3 mb-8">
                             <Button
                                 size="lg"
-                                className="text-base  bg-electric-orange hover:bg-orange-600 text-white rounded-md shadow-lg shadow-orange-500/20 transition-all"
+                                className="text-base bg-electric-orange hover:bg-orange-600 text-white rounded-md shadow-lg shadow-orange-500/20 transition-all"
                                 disabled={!selectedVariant || selectedVariant.stock === 0}
+                                onClick={() => {
+                                    if (!selectedVariant || !product) return;
+                                    addToCart({
+                                        productId: product.id,
+                                        variantId: selectedVariant.id,
+                                        productName: product.name,
+                                        thumbnail: product.thumbnail,
+                                        attributes: selectedVariant.attributes,
+                                        price: selectedVariant.price,
+                                        quantity: quantity,
+                                        stock: selectedVariant.stock
+                                    });
+                                    toast({ title: "✓ Đã thêm vào giỏ hàng!", description: `${product.name} x${quantity}` });
+                                }}
                             >
                                 <ShoppingCart className="mr-2 h-5 w-5" /> Thêm vào giỏ hàng
                             </Button>
@@ -414,6 +457,20 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
                                 variant="outline"
                                 className="flex-1 text-base font-bold border-electric-orange text-electric-orange hover:bg-orange-50 rounded-md transition-all"
                                 disabled={!selectedVariant || selectedVariant.stock === 0}
+                                onClick={() => {
+                                    if (!selectedVariant || !product) return;
+                                    addToCart({
+                                        productId: product.id,
+                                        variantId: selectedVariant.id,
+                                        productName: product.name,
+                                        thumbnail: product.thumbnail,
+                                        attributes: selectedVariant.attributes,
+                                        price: selectedVariant.price,
+                                        quantity: quantity,
+                                        stock: selectedVariant.stock
+                                    });
+                                    router.push("/checkout");
+                                }}
                             >
                                 <Zap className="mr-2 h-5 w-5" /> Mua ngay
                             </Button>
@@ -562,6 +619,7 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
                     </div>
                 </div>
             </div>
+
         </DefaultLayout>
     );
 }

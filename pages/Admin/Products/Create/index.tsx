@@ -4,7 +4,7 @@ import React, { useEffect, useMemo, useState, useRef, ChangeEvent } from "react"
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useSearchParams, useRouter } from "next/navigation";
-import { Loader2, Save, X, Plus, Package, Image as ImageIcon, Layers, UploadCloud, ArrowLeft } from "lucide-react";
+import { Loader2, Save, X, Plus, Package, Image as ImageIcon, Layers, UploadCloud, ArrowLeft, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
@@ -20,6 +20,7 @@ const productSchema = z.object({
     description: z.string().max(5000).optional(),
     brand: z.string().min(1, "Vui lòng nhập thương hiệu"),
     origin: z.string().min(1, "Vui lòng nhập xuất xứ"),
+    category_id: z.string().optional().nullable(),
     thumbnail: z.string().min(1, "Ảnh bìa là bắt buộc"),
     images: z.array(z.string()).default([]),
     attrGroups: z.array(z.object({
@@ -49,6 +50,12 @@ const sanitizeFileName = (str: string) => {
         .toLowerCase();
 };
 
+interface CategoryOption {
+    id: string;
+    name: string;
+    parent_id: string | null;
+}
+
 export default function ProductForm({ initialData }: { initialData?: any }) {
     const supabase = createClient();
     const { toast } = useToast();
@@ -60,12 +67,16 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
     const isEditMode = Boolean(editId);
     const [isLoadingProduct, setIsLoadingProduct] = useState(isEditMode);
 
+    // Categories
+    const [categories, setCategories] = useState<CategoryOption[]>([]);
+
     // Upload states
     const [isUploadingThumb, setIsUploadingThumb] = useState(false);
     const [galleryFiles, setGalleryFiles] = useState<string[]>(initialData?.images || []);
     const [isUploadingGallery, setIsUploadingGallery] = useState(false);
     const thumbInputRef = useRef<HTMLInputElement>(null);
     const galleryInputRef = useRef<HTMLInputElement>(null);
+    const [deletedCombos, setDeletedCombos] = useState<string[]>([]);
 
     const form = useForm<ProductFormValues>({
         resolver: zodResolver(productSchema),
@@ -73,6 +84,7 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
             name: "",
             brand: "NoBrand",
             origin: "Việt Nam",
+            category_id: null,
             thumbnail: "",
             images: [],
             attrGroups: [{ name: "Màu sắc", values: [] }],
@@ -87,6 +99,18 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
 
     const watchedGroups = form.watch("attrGroups");
 
+    // Fetch categories
+    useEffect(() => {
+        const fetchCategories = async () => {
+            const { data } = await supabase
+                .from("categories")
+                .select("id, name, parent_id")
+                .order("name");
+            setCategories(data || []);
+        };
+        fetchCategories();
+    }, [supabase]);
+
     // Load product data when in edit mode
     useEffect(() => {
         if (!isEditMode || !editId) {
@@ -96,6 +120,7 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
                 name: "",
                 brand: "NoBrand",
                 origin: "Việt Nam",
+                category_id: null,
                 description: "",
                 thumbnail: "",
                 images: [],
@@ -155,6 +180,7 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
                 name: product.name,
                 brand: product.brand || "NoBrand",
                 origin: product.origin || "Việt Nam",
+                category_id: product.category_id || null,
                 description: product.description || "",
                 thumbnail: product.thumbnail || "",
                 images: product.images || [],
@@ -188,22 +214,24 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
         const combinations = validGroups.reduce(cartesian, [{}]);
         const currentVariants = form.getValues("variants");
 
-        const newVariants = combinations.map((combo: any) => {
-            // Tìm xem biến thể này đã tồn tại chưa để giữ lại Price/Stock/SKU
-            const existing = currentVariants.find((v: { attributes: Record<string, string> }) =>
-                JSON.stringify(v.attributes) === JSON.stringify(combo)
-            );
+        const newVariants = combinations
+            .filter((combo: any) => !deletedCombos.includes(JSON.stringify(combo)))
+            .map((combo: any) => {
+                // Tìm xem biến thể này đã tồn tại chưa để giữ lại Price/Stock/SKU
+                const existing = currentVariants.find((v: { attributes: Record<string, string> }) =>
+                    JSON.stringify(v.attributes) === JSON.stringify(combo)
+                );
 
-            return existing || {
-                attributes: combo,
-                price: 0,
-                stock: 0,
-                sku: ""
-            };
-        });
+                return existing || {
+                    attributes: combo,
+                    price: 0,
+                    stock: 0,
+                    sku: ""
+                };
+            });
 
         form.setValue("variants", newVariants);
-    }, [JSON.stringify(watchedGroups), isLoadingProduct]);
+    }, [JSON.stringify(watchedGroups), deletedCombos, isLoadingProduct]);
 
     const onSubmit = async (values: ProductFormValues) => {
         try {
@@ -218,6 +246,7 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
                         description: values.description || null,
                         brand: values.brand,
                         origin: values.origin,
+                        category_id: values.category_id || null,
                         thumbnail: values.thumbnail,
                         images: values.images || [],
                         updated_at: new Date().toISOString()
@@ -264,6 +293,7 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
                         description: values.description || null,
                         brand: values.brand,
                         origin: values.origin,
+                        category_id: values.category_id || null,
                         thumbnail: values.thumbnail,
                         images: values.images || [],
                     })
@@ -390,6 +420,35 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
                                         <InputField control={form.control} name="origin" label="Xuất xứ" />
                                     </div>
 
+                                    {/* Category Selector */}
+                                    <FormField
+                                        control={form.control}
+                                        name="category_id"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Danh mục</FormLabel>
+                                                <FormControl>
+                                                    <select
+                                                        value={field.value || ""}
+                                                        onChange={e => field.onChange(e.target.value || null)}
+                                                        className="w-full h-10 px-3 rounded-md border bg-white dark:bg-slate-800 text-sm outline-none focus:ring-2 focus:ring-orange-200 focus:border-orange-400 transition-all"
+                                                    >
+                                                        <option value="">— Chưa phân loại</option>
+                                                        {categories.filter(c => !c.parent_id).map(parent => (
+                                                            <React.Fragment key={parent.id}>
+                                                                <option value={parent.id}>{parent.name}</option>
+                                                                {categories.filter(c => c.parent_id === parent.id).map(child => (
+                                                                    <option key={child.id} value={child.id}>&nbsp;&nbsp;↳ {child.name}</option>
+                                                                ))}
+                                                            </React.Fragment>
+                                                        ))}
+                                                    </select>
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+
                                     <FormField
                                         control={form.control}
                                         name="description"
@@ -479,6 +538,7 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
                                                         <th className="p-3 font-semibold w-32">Giá bán</th>
                                                         <th className="p-3 font-semibold w-28">Kho hàng</th>
                                                         <th className="p-3 font-semibold">Mã SKU</th>
+                                                        <th className="p-3 font-semibold w-12 text-center">Xóa</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -495,6 +555,20 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
                                                             </td>
                                                             <td className="p-3">
                                                                 <Input {...form.register(`variants.${vIdx}.sku`)} placeholder="SKU..." className="h-9" />
+                                                            </td>
+                                                            <td className="p-3 text-center">
+                                                                <Button
+                                                                    type="button"
+                                                                    variant="ghost"
+                                                                    size="icon"
+                                                                    className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50"
+                                                                    onClick={() => {
+                                                                        const variant = form.getValues(`variants.${vIdx}`);
+                                                                        setDeletedCombos(prev => [...prev, JSON.stringify(variant.attributes)]);
+                                                                    }}
+                                                                >
+                                                                    <Trash2 className="h-4 w-4" />
+                                                                </Button>
                                                             </td>
                                                         </tr>
                                                     ))}
