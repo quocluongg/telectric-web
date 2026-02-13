@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
-import { Home, Package, Zap, LifeBuoy, Percent, Sun, Moon, ChevronDown, Layers, Megaphone } from "lucide-react";
+import { Home, Package, Zap, LifeBuoy, Percent, Sun, Moon, ChevronDown, Layers, Megaphone, ShieldCheck } from "lucide-react";
 import { useTheme } from "next-themes";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
@@ -91,6 +91,7 @@ export const NavBar = () => {
                         <NavItem href="/brands" icon={<Zap size={16} />} label="Thương Hiệu" />
                         <NavItem href="/promotions" icon={<Percent size={16} />} label="Khuyến Mãi" />
                         <NavItem href="/news" icon={<Megaphone size={16} />} label="Bài viết" />
+                        <NavItem href="/warranty-check" icon={<ShieldCheck size={16} />} label="Tra cứu BH" />
                         <NavItem href="/contact" icon={<LifeBuoy size={16} />} label="Liên Hệ" />
                     </ul>
                 </nav>
