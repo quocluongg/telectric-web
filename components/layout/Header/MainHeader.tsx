@@ -2,11 +2,12 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Search, Zap, User, LogOut, Settings, UserCircle, ChevronDown } from "lucide-react";
+import { Search, Zap, User, LogOut, Settings, UserCircle, ChevronDown, ShoppingCart } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { AuthModal } from "@/components/auth/AuthModal";
 import { createClient } from "@/lib/supabase/client";
 import { User as SupabaseUser } from "@supabase/supabase-js";
+import { CartPopover } from "./CartPopover";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -80,8 +81,10 @@ export const MainHeader = () => {
                     </div>
                 </div>
 
-                {/* Login Action / User Profile */}
-                <div className="flex items-center">
+                {/* Actions: Cart & Login */}
+                <div className="flex items-center gap-3">
+                    <CartPopover />
+
                     {user ? (
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
@@ -151,5 +154,6 @@ export const MainHeader = () => {
                 defaultView={authDefaultView}
             />
         </div>
+
     );
 };

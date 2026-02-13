@@ -21,8 +21,8 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
     const pathname = usePathname()
 
     const menuItems = [
-        { path: '/admin/dashboard', icon: <LayoutDashboard size={20} />, label: 'Dashboard' },
-        { path: '/admin/products/list', icon: <Package size={20} />, label: 'Sản phẩm' },
+        { path: '/admin', icon: <LayoutDashboard size={20} />, label: 'Dashboard' },
+        { path: '/admin/products', icon: <Package size={20} />, label: 'Sản phẩm' },
         { path: '/admin/orders', icon: <ShoppingCart size={20} />, label: 'Đơn hàng' },
         { path: '/admin/categories', icon: <Layers size={20} />, label: 'Danh mục' },
         // --- MỤC MỚI THÊM ---
@@ -46,7 +46,9 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
 
                 <nav className="flex-1 p-4 space-y-1 overflow-y-auto mt-4">
                     {menuItems.map((item) => {
-                        const isActive = pathname?.startsWith(item.path)
+                        const isActive = item.path === '/admin'
+                            ? pathname === '/admin'
+                            : pathname?.startsWith(item.path)
 
                         return (
                             <Link
@@ -79,7 +81,9 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
                     <div className="flex items-center gap-2">
                         <h2 className="font-semibold text-slate-800 dark:text-white capitalize text-lg">
                             {/* Hiển thị tiêu đề trang dựa trên path */}
-                            {menuItems.find(item => pathname?.startsWith(item.path))?.label || 'Quản trị'}
+                            {[...menuItems].reverse().find(item =>
+                                item.path === '/admin' ? pathname === '/admin' : pathname?.startsWith(item.path)
+                            )?.label || 'Quản trị'}
                         </h2>
                     </div>
 

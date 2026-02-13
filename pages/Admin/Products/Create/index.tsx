@@ -4,7 +4,7 @@ import React, { useEffect, useMemo, useState, useRef, ChangeEvent } from "react"
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useSearchParams, useRouter } from "next/navigation";
-import { Loader2, Save, X, Plus, Package, Image as ImageIcon, Layers, UploadCloud, ArrowLeft } from "lucide-react";
+import { Loader2, Save, X, Plus, Package, Image as ImageIcon, Layers, UploadCloud, ArrowLeft, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
@@ -66,6 +66,7 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
     const [isUploadingGallery, setIsUploadingGallery] = useState(false);
     const thumbInputRef = useRef<HTMLInputElement>(null);
     const galleryInputRef = useRef<HTMLInputElement>(null);
+    const [deletedCombos, setDeletedCombos] = useState<string[]>([]);
 
     const form = useForm<ProductFormValues>({
         resolver: zodResolver(productSchema),
@@ -188,22 +189,24 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
         const combinations = validGroups.reduce(cartesian, [{}]);
         const currentVariants = form.getValues("variants");
 
-        const newVariants = combinations.map((combo: any) => {
-            // Tìm xem biến thể này đã tồn tại chưa để giữ lại Price/Stock/SKU
-            const existing = currentVariants.find((v: { attributes: Record<string, string> }) =>
-                JSON.stringify(v.attributes) === JSON.stringify(combo)
-            );
+        const newVariants = combinations
+            .filter((combo: any) => !deletedCombos.includes(JSON.stringify(combo)))
+            .map((combo: any) => {
+                // Tìm xem biến thể này đã tồn tại chưa để giữ lại Price/Stock/SKU
+                const existing = currentVariants.find((v: { attributes: Record<string, string> }) =>
+                    JSON.stringify(v.attributes) === JSON.stringify(combo)
+                );
 
-            return existing || {
-                attributes: combo,
-                price: 0,
-                stock: 0,
-                sku: ""
-            };
-        });
+                return existing || {
+                    attributes: combo,
+                    price: 0,
+                    stock: 0,
+                    sku: ""
+                };
+            });
 
         form.setValue("variants", newVariants);
-    }, [JSON.stringify(watchedGroups), isLoadingProduct]);
+    }, [JSON.stringify(watchedGroups), deletedCombos, isLoadingProduct]);
 
     const onSubmit = async (values: ProductFormValues) => {
         try {
@@ -479,6 +482,7 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
                                                         <th className="p-3 font-semibold w-32">Giá bán</th>
                                                         <th className="p-3 font-semibold w-28">Kho hàng</th>
                                                         <th className="p-3 font-semibold">Mã SKU</th>
+                                                        <th className="p-3 font-semibold w-12 text-center">Xóa</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -495,6 +499,20 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
                                                             </td>
                                                             <td className="p-3">
                                                                 <Input {...form.register(`variants.${vIdx}.sku`)} placeholder="SKU..." className="h-9" />
+                                                            </td>
+                                                            <td className="p-3 text-center">
+                                                                <Button
+                                                                    type="button"
+                                                                    variant="ghost"
+                                                                    size="icon"
+                                                                    className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50"
+                                                                    onClick={() => {
+                                                                        const variant = form.getValues(`variants.${vIdx}`);
+                                                                        setDeletedCombos(prev => [...prev, JSON.stringify(variant.attributes)]);
+                                                                    }}
+                                                                >
+                                                                    <Trash2 className="h-4 w-4" />
+                                                                </Button>
                                                             </td>
                                                         </tr>
                                                     ))}
