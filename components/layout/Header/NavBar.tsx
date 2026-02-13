@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
-import { Home, Package, Zap, LifeBuoy, Percent, Sun, Moon, ChevronDown, Layers } from "lucide-react";
+import { Home, Package, Zap, LifeBuoy, Percent, Sun, Moon, ChevronDown, Layers, Megaphone } from "lucide-react";
 import { useTheme } from "next-themes";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
