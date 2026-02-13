@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Home, Package, Zap, LifeBuoy, Percent, Sun, Moon } from "lucide-react";
+import { Home, Package, Zap, LifeBuoy, Percent, Sun, Moon, Megaphone } from "lucide-react";
 import { useTheme } from "next-themes";
 
 export const NavBar = () => {
@@ -17,6 +17,7 @@ export const NavBar = () => {
                         <NavItem href="/products" icon={<Package size={16} />} label="Sản Phẩm" />
                         <NavItem href="/brands" icon={<Zap size={16} />} label="Thương Hiệu" />
                         <NavItem href="/promotions" icon={<Percent size={16} />} label="Khuyến Mãi" />
+                        <NavItem href="/news" icon={<Megaphone size={16} />} label="Bài viết" />
                         <NavItem href="/contact" icon={<LifeBuoy size={16} />} label="Liên Hệ" />
                     </ul>
                 </nav>

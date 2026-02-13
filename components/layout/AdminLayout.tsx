@@ -30,7 +30,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
         { path: '/admin/warranty-check', icon: <SearchCheck size={20} />, label: 'Tra cứu bảo hành' },
         // -------------------
         { path: '/admin/users', icon: <Users size={20} />, label: 'Người dùng' },
-        { path: '/admin/marketing', icon: <Megaphone size={20} />, label: 'Marketing' },
+        { path: '/admin/news', icon: <Megaphone size={20} />, label: 'Bài viết' },
     ]
 
     return (

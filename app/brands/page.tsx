@@ -1,5 +1,6 @@
 import { Metadata } from "next"
 import BrandPage from "@/pages/Brand"
+import DefaultLayout from "@/components/layout/DefaultLayout"
 
 export const metadata: Metadata = {
     title: "Thương Hiệu | TELECTRIC - Điểm Tựa Kỹ Thuật",
@@ -8,5 +9,9 @@ export const metadata: Metadata = {
 }
 
 export default function Page() {
-    return <BrandPage />
+    return (
+        <DefaultLayout>
+            <BrandPage />
+        </DefaultLayout>
+    )
 }
