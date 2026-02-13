@@ -20,6 +20,7 @@ const productSchema = z.object({
     description: z.string().max(5000).optional(),
     brand: z.string().min(1, "Vui lòng nhập thương hiệu"),
     origin: z.string().min(1, "Vui lòng nhập xuất xứ"),
+    category_id: z.string().optional().nullable(),
     thumbnail: z.string().min(1, "Ảnh bìa là bắt buộc"),
     images: z.array(z.string()).default([]),
     attrGroups: z.array(z.object({
@@ -49,6 +50,12 @@ const sanitizeFileName = (str: string) => {
         .toLowerCase();
 };
 
+interface CategoryOption {
+    id: string;
+    name: string;
+    parent_id: string | null;
+}
+
 export default function ProductForm({ initialData }: { initialData?: any }) {
     const supabase = createClient();
     const { toast } = useToast();
@@ -59,6 +66,9 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
     const editId = searchParams?.get("edit");
     const isEditMode = Boolean(editId);
     const [isLoadingProduct, setIsLoadingProduct] = useState(isEditMode);
+
+    // Categories
+    const [categories, setCategories] = useState<CategoryOption[]>([]);
 
     // Upload states
     const [isUploadingThumb, setIsUploadingThumb] = useState(false);
@@ -74,6 +84,7 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
             name: "",
             brand: "NoBrand",
             origin: "Việt Nam",
+            category_id: null,
             thumbnail: "",
             images: [],
             attrGroups: [{ name: "Màu sắc", values: [] }],
@@ -88,6 +99,18 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
 
     const watchedGroups = form.watch("attrGroups");
 
+    // Fetch categories
+    useEffect(() => {
+        const fetchCategories = async () => {
+            const { data } = await supabase
+                .from("categories")
+                .select("id, name, parent_id")
+                .order("name");
+            setCategories(data || []);
+        };
+        fetchCategories();
+    }, [supabase]);
+
     // Load product data when in edit mode
     useEffect(() => {
         if (!isEditMode || !editId) {
@@ -97,6 +120,7 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
                 name: "",
                 brand: "NoBrand",
                 origin: "Việt Nam",
+                category_id: null,
                 description: "",
                 thumbnail: "",
                 images: [],
@@ -156,6 +180,7 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
                 name: product.name,
                 brand: product.brand || "NoBrand",
                 origin: product.origin || "Việt Nam",
+                category_id: product.category_id || null,
                 description: product.description || "",
                 thumbnail: product.thumbnail || "",
                 images: product.images || [],
@@ -221,6 +246,7 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
                         description: values.description || null,
                         brand: values.brand,
                         origin: values.origin,
+                        category_id: values.category_id || null,
                         thumbnail: values.thumbnail,
                         images: values.images || [],
                         updated_at: new Date().toISOString()
@@ -267,6 +293,7 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
                         description: values.description || null,
                         brand: values.brand,
                         origin: values.origin,
+                        category_id: values.category_id || null,
                         thumbnail: values.thumbnail,
                         images: values.images || [],
                     })
@@ -392,6 +419,35 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
                                         <InputField control={form.control} name="brand" label="Thương hiệu" />
                                         <InputField control={form.control} name="origin" label="Xuất xứ" />
                                     </div>
+
+                                    {/* Category Selector */}
+                                    <FormField
+                                        control={form.control}
+                                        name="category_id"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Danh mục</FormLabel>
+                                                <FormControl>
+                                                    <select
+                                                        value={field.value || ""}
+                                                        onChange={e => field.onChange(e.target.value || null)}
+                                                        className="w-full h-10 px-3 rounded-md border bg-white dark:bg-slate-800 text-sm outline-none focus:ring-2 focus:ring-orange-200 focus:border-orange-400 transition-all"
+                                                    >
+                                                        <option value="">— Chưa phân loại</option>
+                                                        {categories.filter(c => !c.parent_id).map(parent => (
+                                                            <React.Fragment key={parent.id}>
+                                                                <option value={parent.id}>{parent.name}</option>
+                                                                {categories.filter(c => c.parent_id === parent.id).map(child => (
+                                                                    <option key={child.id} value={child.id}>&nbsp;&nbsp;↳ {child.name}</option>
+                                                                ))}
+                                                            </React.Fragment>
+                                                        ))}
+                                                    </select>
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
 
                                     <FormField
                                         control={form.control}
