@@ -14,6 +14,7 @@ import { InputField } from "@/components/forms/InputField";
 import { createClient } from "@/lib/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import * as z from "zod";
+import imageCompression from "browser-image-compression";
 
 const productSchema = z.object({
     name: z.string().min(5, "Tên sản phẩm ít nhất 5 ký tự").max(255),
@@ -255,32 +256,108 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
 
                 if (productError) throw productError;
 
-                // 2. Delete old variants
-                const { error: deleteError } = await supabase
+                // 2. Fetch existing variants for this product
+                const { data: existingVariants } = await supabase
                     .from("product_variants")
-                    .delete()
+                    .select("id, attributes")
                     .eq("product_id", editId);
 
-                if (deleteError) throw deleteError;
+                const existingList = existingVariants || [];
+                const newVariants = values.variants || [];
 
-                // 3. Insert new variants
-                if (values.variants && values.variants.length > 0) {
-                    const variantRows = values.variants.map((v: any) => ({
-                        product_id: editId,
-                        sku: v.sku || null,
-                        price: Number(v.price) || 0,
-                        stock: Number(v.stock) || 0,
-                        attributes: v.attributes,
-                    }));
+                // 3. Match new variants to existing ones by attributes
+                const matchedExistingIds = new Set<string>();
+                const toUpdate: { id: string; data: any }[] = [];
+                const toInsert: any[] = [];
 
-                    const { error: variantError } = await supabase
-                        .from("product_variants")
-                        .insert(variantRows);
+                for (const v of newVariants) {
+                    const match = existingList.find(
+                        (ev: any) =>
+                            !matchedExistingIds.has(ev.id) &&
+                            JSON.stringify(ev.attributes) === JSON.stringify(v.attributes)
+                    );
 
-                    if (variantError) throw variantError;
+                    if (match) {
+                        matchedExistingIds.add(match.id);
+                        toUpdate.push({
+                            id: match.id,
+                            data: {
+                                sku: v.sku || null,
+                                price: Number(v.price) || 0,
+                                stock: Number(v.stock) || 0,
+                                attributes: v.attributes,
+                            },
+                        });
+                    } else {
+                        toInsert.push({
+                            product_id: editId,
+                            sku: v.sku || null,
+                            price: Number(v.price) || 0,
+                            stock: Number(v.stock) || 0,
+                            attributes: v.attributes,
+                        });
+                    }
                 }
 
-                toast({ title: "Đã cập nhật!", description: "Sản phẩm đã được cập nhật", className: "bg-green-600 text-white" });
+                // 4. Update existing variants
+                for (const item of toUpdate) {
+                    const { error: updateError } = await supabase
+                        .from("product_variants")
+                        .update(item.data)
+                        .eq("id", item.id);
+                    if (updateError) throw updateError;
+                }
+
+                // 5. Insert new variants
+                if (toInsert.length > 0) {
+                    const { error: insertError } = await supabase
+                        .from("product_variants")
+                        .insert(toInsert);
+                    if (insertError) throw insertError;
+                }
+
+                // 6. Delete variants that are no longer needed (only if not referenced by order_items)
+                const unmatchedIds = existingList
+                    .filter((ev: any) => !matchedExistingIds.has(ev.id))
+                    .map((ev: any) => ev.id);
+
+                if (unmatchedIds.length > 0) {
+                    // Check which ones are referenced by order_items
+                    const { data: referencedItems } = await supabase
+                        .from("order_items")
+                        .select("variant_id")
+                        .in("variant_id", unmatchedIds);
+
+                    const referencedIds = new Set((referencedItems || []).map((r: any) => r.variant_id));
+                    const safeToDelete = unmatchedIds.filter((id: string) => !referencedIds.has(id));
+                    const keptVariantIds = unmatchedIds.filter((id: string) => referencedIds.has(id));
+
+                    if (safeToDelete.length > 0) {
+                        const { error: deleteError } = await supabase
+                            .from("product_variants")
+                            .delete()
+                            .in("id", safeToDelete);
+                        if (deleteError) throw deleteError;
+                    }
+
+                    // Notify user about variants that couldn't be removed
+                    if (keptVariantIds.length > 0) {
+                        // Get the attributes of kept variants for display
+                        const keptVariants = existingList.filter((ev: any) => keptVariantIds.includes(ev.id));
+                        const keptNames = keptVariants
+                            .map((v: any) => Object.values(v.attributes || {}).join(" / "))
+                            .join(", ");
+
+                        toast({
+                            title: `⚠️ ${keptVariantIds.length} biến thể không thể xóa`,
+                            description: `Các biến thể "${keptNames}" đang được liên kết với đơn hàng nên không thể xóa. Chúng sẽ được giữ lại trong hệ thống.`,
+                            variant: "destructive",
+                            duration: 8000,
+                        });
+                    }
+                }
+
+                toast({ title: "Đã cập nhật!", description: "Sản phẩm đã được cập nhật thành công.", className: "bg-green-600 text-white" });
                 window.location.href = `/products/${editId}`;
             } else {
                 // === CREATE MODE ===
@@ -333,10 +410,33 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
     };
 
     // --- UPLOAD HELPERS ---
+    const compressImage = async (file: File): Promise<File> => {
+        const options = {
+            maxSizeMB: 0.05, // 100KB max
+            maxWidthOrHeight: 1920,
+            useWebWorker: true,
+            fileType: "image/webp" as const,
+            initialQuality: 0.7,
+        };
+
+        try {
+            const compressed = await imageCompression(file, options);
+            const sizeMB = compressed.size / 1024;
+            console.log(`Ảnh nén: ${(file.size / 1024).toFixed(0)}KB → ${sizeMB.toFixed(0)}KB`);
+            return compressed;
+        } catch (err) {
+            console.warn("Không thể nén ảnh, sử dụng ảnh gốc:", err);
+            return file;
+        }
+    };
+
     const uploadFileToSupabase = async (file: File): Promise<string | null> => {
-        const fileExt = file.name.split('.').pop();
-        const fileName = `${Date.now()}-${sanitizeFileName(file.name.split('.')[0])}.${fileExt}`;
-        const { error } = await supabase.storage.from('products').upload(fileName, file);
+        // Compress image before uploading
+        const compressed = await compressImage(file);
+        const fileName = `${Date.now()}-${sanitizeFileName(file.name.split('.')[0])}.webp`;
+        const { error } = await supabase.storage.from('products').upload(fileName, compressed, {
+            contentType: 'image/webp',
+        });
         if (error) {
             toast({ title: "Upload lỗi", description: error.message, variant: "destructive" });
             return null;
