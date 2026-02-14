@@ -1,0 +1,142 @@
+﻿▲ Next.js 16.1.6 (Turbopack, Cache Components)
+- Environments: .env
+
+  Creating an optimized production build ...
+node.exe : 
+At C:\Program Files\nodejs\npx.ps1:29 
+char:3
++   & $NODE_EXE $NPX_CLI_JS $args
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecifie 
+   d: (:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeComma 
+   ndError
+ 
+> Build error occurred
+Error: Turbopack build failed with 2 
+errors:
+./lib/supabase/server.ts:2:1
+Ecmascript file had an error
+[0m [90m 1 |[39m [36mimport[39m { 
+createServerClient } [36mfrom[39m 
+[32m"@supabase/ssr"[39m[33m;[39m
+[31m[1m>[22m[39m[90m 2 |[39m 
+[36mimport[39m { cookies } 
+[36mfrom[39m 
+[32m"next/headers"[39m[33m;[39m
+ [90m   |[39m [31m[1m^[22m[39m[31m
+[1m^[22m[39m[31m[1m^[22m[39m[31m[1
+m^[22m[39m[31m[1m^[22m[39m[31m[1m^
+[22m[39m[31m[1m^[22m[39m[31m[1m^[
+22m[39m[31m[1m^[22m[39m[31m[1m^[22
+m[39m[31m[1m^[22m[39m[31m[1m^[22m
+[39m[31m[1m^[22m[39m[31m[1m^[22m[3
+9m[31m[1m^[22m[39m[31m[1m^[22m[39m
+[31m[1m^[22m[39m[31m[1m^[22m[39m[
+31m[1m^[22m[39m[31m[1m^[22m[39m[31
+m[1m^[22m[39m[31m[1m^[22m[39m[31m
+[1m^[22m[39m[31m[1m^[22m[39m[31m[1
+m^[22m[39m[31m[1m^[22m[39m[31m[1m^
+[22m[39m[31m[1m^[22m[39m[31m[1m^[
+22m[39m[31m[1m^[22m[39m[31m[1m^[22
+m[39m[31m[1m^[22m[39m[31m[1m^[22m
+[39m[31m[1m^[22m[39m[31m[1m^[22m[3
+9m[31m[1m^[22m[39m[31m[1m^[22m[39m
+[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 3 |[39m
+ [90m 4 |[39m [90m/**[39m
+ [90m 5 |[39m [90m * Especially 
+important if using Fluid compute: Don't 
+put this client in a[39m[0m
+
+You're importing a component that needs 
+"next/headers". That only works in a 
+Server Component which is not supported 
+in the pages/ directory. Read more: https:
+//nextjs.org/docs/app/building-your-applic
+ation/rendering/server-components
+
+
+
+Import traces:
+  App Route:
+    ./lib/supabase/server.ts
+    ./app/auth/confirm/route.ts
+
+  Browser:
+    ./lib/supabase/server.ts
+    ./pages/Admin/Products/List/index.tsx
+
+  SSR:
+    ./lib/supabase/server.ts
+    ./pages/Admin/Products/List/index.tsx
+
+  Server Component:
+    ./lib/supabase/server.ts
+    ./app/news/[slug]/page.tsx
+
+
+./app/auth/update-password/page.tsx:1:1
+Module not found: Can't resolve 
+'@/components/update-password-form'
+[0m[31m[1m>[22m[39m[90m 1 |[39m 
+[36mimport[39m { 
+[33mUpdatePasswordForm[39m } 
+[36mfrom[39m [32m"@/components/update-p
+assword-form"[39m[33m;[39m
+ [90m   |[39m [31m[1m^[22m[39m[31m
+[1m^[22m[39m[31m[1m^[22m[39m[31m[1
+m^[22m[39m[31m[1m^[22m[39m[31m[1m^
+[22m[39m[31m[1m^[22m[39m[31m[1m^[
+22m[39m[31m[1m^[22m[39m[31m[1m^[22
+m[39m[31m[1m^[22m[39m[31m[1m^[22m
+[39m[31m[1m^[22m[39m[31m[1m^[22m[3
+9m[31m[1m^[22m[39m[31m[1m^[22m[39m
+[31m[1m^[22m[39m[31m[1m^[22m[39m[
+31m[1m^[22m[39m[31m[1m^[22m[39m[31
+m[1m^[22m[39m[31m[1m^[22m[39m[31m
+[1m^[22m[39m[31m[1m^[22m[39m[31m[1
+m^[22m[39m[31m[1m^[22m[39m[31m[1m^
+[22m[39m[31m[1m^[22m[39m[31m[1m^[
+22m[39m[31m[1m^[22m[39m[31m[1m^[22
+m[39m[31m[1m^[22m[39m[31m[1m^[22m
+[39m[31m[1m^[22m[39m[31m[1m^[22m[3
+9m[31m[1m^[22m[39m[31m[1m^[22m[39m
+[31m[1m^[22m[39m[31m[1m^[22m[39m[
+31m[1m^[22m[39m[31m[1m^[22m[39m[31
+m[1m^[22m[39m[31m[1m^[22m[39m[31m
+[1m^[22m[39m[31m[1m^[22m[39m[31m[1
+m^[22m[39m[31m[1m^[22m[39m[31m[1m^
+[22m[39m[31m[1m^[22m[39m[31m[1m^[
+22m[39m[31m[1m^[22m[39m[31m[1m^[22
+m[39m[31m[1m^[22m[39m[31m[1m^[22m
+[39m[31m[1m^[22m[39m[31m[1m^[22m[3
+9m[31m[1m^[22m[39m[31m[1m^[22m[39m
+[31m[1m^[22m[39m[31m[1m^[22m[39m[
+31m[1m^[22m[39m[31m[1m^[22m[39m[31
+m[1m^[22m[39m[31m[1m^[22m[39m[31m
+[1m^[22m[39m[31m[1m^[22m[39m[31m[1
+m^[22m[39m[31m[1m^[22m[39m[31m[1m^
+[22m[39m[31m[1m^[22m[39m[31m[1m^[
+22m[39m
+ [90m 2 |[39m
+ [90m 3 |[39m [36mexport[39m 
+[36mdefault[39m [36mfunction[39m 
+[33mPage[39m() {
+ [90m 4 |[39m   [36mreturn[39m ([0m
+
+Import map: aliased to relative 
+'./components/update-password-form' 
+inside of [project]/
+
+
+https://nextjs.org/docs/messages/module-no
+t-found
+
+
+    at <unknown> 
+(./lib/supabase/server.ts:2:1)
+    at <unknown> 
+(./app/auth/update-password/page.tsx:1:1)
+    at <unknown> (https://nextjs.org/docs/
+messages/module-not-found)
