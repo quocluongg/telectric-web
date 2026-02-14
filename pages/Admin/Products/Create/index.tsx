@@ -20,6 +20,7 @@ const productSchema = z.object({
     description: z.string().max(5000).optional(),
     brand: z.string().min(1, "Vui lòng nhập thương hiệu"),
     origin: z.string().min(1, "Vui lòng nhập xuất xứ"),
+    warranty_months: z.coerce.number().min(0, "Không được âm").default(12),
     category_id: z.string().optional().nullable(),
     thumbnail: z.string().min(1, "Ảnh bìa là bắt buộc"),
     images: z.array(z.string()).default([]),
@@ -84,6 +85,7 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
             name: "",
             brand: "NoBrand",
             origin: "Việt Nam",
+            warranty_months: 12,
             category_id: null,
             thumbnail: "",
             images: [],
@@ -120,6 +122,7 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
                 name: "",
                 brand: "NoBrand",
                 origin: "Việt Nam",
+                warranty_months: 12,
                 category_id: null,
                 description: "",
                 thumbnail: "",
@@ -180,6 +183,7 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
                 name: product.name,
                 brand: product.brand || "NoBrand",
                 origin: product.origin || "Việt Nam",
+                warranty_months: product.warranty_months ?? 12,
                 category_id: product.category_id || null,
                 description: product.description || "",
                 thumbnail: product.thumbnail || "",
@@ -246,6 +250,7 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
                         description: values.description || null,
                         brand: values.brand,
                         origin: values.origin,
+                        warranty_months: values.warranty_months ?? 12,
                         category_id: values.category_id || null,
                         thumbnail: values.thumbnail,
                         images: values.images || [],
@@ -293,6 +298,7 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
                         description: values.description || null,
                         brand: values.brand,
                         origin: values.origin,
+                        warranty_months: values.warranty_months ?? 12,
                         category_id: values.category_id || null,
                         thumbnail: values.thumbnail,
                         images: values.images || [],
@@ -415,9 +421,22 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
                                 <CardContent className="space-y-4">
                                     <InputField control={form.control} name="name" label="Tên sản phẩm" placeholder="Ví dụ: Áo thun nam co giãn..." />
 
-                                    <div className="grid grid-cols-2 gap-4">
+                                    <div className="grid grid-cols-3 gap-4">
                                         <InputField control={form.control} name="brand" label="Thương hiệu" />
                                         <InputField control={form.control} name="origin" label="Xuất xứ" />
+                                        <FormField
+                                            control={form.control}
+                                            name="warranty_months"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel>Bảo hành (tháng)</FormLabel>
+                                                    <FormControl>
+                                                        <Input type="number" min={0} placeholder="12" {...field} className="h-10" />
+                                                    </FormControl>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
                                     </div>
 
                                     {/* Category Selector */}

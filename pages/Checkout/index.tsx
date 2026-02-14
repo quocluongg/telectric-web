@@ -164,12 +164,15 @@ export default function CheckoutPage() {
                 price: item.price
             }));
 
+            // Get current user ID if logged in
+            const { data: { user } } = await supabase.auth.getUser();
+
             const { data, error } = await supabase.rpc("create_order_v2", {
                 p_customer_name: form.name,
                 p_customer_phone: form.phone.replace(/\s/g, ""),
                 p_shipping_address: fullAddress,
                 p_items: items,
-                p_user_id: null
+                p_user_id: user?.id || null
             });
 
             if (error) throw error;

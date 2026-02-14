@@ -624,6 +624,58 @@ export function OrderTable({
 
             if (error) throw error;
 
+            // Auto-create warranty cards when status changes to "shipped"
+            if (newStatus === "shipped") {
+                try {
+                    // Fetch order with items + product info
+                    const { data: orderData } = await supabase
+                        .from("orders")
+                        .select(`
+                            customer_name, customer_phone,
+                            order_items (
+                                quantity,
+                                product_variants (
+                                    products ( name, warranty_months )
+                                )
+                            )
+                        `)
+                        .eq("id", orderId)
+                        .single();
+
+                    if (orderData?.order_items) {
+                        const now = new Date();
+                        const warrantyCards = (orderData.order_items as any[]).map((item: any) => {
+                            const product = item.product_variants?.products;
+                            const warrantyMonths = product?.warranty_months ?? 12;
+                            const expiryDate = new Date(now);
+                            expiryDate.setMonth(expiryDate.getMonth() + warrantyMonths);
+
+                            return {
+                                customer_phone: orderData.customer_phone,
+                                customer_name: orderData.customer_name,
+                                product_name: product?.name || "Sản phẩm",
+                                serial_number: null,
+                                purchase_date: now.toISOString().split("T")[0],
+                                warranty_months: warrantyMonths,
+                                expiry_date: expiryDate.toISOString().split("T")[0],
+                                status: "active",
+                            };
+                        });
+
+                        if (warrantyCards.length > 0) {
+                            await supabase.from("warranty_cards").insert(warrantyCards);
+                            toast({
+                                title: "🛡️ Đã tạo phiếu bảo hành",
+                                description: `Tạo ${warrantyCards.length} phiếu bảo hành tự động`,
+                            });
+                        }
+                    }
+                } catch (warrantyErr) {
+                    console.error("Auto-create warranty failed:", warrantyErr);
+                    // Don't block the status update if warranty creation fails
+                }
+            }
+
             toast({
                 title: "✓ Cập nhật thành công",
                 description: `Đơn hàng chuyển sang "${STATUS_CONFIG[newStatus]?.label}"`,
