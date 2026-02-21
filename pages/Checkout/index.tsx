@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { sendOrderEmails } from "@/actions/order";
 import {
     getCart, clearCart, removeFromCart, updateCartItemQuantity,
     getCartTotal, CartItem, formatVND
@@ -177,7 +178,46 @@ export default function CheckoutPage() {
 
             if (error) throw error;
 
-            setOrderId((data as string) || "");
+            const newOrderId = (data as string) || "";
+            setOrderId(newOrderId);
+
+            // --- Send Emails ---
+            try {
+                let shouldSendToCustomer = true;
+                // If logged in, respect their profile settings
+                if (user?.id) {
+                    const { data: profile } = await supabase
+                        .from("profiles")
+                        .select("email_notif")
+                        .eq("id", user.id)
+                        .single();
+                    if (profile && profile.email_notif === false) {
+                        shouldSendToCustomer = false;
+                    }
+                }
+
+                const orderData = {
+                    orderId: newOrderId,
+                    customerName: form.name,
+                    customerPhone: form.phone,
+                    shippingAddress: fullAddress,
+                    paymentMethod,
+                    notes: form.notes,
+                    totalAmount: total,
+                    items: cartItems.map(item => ({
+                        productName: item.productName,
+                        variantName: Object.values(item.attributes).join(' - '),
+                        quantity: item.quantity,
+                        price: item.price
+                    }))
+                };
+
+                await sendOrderEmails(orderData, form.email || null, shouldSendToCustomer);
+            } catch (emailError) {
+                console.error("Failed to send order emails:", emailError);
+                // We don't block the checkout success if email fails
+            }
+
             setOrderSuccess(true);
             clearCart();
             setCartItems([]);
