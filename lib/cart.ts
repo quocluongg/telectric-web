@@ -8,9 +8,22 @@ export interface CartItem {
     price: number;
     quantity: number;
     stock: number;
+    /** ISO timestamp: if sale ended, item lives until this time before auto-removal */
+    saleGraceExpiresAt?: string;
 }
 
 const CART_KEY = "telectric_cart";
+
+/** Stamp a 5-minute sale grace period onto a cart item (called when we detect sale just ended) */
+export function setCartItemGrace(variantId: string, durationMs = 5 * 60 * 1000) {
+    const cart = getCart();
+    const idx = cart.findIndex(i => i.variantId === variantId);
+    if (idx === -1) return cart;
+    cart[idx].saleGraceExpiresAt = new Date(Date.now() + durationMs).toISOString();
+    saveCart(cart);
+    return cart;
+}
+
 
 export function getCart(): CartItem[] {
     if (typeof window === "undefined") return [];

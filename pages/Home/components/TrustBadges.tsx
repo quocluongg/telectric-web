@@ -27,13 +27,13 @@ export function TrustBadges() {
     ];
 
     return (
-        <section className="bg-white dark:bg-[#1e2330] py-8 border-y border-slate-200 dark:border-white/5 transition-colors duration-300">
+        <section className="bg-white dark:bg-[#1e2330] py-6 border-b border-slate-200 dark:border-white/5 transition-colors duration-300">
             <div className="container mx-auto max-w-7xl px-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 divide-y sm:divide-y-0 sm:divide-x divide-slate-100 dark:divide-slate-800/50">
                     {badges.map((badge, index) => (
                         <div
                             key={index}
-                            className="flex items-center gap-4 p-4 rounded-xl hover:bg-slate-50 dark:hover:bg-[#2a3040] transition-colors group cursor-pointer border border-transparent hover:border-slate-200 dark:hover:border-slate-800"
+                            className="flex items-center gap-4 py-3 sm:py-0 px-2 sm:px-6 transition-colors group cursor-pointer"
                         >
                             <div className="bg-orange-50 dark:bg-industrial-black p-3 rounded-full group-hover:scale-110 transition-transform duration-300 shadow-sm border border-orange-100 dark:border-white/5">
                                 {badge.icon}

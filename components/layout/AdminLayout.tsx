@@ -13,7 +13,8 @@ import {
     LogOut,
     Settings,
     ShieldCheck, // Icon cho Bảo hành
-    SearchCheck  // Icon cho Tra cứu
+    SearchCheck,  // Icon cho Tra cứu
+    Zap // Icon Siêu sale
 } from 'lucide-react'
 
 const AdminLayout = ({ children }: { children: React.ReactNode }) => {
@@ -23,6 +24,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
     const menuItems = [
         { path: '/admin', icon: <LayoutDashboard size={20} />, label: 'Dashboard' },
         { path: '/admin/products', icon: <Package size={20} />, label: 'Sản phẩm' },
+        { path: '/admin/campaigns', icon: <Zap size={20} />, label: 'Siêu sale' },
         { path: '/admin/orders', icon: <ShoppingCart size={20} />, label: 'Đơn hàng' },
         { path: '/admin/categories', icon: <Layers size={20} />, label: 'Danh mục' },
         // --- MỤC MỚI THÊM ---

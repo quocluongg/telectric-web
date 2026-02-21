@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
     getCart, clearCart, removeFromCart, updateCartItemQuantity,
-    getCartTotal, CartItem, formatVND
+    setCartItemGrace, getCartTotal, CartItem, formatVND
 } from "@/lib/cart";
 import {
     ChevronLeft, Trash2, Loader2, ShieldCheck, Truck,
@@ -66,11 +66,90 @@ export default function CheckoutPage() {
     // Validation
     const [errors, setErrors] = useState<Record<string, string>>({});
 
-    // Load cart from localStorage
+    // Load cart & handle flash sale grace periods
     useEffect(() => {
-        setCartItems(getCart());
-        setIsLoaded(true);
+        const loadAndCleanCart = async () => {
+            const raw = getCart();
+            const nowMs = Date.now();
+            const now = new Date(nowMs).toISOString();
+
+            // ── Step A: Remove items whose grace period has already expired ──
+            const graceExpired = raw.filter(
+                i => i.saleGraceExpiresAt && new Date(i.saleGraceExpiresAt).getTime() <= nowMs
+            );
+            let workingCart = raw;
+            if (graceExpired.length > 0) {
+                graceExpired.forEach(i => { workingCart = removeFromCart(i.variantId); });
+                const names = graceExpired.map(i => `• ${i.productName}`).join("\n");
+                toast({
+                    title: "⏱ Thời gian gia hạn đã hết",
+                    description: `Các sản phẩm sau đã bị xóa (hết 5 phút gia hạn):\n${names}`,
+                    variant: "destructive",
+                });
+            }
+
+            // ── Step B: Skip items that are still within an active grace period ──
+            const variantIds = workingCart
+                .filter(i => !i.saleGraceExpiresAt) // already-graced items are fine
+                .map(i => i.variantId)
+                .filter(Boolean);
+
+            if (variantIds.length === 0) {
+                setCartItems(workingCart);
+                setIsLoaded(true);
+                return;
+            }
+
+            // ── Step C: Fetch real prices for non-graced suspects ──
+            const { data: variantData } = await supabase
+                .from("product_variants")
+                .select("id, price")
+                .in("id", variantIds);
+
+            const variantPriceMap: Record<string, number> = {};
+            (variantData || []).forEach((v: any) => { variantPriceMap[v.id] = v.price; });
+
+            const suspectVariantIds = workingCart
+                .filter(item => {
+                    if (item.saleGraceExpiresAt) return false; // already in grace
+                    const realPrice = variantPriceMap[item.variantId ?? ""];
+                    return realPrice !== undefined && item.price < realPrice;
+                })
+                .map(item => item.variantId!);
+
+            if (suspectVariantIds.length === 0) {
+                setCartItems(workingCart);
+                setIsLoaded(true);
+                return;
+            }
+
+            // ── Step D: Check which suspects still have an active campaign ──
+            const { data: activeSaleItems } = await supabase
+                .from("campaign_items")
+                .select("variant_id, campaigns!inner(is_active, start_time, end_time)")
+                .in("variant_id", suspectVariantIds)
+                .eq("campaigns.is_active", true)
+                .lte("campaigns.start_time", now)
+                .gte("campaigns.end_time", now);
+
+            const stillActiveSet = new Set(
+                (activeSaleItems || []).map((si: any) => si.variant_id)
+            );
+
+            // ── Step E: For items whose sale ended → stamp grace (don't remove yet) ──
+            suspectVariantIds.forEach(vid => {
+                if (!stillActiveSet.has(vid)) {
+                    workingCart = setCartItemGrace(vid) ?? workingCart;
+                }
+            });
+
+            setCartItems(getCart()); // re-read after grace stamps
+            setIsLoaded(true);
+        };
+
+        loadAndCleanCart();
     }, []);
+
 
     // Fetch provinces
     useEffect(() => {
@@ -157,6 +236,25 @@ export default function CheckoutPage() {
         try {
             const fullAddress = `${form.address}, ${wardName}, ${districtName}, ${provinceName}`;
 
+            // ── Safety-net: remove items whose grace window has now expired ──
+            const now = Date.now();
+            const graceExpired = cartItems.filter(
+                i => i.saleGraceExpiresAt && new Date(i.saleGraceExpiresAt).getTime() <= now
+            );
+            if (graceExpired.length > 0) {
+                let updatedCart = cartItems;
+                graceExpired.forEach(i => { updatedCart = removeFromCart(i.variantId); });
+                setCartItems(updatedCart);
+                setIsSubmitting(false);
+                toast({
+                    title: "⏱ Thời gian gia hạn đã hết",
+                    description: `Thời gian 5 phút đã hết, các sản phẩm sale sau đã bị xóa:\n${graceExpired.map(i => `• ${i.productName}`).join("\n")}\n\nVui lòng xem lại giỏ hàng.`,
+                    variant: "destructive",
+                });
+                return;
+            }
+            // ── END safety-net ───────────────────────────────────────────────
+
             const items = cartItems.map(item => ({
                 product_id: item.productId,
                 variant_id: item.variantId,
@@ -191,6 +289,7 @@ export default function CheckoutPage() {
             setIsSubmitting(false);
         }
     };
+
 
     // --- Loading ---
     if (!isLoaded) {
