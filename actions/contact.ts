@@ -24,7 +24,7 @@ export async function sendContactEmail(formData: z.infer<typeof contactSchema>) 
 
         const mailOptions = {
             from: process.env.SMTP_EMAIL,
-            to: "cskh.donghodo@gmail.com", // Target owner email from the design
+            to: process.env.SMTP_EMAIL, // Send to the owner's configured email
             subject: `Website Liên Hệ: ${validatedData.name}`,
             html: `
         <h3>Bạn có một liên hệ mới từ website:</h3>
@@ -41,11 +41,11 @@ export async function sendContactEmail(formData: z.infer<typeof contactSchema>) 
         if (!process.env.SMTP_EMAIL || !process.env.SMTP_PASSWORD) {
             console.warn("SMTP_EMAIL or SMTP_PASSWORD is not set. Simulation mode.");
             console.log("Would have sent email:", mailOptions);
-            return { success: true, message: "Gửi yêu cầu thành công (Mô phỏng)" };
+            return { success: true, message: "Gửi yêu cầu thành công (Mô phỏng chưa có mail thật)" };
         }
 
         await transporter.sendMail(mailOptions);
-        return { success: true, message: "Cảm ơn bạn đã liên hệ chúng tôi!" };
+        return { success: true, message: "Gửi yêu cầu thành công! Chúng tôi sẽ sớm liên hệ mặt." };
     } catch (error) {
         console.error("Error sending contact email:", error);
         return { success: false, message: "Có lỗi xảy ra, vui lòng thử lại sau." };
