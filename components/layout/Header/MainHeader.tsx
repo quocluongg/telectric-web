@@ -25,6 +25,14 @@ export const MainHeader = () => {
 
     const [authModalOpen, setAuthModalOpen] = useState(false);
     const [authDefaultView, setAuthDefaultView] = useState<"login" | "register">("login");
+    const [searchQuery, setSearchQuery] = useState("");
+
+    const handleSearch = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (searchQuery.trim()) {
+            router.push(`/products?search=${encodeURIComponent(searchQuery.trim())}`);
+        }
+    };
 
     const openAuthModal = (view: "login" | "register") => {
         setAuthDefaultView(view);
@@ -71,14 +79,18 @@ export const MainHeader = () => {
 
                 {/* Search Bar */}
                 <div className="flex-1 w-full max-w-2xl px-4">
-                    <div className="relative flex items-center w-full group">
+                    <form onSubmit={handleSearch} className="relative flex items-center w-full group">
                         <Input
                             type="text"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
                             placeholder="Tìm kiếm sản phẩm, danh mục..."
                             className="w-full pl-5 pr-12 py-5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-[#1e2330] text-slate-900 dark:text-white focus-visible:ring-1 focus-visible:ring-electric-orange focus-visible:border-electric-orange transition-all placeholder:text-slate-500 dark:placeholder:text-slate-500"
                         />
-                        <Search size={18} className="absolute right-4 text-slate-500 group-focus-within:text-electric-orange transition-colors" />
-                    </div>
+                        <button type="submit" className="absolute right-4 text-slate-500 group-focus-within:text-electric-orange hover:text-electric-orange transition-colors">
+                            <Search size={18} />
+                        </button>
+                    </form>
                 </div>
 
                 {/* Actions: Cart & Login */}

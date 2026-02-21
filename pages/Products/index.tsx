@@ -34,13 +34,25 @@ function ProductsPageInner() {
     const [availableOrigins, setAvailableOrigins] = useState<string[]>([]);
 
     const [filters, setFilters] = useState<FilterState>({
-        search: searchParams?.get("q") || "",
+        search: searchParams?.get("search") || searchParams?.get("q") || "",
         categorySlug: searchParams?.get("category") || null,
         brands: [],
         origins: [],
         sort: "newest",
         inStockOnly: false,
     });
+
+    // Keep filters in sync with URL search params changes (e.g., when using header search bar on the same page)
+    useEffect(() => {
+        const querySearch = searchParams?.get("search") || searchParams?.get("q") || "";
+        setFilters(prev => {
+            if (prev.search !== querySearch) {
+                setPage(1);
+                return { ...prev, search: querySearch };
+            }
+            return prev;
+        });
+    }, [searchParams]);
 
     const activeFilterCount = useMemo(() => {
         let c = 0;
