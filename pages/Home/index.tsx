@@ -5,41 +5,49 @@ import DefaultLayout from "@/components/layout/DefaultLayout";
 import { HomeHero } from "./components/HomeHero";
 import { TrustBadges } from "./components/TrustBadges";
 import { FlashSale } from "./components/FlashSale";
-import { CategoryShowcase } from "./components/CategoryShowcase";
+import { CategorySection } from "./components/CategorySection";
 import { BrandMarquee } from "./components/BrandMarquee";
+import { Gauge, Thermometer, Wind } from "lucide-react";
 
 export default function HomePage() {
     return (
         <DefaultLayout>
-            <div className="bg-slate-50 dark:bg-industrial-black min-h-screen">
+            <div className="bg-slate-100 dark:bg-industrial-black min-h-screen">
                 <HomeHero />
                 <TrustBadges />
                 <FlashSale />
 
-                {/* Dong-ho-do-dien - Using 'dong-ho-chuyen-dung-khac' for now as placeholder if needed, update slug later */}
-                <CategoryShowcase
-                    categoryName="ĐỒNG HỒ ĐO ĐIỆN"
+                {/* Đồng hồ đo điện */}
+                <CategorySection
+                    categoryName="Đồng hồ đo điện"
                     categorySlug="thiet-bi-do-dien"
-                    bannerColor="from-red-600 to-orange-500"
-                    brandImages={[
-                        "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Fluke_Corporation_logo.svg/1200px-Fluke_Corporation_logo.svg.png",
-                        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQJ6QpxRBY4i-hQ6x3A1jOHTg8bS-Wq9I081Q&s",
-                        "https://kyoritsu.com.vn/wp-content/uploads/2019/08/logo-Kyoritsu.png",
-                        "https://kyoritsu.net.vn/wp-content/uploads/2019/08/logo-Kyoritsu.png"
-                    ]}
+                    accentColor="bg-red-600"
+                    icon={<Gauge className="w-4 h-4" />}
+                    bannerText="ĐỒNG HỒ ĐO"
+                    bannerSubText="Chính hãng, bảo hành 1 đổi 1"
+                    bannerBg="from-red-600 to-orange-500"
                 />
 
-                {/* May do moi truong */}
-                <CategoryShowcase
-                    categoryName="MÁY ĐO MÔI TRƯỜNG"
+                {/* Máy đo môi trường */}
+                <CategorySection
+                    categoryName="Máy đo môi trường"
                     categorySlug="thiet-bi-do-moi-truong"
-                    bannerColor="from-blue-600 to-cyan-500"
-                    brandImages={[
-                        "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/Omron_Logo.svg/1200px-Omron_Logo.svg.png",
-                        "https://upload.wikimedia.org/wikipedia/commons/thumb/3/30/Siemens_logo.svg/1200px-Siemens_logo.svg.png",
-                        "https://testo.com/favicon.ico",
-                        "https://extech.com/favicon.ico"
-                    ]}
+                    accentColor="bg-blue-600"
+                    icon={<Wind className="w-4 h-4" />}
+                    bannerText="MÁY ĐO ĐA CHỨC NĂNG"
+                    bannerSubText="Đo ánh sáng, tốc độ gió, độ ồn"
+                    bannerBg="from-blue-600 to-cyan-500"
+                />
+
+                {/* Thiết bị đo nhiệt độ */}
+                <CategorySection
+                    categoryName="Thiết bị đo nhiệt độ"
+                    categorySlug="thiet-bi-do-nhiet-do"
+                    accentColor="bg-orange-600"
+                    icon={<Thermometer className="w-4 h-4" />}
+                    bannerText="ĐO NHIỆT ĐỘ"
+                    bannerSubText="Hồng ngoại, tiếp xúc, camera nhiệt"
+                    bannerBg="from-orange-500 to-yellow-500"
                 />
 
                 <BrandMarquee />
