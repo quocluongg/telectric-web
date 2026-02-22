@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Search, Zap, User, LogOut, Settings, UserCircle, ChevronDown, ShoppingCart } from "lucide-react";
+import { Search, Zap, User, LogOut, Settings, UserCircle, ChevronDown, ShoppingCart, Loader2 } from "lucide-react";
+import Image from "next/image";
 import { Input } from "@/components/ui/input";
 import { AuthModal } from "@/components/auth/AuthModal";
 import { createClient } from "@/lib/supabase/client";
@@ -17,6 +18,37 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useRouter } from "next/navigation";
+import { useRef } from "react";
+
+// --- Custom Hook for outside click ---
+function useOnClickOutside(ref: any, handler: any) {
+    useEffect(() => {
+        const listener = (event: any) => {
+            if (!ref.current || ref.current.contains(event.target)) return;
+            handler(event);
+        };
+        document.addEventListener("mousedown", listener);
+        document.addEventListener("touchstart", listener);
+        return () => {
+            document.removeEventListener("mousedown", listener);
+            document.removeEventListener("touchstart", listener);
+        };
+    }, [ref, handler]);
+}
+
+// --- Custom Hook for debouncing ---
+function useDebounce<T>(value: T, delay: number): T {
+    const [debouncedValue, setDebouncedValue] = useState<T>(value);
+    useEffect(() => {
+        const handler = setTimeout(() => {
+            setDebouncedValue(value);
+        }, delay);
+        return () => {
+            clearTimeout(handler);
+        };
+    }, [value, delay]);
+    return debouncedValue;
+}
 
 export const MainHeader = () => {
     const [user, setUser] = useState<SupabaseUser | null>(null);
@@ -25,6 +57,56 @@ export const MainHeader = () => {
 
     const [authModalOpen, setAuthModalOpen] = useState(false);
     const [authDefaultView, setAuthDefaultView] = useState<"login" | "register">("login");
+
+    // --- Live Search State ---
+    const [searchQuery, setSearchQuery] = useState("");
+    const debouncedSearchQuery = useDebounce(searchQuery, 400); // 400ms delay
+    const [searchResults, setSearchResults] = useState<any[]>([]);
+    const [isSearching, setIsSearching] = useState(false);
+    const [dropdownOpen, setDropdownOpen] = useState(false);
+    const searchContainerRef = useRef<HTMLDivElement>(null);
+
+    useOnClickOutside(searchContainerRef, () => setDropdownOpen(false));
+
+    // Fetch live search results
+    useEffect(() => {
+        const fetchResults = async () => {
+            if (!debouncedSearchQuery.trim()) {
+                setSearchResults([]);
+                setDropdownOpen(false);
+                setIsSearching(false);
+                return;
+            }
+
+            setIsSearching(true);
+            const { data, error } = await supabase
+                .from("products")
+                .select("id, name, thumbnail")
+                .ilike("name", `%${debouncedSearchQuery.trim()}%`)
+                .limit(5);
+
+            if (!error && data) {
+                setSearchResults(data);
+                setDropdownOpen(true);
+            }
+            setIsSearching(false);
+        };
+
+        fetchResults();
+    }, [debouncedSearchQuery, supabase]);
+
+    const handleSearch = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (searchQuery.trim()) {
+            setDropdownOpen(false);
+            router.push(`/products?search=${encodeURIComponent(searchQuery.trim())}`);
+        }
+    };
+
+    const handleResultClick = (productId: string) => {
+        setDropdownOpen(false);
+        router.push(`/products/${productId}`);
+    };
 
     const openAuthModal = (view: "login" | "register") => {
         setAuthDefaultView(view);
@@ -61,7 +143,6 @@ export const MainHeader = () => {
                     <div className="bg-electric-orange text-white p-1.5 rounded transform group-hover:scale-105 transition-transform duration-300">
                         <Zap size={24} fill="currentColor" />
                     </div>
-                    {/* <img src="/logo.png" alt="Logo" className="h-10" /> OPTIONAL: Use image if available */}
                     <div className="flex flex-col">
                         <span className="text-xl font-bold text-slate-900 dark:text-white tracking-tight leading-none group-hover:text-electric-orange transition-colors">
                             TLECTRIC
@@ -69,15 +150,88 @@ export const MainHeader = () => {
                     </div>
                 </Link>
 
-                {/* Search Bar */}
+                {/* Search Bar with Dropdown */}
                 <div className="flex-1 w-full max-w-2xl px-4">
-                    <div className="relative flex items-center w-full group">
-                        <Input
-                            type="text"
-                            placeholder="Tìm kiếm sản phẩm, danh mục..."
-                            className="w-full pl-5 pr-12 py-5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-[#1e2330] text-slate-900 dark:text-white focus-visible:ring-1 focus-visible:ring-electric-orange focus-visible:border-electric-orange transition-all placeholder:text-slate-500 dark:placeholder:text-slate-500"
-                        />
-                        <Search size={18} className="absolute right-4 text-slate-500 group-focus-within:text-electric-orange transition-colors" />
+                    <div ref={searchContainerRef} className="relative w-full group">
+                        <form onSubmit={handleSearch} className="relative flex items-center w-full">
+                            <Input
+                                type="text"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                onClick={() => {
+                                    if (searchQuery.trim() && searchResults.length > 0) {
+                                        setDropdownOpen(true);
+                                    }
+                                }}
+                                placeholder="Tìm kiếm sản phẩm, danh mục..."
+                                className="w-full pl-5 pr-12 py-5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-[#1e2330] text-slate-900 dark:text-white focus-visible:ring-1 focus-visible:ring-electric-orange focus-visible:border-electric-orange transition-all placeholder:text-slate-500 dark:placeholder:text-slate-500"
+                            />
+                            <button type="submit" className="absolute right-4 text-slate-500 hover:text-electric-orange transition-colors flex items-center justify-center">
+                                {isSearching ? (
+                                    <Loader2 size={18} className="animate-spin text-electric-orange" />
+                                ) : (
+                                    <Search size={18} />
+                                )}
+                            </button>
+                        </form>
+
+                        {/* Live Search Dropdown */}
+                        {dropdownOpen && (
+                            <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-[#1e2330] border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl overflow-hidden z-50">
+                                {searchResults.length > 0 ? (
+                                    <div>
+                                        <div className="px-4 py-2 border-b border-slate-100 dark:border-slate-800">
+                                            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                                                Sản phẩm đề xuất
+                                            </span>
+                                        </div>
+                                        <ul className="max-h-80 overflow-y-auto">
+                                            {searchResults.map((product) => (
+                                                <li key={product.id}>
+                                                    <button
+                                                        onClick={() => handleResultClick(product.id)}
+                                                        className="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-[#2a3040] transition-colors text-left group/item"
+                                                    >
+                                                        {product.thumbnail ? (
+                                                            <div className="w-10 h-10 rounded bg-slate-100 flex-shrink-0 relative overflow-hidden">
+                                                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                                                <img
+                                                                    src={product.thumbnail}
+                                                                    alt={product.name}
+                                                                    className="w-full h-full object-cover"
+                                                                />
+                                                            </div>
+                                                        ) : (
+                                                            <div className="w-10 h-10 rounded bg-slate-100 dark:bg-slate-800 flex items-center justify-center flex-shrink-0">
+                                                                <Zap className="h-4 w-4 text-slate-400" />
+                                                            </div>
+                                                        )}
+                                                        <span className="text-sm font-medium text-slate-700 dark:text-slate-200 group-hover/item:text-electric-orange transition-colors truncate">
+                                                            {product.name}
+                                                        </span>
+                                                    </button>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                        <div className="p-2 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-industrial-black/50">
+                                            <button
+                                                onClick={() => {
+                                                    setDropdownOpen(false);
+                                                    router.push(`/products?search=${encodeURIComponent(searchQuery.trim())}`);
+                                                }}
+                                                className="w-full text-center py-2 text-sm font-medium text-electric-orange hover:text-orange-600 transition-colors"
+                                            >
+                                                Xem tất cả kết quả cho &quot;{searchQuery}&quot;
+                                            </button>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="p-4 text-center text-sm text-slate-500">
+                                        Không tìm thấy sản phẩm nào phù hợp.
+                                    </div>
+                                )}
+                            </div>
+                        )}
                     </div>
                 </div>
 
