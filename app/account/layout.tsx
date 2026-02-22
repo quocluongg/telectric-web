@@ -2,7 +2,7 @@ import { Metadata } from "next"
 import Image from "next/image"
 
 import { Separator } from "@/components/ui/separator"
-import { SidebarNav } from "./components/sidebar-nav"
+import { SidebarNav } from "@/components/account/sidebar-nav"
 import { User, Bell, History, Shield, CreditCard, Ticket } from "lucide-react"
 import DefaultLayout from "@/components/layout/DefaultLayout"
 
