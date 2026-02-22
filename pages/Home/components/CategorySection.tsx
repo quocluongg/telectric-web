@@ -2,306 +2,316 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
-import { ArrowRight, Zap } from "lucide-react";
+import { Zap, ChevronRight } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
-interface SubCategory {
-    id: string;
-    name: string;
-    slug: string;
-}
-
-interface Brand {
-    id: string;
-    name: string;
-    logo_url: string | null;
-    slug: string;
-}
-
+/* ─── Types ─── */
+interface SubCategory { id: string; name: string; slug: string; }
 interface Product {
-    id: string;
-    name: string;
-    price: number | null;
-    original_price: number | null;
-    thumbnail: string | null;
-    category_id: string;
+    id: string; name: string;
+    price: number | null; original_price: number | null;
+    thumbnail: string | null; brand: string | null;
 }
+interface BrandInfo { name: string; logoUrl?: string | null; }
 
 interface CategorySectionProps {
     categoryName: string;
     categorySlug: string;
-    accentColor?: string; // tailwind bg color e.g. "bg-red-600"
+    accentColor?: string;     // Tailwind bg class e.g. "bg-red-600"
+    accentBorderColor?: string; // Tailwind border class e.g. "border-red-600"
     icon?: React.ReactNode;
-    bannerText?: string;
-    bannerSubText?: string;
-    bannerPrice?: string;
-    bannerBg?: string;
 }
 
-function formatPrice(price: number) {
-    return price.toLocaleString("vi-VN") + "đ";
+/* ─── Helpers ─── */
+function fmt(n: number) { return n.toLocaleString("vi-VN") + "đ"; }
+function pct(price: number | null, orig: number | null) {
+    if (!price || !orig || orig <= price) return null;
+    return Math.round(((orig - price) / orig) * 100);
 }
 
-function getDiscount(price: number | null, original: number | null): number | null {
-    if (!price || !original || original <= price) return null;
-    return Math.round(((original - price) / original) * 100);
+/* ─── Classic Product Card ─── */
+function ProductCard({ p }: { p: Product }) {
+    const disc = pct(p.price, p.original_price);
+
+    return (
+        <div className="group relative flex flex-col bg-white border border-slate-200 rounded-xl hover:border-slate-300 hover:shadow-lg transition-all duration-300 overflow-hidden">
+
+            <Link href={`/products/${p.id}`} className="absolute inset-0 z-10">
+                <span className="sr-only">View {p.name}</span>
+            </Link>
+
+            {/* Yellow Circle Discount Badge */}
+            {disc && (
+                <div className="absolute top-2 right-2 z-20 w-9 h-9 bg-[#ffc107] text-[#333] font-bold rounded-full flex items-center justify-center shadow-sm">
+                    <span className="text-[11px] leading-none">-{disc}%</span>
+                </div>
+            )}
+
+            {/* Fixed-height Image Area */}
+            <div className="relative w-full h-[180px] flex-shrink-0 overflow-hidden bg-[#f8f9fa]">
+                {p.thumbnail ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                        src={p.thumbnail}
+                        alt={p.name}
+                        className="absolute inset-0 w-full h-full object-contain p-3 group-hover:scale-105 transition-transform duration-500"
+                    />
+                ) : (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                        <Zap className="w-12 h-12 text-slate-200" />
+                    </div>
+                )}
+            </div>
+
+            {/* Content Area */}
+            <div className="p-3 flex flex-col gap-1 flex-1 bg-white">
+                {/* Brand Tag */}
+                {p.brand && (
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">
+                        {p.brand}
+                    </span>
+                )}
+
+                {/* Title */}
+                <h3 className="text-[13px] text-[#333] font-bold leading-snug line-clamp-2 h-[36px] group-hover:text-[#d32f2f] transition-colors mt-0.5">
+                    {p.name}
+                </h3>
+
+                {/* Price */}
+                <div className="mt-auto pt-2 flex items-center gap-2 flex-wrap">
+                    {p.price ? (
+                        <>
+                            <span className="font-bold text-[15px] text-[#d32f2f] leading-none">
+                                {fmt(p.price)}
+                            </span>
+                            {p.original_price && p.original_price > p.price && (
+                                <span className="text-[12px] text-slate-400 line-through leading-none">
+                                    {fmt(p.original_price)}
+                                </span>
+                            )}
+                        </>
+                    ) : (
+                        <span className="font-bold text-[15px] text-[#d32f2f]">Liên hệ</span>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
 }
 
+/* ─── Main Component ─── */
 export function CategorySection({
     categoryName,
     categorySlug,
-    accentColor = "bg-red-600",
+    accentColor = "bg-[#e30019]",
+    accentBorderColor = "border-[#e30019]",
     icon,
-    bannerText = "BÁN CHẠY",
-    bannerSubText = "Xem ngay ưu đãi tốt nhất",
-    bannerPrice,
-    bannerBg = "from-orange-500 to-red-600",
 }: CategorySectionProps) {
     const supabase = useMemo(() => createClient(), []);
 
-    const [parentCategory, setParentCategory] = useState<{ id: string } | null>(null);
+    const [parentCatId, setParentCatId] = useState<string | null>(null);
     const [subCategories, setSubCategories] = useState<SubCategory[]>([]);
-    const [brands, setBrands] = useState<Brand[]>([]);
+    const [brands, setBrands] = useState<BrandInfo[]>([]);
     const [products, setProducts] = useState<Product[]>([]);
+    const [activeBrand, setActiveBrand] = useState<string | null>(null);
     const [activeSubSlug, setActiveSubSlug] = useState<string | null>(null);
-    const [loading, setLoading] = useState(true);
+    const [loadingProds, setLoadingProds] = useState(true);
 
-    // 1. Fetch parent category
+    /* 1 – parent */
     useEffect(() => {
-        supabase
-            .from("categories")
-            .select("id")
-            .eq("slug", categorySlug)
-            .single()
-            .then(({ data }) => {
-                if (data) setParentCategory(data);
-            });
+        supabase.from("categories").select("id").eq("slug", categorySlug).maybeSingle()
+            .then(({ data }) => { if (data) setParentCatId(data.id); });
     }, [categorySlug, supabase]);
 
-    // 2. Fetch sub-categories and brands once parent is known
+    /* 2 – sub-cats + brands */
     useEffect(() => {
-        if (!parentCategory) return;
-
-        // Sub-categories
-        supabase
-            .from("categories")
-            .select("id, name, slug")
-            .eq("parent_id", parentCategory.id)
-            .order("name")
+        if (!parentCatId) return;
+        supabase.from("categories").select("id, name, slug").eq("parent_id", parentCatId).order("name")
             .then(({ data }) => {
-                if (data && data.length > 0) {
-                    setSubCategories(data);
-                    setActiveSubSlug(data[0].slug);
-                }
+                if (data && data.length > 0) { setSubCategories(data); setActiveSubSlug(null); }
             });
 
-        // Brands that have products in this category (via join)
-        supabase
-            .from("brands")
-            .select("id, name, logo_url, slug")
-            .order("name")
-            .limit(6)
-            .then(({ data }) => {
-                if (data) setBrands(data);
+        supabase.from("categories").select("id").eq("parent_id", parentCatId)
+            .then(async ({ data: ch }) => {
+                const catIds = [parentCatId, ...(ch || []).map((c: any) => c.id)];
+                const { data: prods } = await supabase.from("products").select("brand")
+                    .in("category_id", catIds).not("brand", "is", null);
+                const unique = [...new Set((prods || []).map((p: any) => p.brand).filter(Boolean))].sort() as string[];
+                setBrands(unique.map(name => ({ name, logoUrl: null })));
             });
-    }, [parentCategory, supabase]);
+    }, [parentCatId, supabase]);
 
-    // 3. Fetch products when active sub-category changes
+    /* 3 – products */
     useEffect(() => {
-        if (!parentCategory && !activeSubSlug) return;
-        setLoading(true);
-
-        const fetchProducts = async () => {
-            let categoryId: string | null = null;
-
+        if (!parentCatId) return;
+        setLoadingProds(true);
+        const go = async () => {
+            let catIds: string[] = [parentCatId];
             if (activeSubSlug) {
-                const { data: subCat } = await supabase
-                    .from("categories")
-                    .select("id")
-                    .eq("slug", activeSubSlug)
-                    .single();
-                categoryId = subCat?.id ?? null;
-            } else if (parentCategory) {
-                categoryId = parentCategory.id;
+                const { data } = await supabase.from("categories").select("id").eq("slug", activeSubSlug).maybeSingle();
+                if (data) catIds = [data.id];
+            } else if (subCategories.length > 0) {
+                catIds = subCategories.map(s => s.id);
             }
 
-            if (!categoryId) { setLoading(false); return; }
-
-            const { data } = await supabase
-                .from("products")
-                .select("id, name, price, original_price, thumbnail, category_id")
-                .eq("category_id", categoryId)
+            let query = supabase.from("products")
+                .select("id, name, thumbnail, brand, category_id")
+                .in("category_id", catIds)
                 .order("created_at", { ascending: false })
                 .limit(8);
 
-            setProducts(data || []);
-            setLoading(false);
+            if (activeBrand) query = query.eq("brand", activeBrand);
+
+            const { data: prods } = await query;
+            if (!prods || prods.length === 0) { setProducts([]); setLoadingProds(false); return; }
+
+            const ids = prods.map((p: any) => p.id);
+            const { data: variants } = await supabase.from("product_variants")
+                .select("product_id, price").in("product_id", ids);
+
+            const priceMap: Record<string, number> = {};
+            (variants || []).forEach((v: any) => {
+                if (!priceMap[v.product_id] || v.price < priceMap[v.product_id]) priceMap[v.product_id] = v.price;
+            });
+
+            setProducts(prods.map((p: any) => ({
+                id: p.id, name: p.name, thumbnail: p.thumbnail, brand: p.brand,
+                price: priceMap[p.id] ?? null, original_price: null,
+            })));
+            setLoadingProds(false);
         };
+        go();
+    }, [activeSubSlug, activeBrand, parentCatId, subCategories, supabase]);
 
-        fetchProducts();
-    }, [activeSubSlug, parentCategory, supabase]);
+    if (!loadingProds && products.length === 0 && brands.length === 0) return null;
 
-    // Don't render if no products and not loading
-    if (!loading && products.length === 0 && subCategories.length === 0) return null;
+    const textColorClass = accentColor.replace('bg-', 'text-');
 
     return (
-        <section className="bg-white dark:bg-[#141820] border-t border-slate-200 dark:border-white/5">
-            <div className="container mx-auto max-w-7xl px-4 py-6">
+        <section className="py-6">
+            <div className="container mx-auto max-w-[1300px] px-4">
 
-                {/* ─── Header Bar ─── */}
-                <div className={`flex items-center gap-0 mb-4 rounded-t-sm overflow-hidden`}>
-                    {/* Category name pill */}
-                    <div className={`${accentColor} flex items-center gap-2 px-4 py-2.5 flex-shrink-0`}>
-                        <span className="text-white">{icon ?? <Zap className="w-4 h-4" />}</span>
-                        <span className="text-white font-bold text-sm uppercase tracking-wide whitespace-nowrap">
-                            {categoryName}
-                        </span>
-                    </div>
+                <div className="flex flex-col bg-[#f8f9fa] p-2 rounded-xl">
+                    {/* ── Donghodo Header ── */}
+                    <div className="flex flex-col md:flex-row items-stretch bg-white rounded-t-xl overflow-hidden mb-2">
 
-                    {/* Sub-category tabs */}
-                    <div className="flex items-center flex-1 overflow-x-auto scrollbar-none border-b-2 border-slate-200 dark:border-slate-700 -mb-px px-2">
-                        {subCategories.map((sub) => (
-                            <button
-                                key={sub.id}
-                                onClick={() => setActiveSubSlug(sub.slug)}
-                                className={`whitespace-nowrap px-3 py-2 text-sm font-semibold transition-colors border-b-2 -mb-px ${activeSubSlug === sub.slug
-                                        ? "text-red-600 border-red-600"
-                                        : "text-slate-600 dark:text-slate-400 border-transparent hover:text-red-500"
-                                    }`}
-                            >
-                                {sub.name}
-                            </button>
-                        ))}
-                        <Link
-                            href={`/products?category=${categorySlug}`}
-                            className="ml-auto whitespace-nowrap text-sm font-semibold text-red-500 hover:text-red-600 flex items-center gap-1 px-3 py-2 transition-colors flex-shrink-0"
-                        >
-                            Xem tất cả <ArrowRight className="w-3.5 h-3.5" />
-                        </Link>
-                    </div>
-                </div>
-
-                {/* ─── Body ─── */}
-                <div className="flex gap-3">
-
-                    {/* Left: Brand list + Banner */}
-                    <div className="w-[150px] flex-shrink-0 hidden lg:flex flex-col gap-3">
-                        {/* Brand logos */}
-                        <div className="border border-slate-200 dark:border-slate-700 rounded overflow-hidden divide-y divide-slate-100 dark:divide-slate-700/50">
-                            {brands.map((brand) => (
-                                <Link
-                                    key={brand.id}
-                                    href={`/products?brand=${brand.slug}`}
-                                    className="flex items-center justify-center px-3 py-3 bg-white dark:bg-[#1e2330] hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors"
-                                >
-                                    {brand.logo_url ? (
-                                        // eslint-disable-next-line @next/next/no-img-element
-                                        <img
-                                            src={brand.logo_url}
-                                            alt={brand.name}
-                                            className="max-h-8 max-w-[110px] object-contain filter grayscale hover:grayscale-0 transition-all duration-300"
-                                        />
-                                    ) : (
-                                        <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">
-                                            {brand.name}
-                                        </span>
-                                    )}
-                                </Link>
-                            ))}
+                        {/* Left Colored Name Block */}
+                        <div className={`bg-[#d32f2f] w-full md:w-auto md:min-w-[280px] flex-shrink-0 flex items-center px-4 py-3 md:py-3 rounded-tl-xl md:rounded-tr-none md:rounded-bl-none`}>
+                            <span className="text-white mr-2 opacity-90">{icon ?? <Zap className="w-5 h-5" />}</span>
+                            <h2 className="text-white font-bold text-[16px] uppercase tracking-wide leading-none">
+                                {categoryName}
+                            </h2>
                         </div>
 
-                        {/* Promo Banner */}
-                        <Link
-                            href={`/products?category=${categorySlug}`}
-                            className={`flex-1 min-h-[140px] rounded bg-gradient-to-br ${bannerBg} p-4 flex flex-col justify-end text-white relative overflow-hidden group`}
-                        >
-                            <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors" />
-                            <div className="relative z-10">
-                                <p className="font-black text-lg leading-tight">{bannerText}</p>
-                                <p className="text-white/80 text-xs mt-1 leading-snug">{bannerSubText}</p>
-                                {bannerPrice && (
-                                    <p className="text-yellow-300 font-black text-base mt-2">{bannerPrice}</p>
-                                )}
-                                <span className="inline-flex items-center gap-1 mt-2 text-xs font-semibold bg-white/20 hover:bg-white/30 rounded px-2 py-1 transition-colors">
-                                    Mua ngay <ArrowRight className="w-3 h-3" />
-                                </span>
-                            </div>
-                        </Link>
-                    </div>
+                        {/* Right Navigation Bar */}
+                        <div className="flex-1 flex flex-col md:flex-row items-start md:items-center justify-between px-4 bg-white relative">
 
-                    {/* Right: Product Grid */}
-                    <div className="flex-1 min-w-0">
-                        {loading ? (
-                            <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3">
-                                {Array.from({ length: 8 }).map((_, i) => (
-                                    <div key={i} className="bg-slate-100 dark:bg-slate-800 rounded animate-pulse aspect-[3/4]" />
+                            <div className="flex items-center gap-6 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] w-full md:w-auto h-[46px]">
+                                <button
+                                    onClick={() => { setActiveSubSlug(null); setActiveBrand(null); }}
+                                    className={`text-[13px] font-bold whitespace-nowrap transition-colors h-full flex items-center border-b-[2px] ${activeSubSlug === null
+                                        ? "text-[#333] border-[#5a4848]"
+                                        : "text-slate-500 border-transparent hover:text-slate-800"
+                                        }`}
+                                >
+                                    Đồng hồ vạn năng
+                                </button>
+                                {subCategories.map(sub => (
+                                    <button
+                                        key={sub.id}
+                                        onClick={() => { setActiveSubSlug(sub.slug); setActiveBrand(null); }}
+                                        className={`text-[13px] font-bold whitespace-nowrap transition-colors h-full flex items-center border-b-[2px] ${activeSubSlug === sub.slug
+                                            ? "text-[#333] border-[#5a4848]"
+                                            : "text-slate-500 border-transparent hover:text-slate-800"
+                                            }`}
+                                    >
+                                        {sub.name}
+                                    </button>
                                 ))}
                             </div>
-                        ) : products.length === 0 ? (
-                            <div className="flex items-center justify-center h-48 text-slate-400 text-sm">
-                                Không có sản phẩm nào trong danh mục này.
-                            </div>
-                        ) : (
-                            <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3">
-                                {products.map((product) => {
-                                    const discount = getDiscount(product.price, product.original_price);
-                                    return (
-                                        <Link
-                                            key={product.id}
-                                            href={`/products/${product.id}`}
-                                            className="group bg-white dark:bg-[#1e2330] border border-slate-200 dark:border-slate-700 rounded hover:border-red-400 dark:hover:border-red-500 hover:shadow-md transition-all duration-200 flex flex-col overflow-hidden"
-                                        >
-                                            {/* Image */}
-                                            <div className="relative aspect-square bg-slate-50 dark:bg-slate-800 overflow-hidden flex-shrink-0">
-                                                {product.thumbnail ? (
-                                                    // eslint-disable-next-line @next/next/no-img-element
-                                                    <img
-                                                        src={product.thumbnail}
-                                                        alt={product.name}
-                                                        className="w-full h-full object-contain p-2 group-hover:scale-105 transition-transform duration-300"
-                                                    />
-                                                ) : (
-                                                    <div className="w-full h-full flex items-center justify-center">
-                                                        <Zap className="w-10 h-10 text-slate-300 dark:text-slate-600" />
-                                                    </div>
-                                                )}
-                                                {/* Discount Badge */}
-                                                {discount && (
-                                                    <span className="absolute top-2 right-2 bg-yellow-400 text-slate-900 text-xs font-black rounded-full w-9 h-9 flex items-center justify-center shadow-sm">
-                                                        -{discount}%
-                                                    </span>
-                                                )}
-                                            </div>
 
-                                            {/* Info */}
-                                            <div className="p-3 flex-1 flex flex-col">
-                                                <p className="text-slate-700 dark:text-slate-200 text-xs font-medium line-clamp-2 mb-2 group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors leading-snug">
-                                                    {product.name}
-                                                </p>
-                                                <div className="mt-auto">
-                                                    {product.price ? (
-                                                        <>
-                                                            <p className="text-red-600 dark:text-red-400 font-black text-sm">
-                                                                {formatPrice(product.price)}
-                                                            </p>
-                                                            {product.original_price && product.original_price > product.price && (
-                                                                <p className="text-slate-400 text-xs line-through">
-                                                                    {formatPrice(product.original_price)}
-                                                                </p>
-                                                            )}
-                                                        </>
-                                                    ) : (
-                                                        <p className="text-red-600 dark:text-red-400 font-bold text-sm">Liên hệ</p>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        </Link>
-                                    );
-                                })}
+                            <Link
+                                href={`/products?category=${categorySlug}`}
+                                className={`hidden md:flex flex-shrink-0 items-center text-[13px] font-medium text-[#d32f2f] hover:underline whitespace-nowrap ml-4 transition-colors`}
+                            >
+                                Xem tất cả <ChevronRight className="w-3.5 h-3.5 ml-0.5" />
+                            </Link>
+                        </div>
+                    </div>
+
+                    {/* ── Body Layout ── */}
+                    <div className="flex flex-col lg:flex-row gap-2">
+
+                        {/* Left Sidebar */}
+                        <div className="w-full lg:w-[240px] xl:w-[280px] flex-shrink-0 flex flex-col gap-2">
+
+                            {/* Brand List Filter (Donghodo style) */}
+                            {brands.length > 0 && (
+                                <div className="bg-white border text-center border-slate-200 rounded-xl overflow-hidden">
+                                    <div className="flex flex-col">
+                                        {brands.map((b) => (
+                                            <button
+                                                key={b.name}
+                                                onClick={() => setActiveBrand(prev => prev === b.name ? null : b.name)}
+                                                className={`flex items-center justify-center p-4 transition-all group hover:bg-slate-50 border-b border-slate-100 last:border-b-0 ${activeBrand === b.name ? 'bg-slate-50 opacity-80' : ''}`}
+                                            >
+                                                {b.logoUrl ? (
+                                                    <img src={b.logoUrl} alt={b.name} className="h-6 object-contain mix-blend-multiply" />
+                                                ) : (
+                                                    <span className={`font-black text-[18px] italic uppercase ${activeBrand === b.name ? 'text-[#d32f2f]' : 'text-[#1a237e]'}`}>{b.name}</span>
+                                                )}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Classic Vertical Banner */}
+                            <div className="hidden xl:flex flex-1 min-h-[200px] p-5 flex-col items-center relative overflow-hidden text-center rounded-xl group cursor-pointer shadow-sm border border-slate-200/50">
+                                {/* Colorful Gradient Background */}
+                                <div className="absolute inset-0 bg-[#0f1118] z-0" />
+                                <div className={`absolute top-0 right-0 w-3/4 h-3/4 ${accentColor} opacity-20 blur-[80px] z-0 rounded-full`} />
+                                <div className="absolute bottom-0 left-0 w-3/4 h-3/4 bg-blue-600 opacity-20 blur-[80px] z-0 rounded-full" />
+
+                                <div className="relative z-20 w-full h-full flex flex-col justify-center items-center gap-3">
+                                    <h4 className="text-white font-black text-[20px] uppercase leading-tight drop-shadow-md">{categoryName}<br /><span className="text-[#ffc107]">ƯU ĐÃI</span></h4>
+                                    <Link href={`/products?category=${categorySlug}`} className={`inline-flex items-center justify-center px-5 py-2.5 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white text-[13px] font-bold rounded-full border border-white/20 transition-all`}>
+                                        Mua ngay <ChevronRight className="w-3.5 h-3.5 ml-1" />
+                                    </Link>
+                                </div>
                             </div>
-                        )}
+
+                        </div>
+
+                        {/* Product Grid */}
+                        <div className="flex-1 min-w-0 bg-white rounded-xl p-3">
+                            {loadingProds ? (
+                                <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3">
+                                    {Array.from({ length: 8 }).map((_, i) => (
+                                        <div key={i} className="bg-white border border-slate-100 rounded-xl animate-pulse h-[300px] p-2">
+                                            <div className="w-full aspect-square bg-slate-50 rounded-lg mb-2" />
+                                            <div className="px-2 pb-2 space-y-2">
+                                                <div className="h-3 bg-slate-200 rounded w-full" />
+                                                <div className="h-3 bg-slate-200 rounded w-3/4" />
+                                                <div className="h-4 bg-slate-200 rounded w-1/2 mt-3" />
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : products.length === 0 ? (
+                                <div className="flex items-center justify-center h-full min-h-[300px] rounded-xl text-slate-400 text-[14px]">
+                                    Không tìm thấy sản phẩm nào.
+                                </div>
+                            ) : (
+                                <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3">
+                                    {products.map(p => <ProductCard key={p.id} p={p} />)}
+                                </div>
+                            )}
+                        </div>
+
                     </div>
                 </div>
+
             </div>
         </section>
     );
