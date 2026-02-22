@@ -9,7 +9,7 @@ import Link from "next/link";
 import {
     Package, ShoppingCart, ArrowLeft, Tag, MapPin, Star, Truck,
     Shield, ChevronLeft, ChevronRight, Minus, Plus, Check, Layers,
-    Home, ChevronRight as ChevronSep, Phone, Heart, Share2, Zap
+    Home, ChevronRight as ChevronSep, Phone, Heart, Share2, Zap, Clock
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -122,6 +122,58 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
         const max = Math.max(...prices);
         return { min, max };
     }, [variants]);
+
+    // ===== FLASH SALE — Must be after selectedVariant/priceRange =====
+    const [flashSale, setFlashSale] = useState<any>(null);
+    const [timeLeft, setTimeLeft] = useState(0);
+
+    useEffect(() => {
+        async function checkFlashSale() {
+            if (!selectedVariant) {
+                setFlashSale(null);
+                return;
+            }
+            const now = new Date().toISOString();
+            const { data } = await supabase
+                .from("campaign_items")
+                .select("sale_price, variant_id, campaigns!inner(name, end_time, is_active, start_time)")
+                .eq("variant_id", selectedVariant.id)
+                .eq("campaigns.is_active", true)
+                .lte("campaigns.start_time", now)
+                .gte("campaigns.end_time", now)
+                .maybeSingle();
+
+            if (data) {
+                const campaignObj = Array.isArray(data.campaigns) ? data.campaigns[0] : data.campaigns;
+                setFlashSale({ ...data, campaigns: campaignObj });
+                const end = new Date(campaignObj.end_time).getTime();
+                setTimeLeft(Math.floor((end - new Date().getTime()) / 1000));
+            } else {
+                setFlashSale(null);
+                setTimeLeft(0);
+            }
+        }
+        checkFlashSale();
+    }, [selectedVariant, supabase]);
+
+    useEffect(() => {
+        if (!flashSale) return;
+        const timer = setInterval(() => {
+            setTimeLeft((prev) => {
+                if (prev <= 1) { clearInterval(timer); setFlashSale(null); return 0; }
+                return prev - 1;
+            });
+        }, 1000);
+        return () => clearInterval(timer);
+    }, [flashSale]);
+
+    const formatTime = (seconds: number) => {
+        if (seconds < 0) seconds = 0;
+        const h = Math.floor(seconds / 3600);
+        const m = Math.floor((seconds % 3600) / 60);
+        const s = seconds % 60;
+        return { h: h.toString().padStart(2, "0"), m: m.toString().padStart(2, "0"), s: s.toString().padStart(2, "0") };
+    };
 
     // Handlers
     const handleSelectAttribute = (key: string, value: string) => {
@@ -313,7 +365,33 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
 
                         {/* ====== PRICE SECTION ====== */}
                         <div className="bg-gray-50 rounded-lg p-5 mb-6">
-                            {selectedVariant ? (
+                            {flashSale ? (
+                                <div className="flex flex-col gap-3">
+                                    <div className="flex flex-wrap items-center gap-3 mb-1">
+                                        <Badge className="bg-red-500 hover:bg-red-600 animate-pulse text-white px-3 py-1 text-sm border-0">
+                                            <Zap className="w-4 h-4 mr-1" fill="currentColor" /> {flashSale.campaigns?.name || "Flash Sale"}
+                                        </Badge>
+                                        <div className="text-sm font-bold text-red-500 flex items-center gap-1.5 bg-red-50 px-3 py-1 rounded-full border border-red-100">
+                                            <Clock className="w-4 h-4" /> Bảng đếm ngược:
+                                            <span className="font-mono bg-white px-1.5 py-0.5 rounded shadow-sm mx-0.5">{formatTime(timeLeft).h}</span>
+                                            :
+                                            <span className="font-mono bg-white px-1.5 py-0.5 rounded shadow-sm mx-0.5">{formatTime(timeLeft).m}</span>
+                                            :
+                                            <span className="font-mono bg-white px-1.5 py-0.5 rounded shadow-sm mx-0.5">{formatTime(timeLeft).s}</span>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-baseline gap-4 mt-2">
+                                        <span className="text-4xl font-black text-red-600 tracking-tight">
+                                            {formatVND(flashSale.sale_price)}
+                                        </span>
+                                        {selectedVariant && (
+                                            <span className="text-lg text-slate-400 line-through font-medium">
+                                                {formatVND(selectedVariant.price)}
+                                            </span>
+                                        )}
+                                    </div>
+                                </div>
+                            ) : selectedVariant ? (
                                 <div className="flex items-baseline gap-3">
                                     <span className="text-3xl font-black text-red-600">
                                         {formatVND(selectedVariant.price)}
@@ -443,11 +521,11 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
                                         productName: product.name,
                                         thumbnail: product.thumbnail,
                                         attributes: selectedVariant.attributes,
-                                        price: selectedVariant.price,
+                                        price: flashSale?.sale_price ?? selectedVariant.price,
                                         quantity: quantity,
                                         stock: selectedVariant.stock
                                     });
-                                    toast({ title: "✓ Đã thêm vào giỏ hàng!", description: `${product.name} x${quantity}` });
+                                    toast({ title: "✓ Đã thêm vào giỏ hàng!", description: `${product.name} x${quantity}${flashSale ? " (Giá Siêu Sale)" : ""}` });
                                 }}
                             >
                                 <ShoppingCart className="mr-2 h-5 w-5" /> Thêm vào giỏ hàng
@@ -465,7 +543,7 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
                                         productName: product.name,
                                         thumbnail: product.thumbnail,
                                         attributes: selectedVariant.attributes,
-                                        price: selectedVariant.price,
+                                        price: flashSale?.sale_price ?? selectedVariant.price,
                                         quantity: quantity,
                                         stock: selectedVariant.stock
                                     });
