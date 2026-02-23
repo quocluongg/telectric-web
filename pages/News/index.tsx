@@ -15,21 +15,7 @@ interface NewsListPageProps {
 export default function NewsListPage({ articles, recentArticles }: NewsListPageProps) {
     return (
         <div className="bg-gray-50 dark:bg-[#0a0d14] min-h-screen font-sans">
-            {/* Breadcrumb */}
-            <div className="bg-white dark:bg-[#0f111a] border-b border-slate-200 dark:border-slate-800 sticky top-0 z-10 shadow-sm backdrop-blur-md bg-white/80 dark:bg-[#0f111a]/80 supports-[backdrop-filter]:bg-white/60">
-                <div className="container mx-auto max-w-7xl px-4 py-3">
-                    <nav className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
-                        <Link
-                            href="/"
-                            className="hover:text-electric-orange transition-colors duration-200 flex items-center gap-1"
-                        >
-                            Trang chủ
-                        </Link>
-                        <ChevronRight size={14} className="text-slate-300" />
-                        <span className="text-slate-900 dark:text-white font-medium">Bài viết</span>
-                    </nav>
-                </div>
-            </div>
+
 
             <div className="container mx-auto max-w-7xl px-4 py-12">
                 <div className="flex flex-col lg:flex-row gap-8 xl:gap-12">

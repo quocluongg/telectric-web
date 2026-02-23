@@ -200,37 +200,6 @@ function ProductsPageInner() {
         <DefaultLayout>
             <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
 
-                {/* Breadcrumb */}
-                <div className="border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
-                    <div className="container mx-auto max-w-7xl px-4 py-3">
-                        <nav className="flex items-center gap-1.5 text-sm">
-                            <Link href="/" className="flex items-center gap-1 text-slate-500 hover:text-orange-500 transition-colors">
-                                <Home className="h-3.5 w-3.5" /> Trang chủ
-                            </Link>
-                            <ChevronRight className="h-3 w-3 text-slate-400" />
-                            <span className="text-slate-800 dark:text-white font-medium flex items-center gap-1">
-                                <Package className="h-3.5 w-3.5" /> Sản phẩm
-                            </span>
-                            {filters.categorySlug && (
-                                <>
-                                    <ChevronRight className="h-3 w-3 text-slate-400" />
-                                    <span className="text-orange-500 font-medium">{filters.categorySlug}</span>
-                                </>
-                            )}
-                        </nav>
-                    </div>
-                </div>
-
-                {/* Hero */}
-                <div className="bg-gradient-to-br from-orange-600 via-orange-500 to-amber-400 text-white">
-                    <div className="container mx-auto max-w-7xl px-4 py-7">
-                        <h1 className="text-2xl md:text-3xl font-black tracking-tight">Sản Phẩm</h1>
-                        <p className="text-orange-100 mt-1.5 text-sm max-w-lg">
-                            Khám phá thiết bị điện công nghiệp chất lượng cao từ các thương hiệu hàng đầu.
-                        </p>
-                    </div>
-                </div>
-
                 {/* Content */}
                 <div className="container mx-auto max-w-7xl px-4 py-5">
 

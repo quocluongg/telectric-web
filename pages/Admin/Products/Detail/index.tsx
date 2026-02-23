@@ -249,25 +249,10 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
 
     return (
         <DefaultLayout>
-            {/* BREADCRUMB */}
-            <div className="bg-gray-50 border-b">
-                <div className="container mx-auto px-4 py-3">
-                    <nav className="flex items-center gap-2 text-sm text-slate-gray">
-                        <Link href="/" className="hover:text-electric-orange transition-colors flex items-center gap-1">
-                            <Home className="h-3.5 w-3.5" /> Trang chủ
-                        </Link>
-                        <ChevronSep className="h-3.5 w-3.5 text-slate-300" />
-                        <Link href="/products" className="hover:text-electric-orange transition-colors">
-                            Sản phẩm
-                        </Link>
-                        <ChevronSep className="h-3.5 w-3.5 text-slate-300" />
-                        <span className="text-industrial-black font-medium truncate max-w-[200px]">{product.name}</span>
-                    </nav>
-                </div>
-            </div>
+
 
             {/* MAIN CONTENT */}
-            <div className="container mx-auto px-4 py-8">
+            <div className="container mx-auto max-w-7xl px-4 py-8">
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
 
                     {/* ======= LEFT: IMAGE GALLERY ======= */}
