@@ -22,6 +22,7 @@ const productSchema = z.object({
     brand: z.string().min(1, "Vui lòng nhập thương hiệu"),
     origin: z.string().min(1, "Vui lòng nhập xuất xứ"),
     warranty_months: z.coerce.number().min(0, "Không được âm").default(12),
+    discount_percent: z.coerce.number().min(0, "Không được âm").max(100, "Tối đa 100%").default(0),
     category_id: z.string().optional().nullable(),
     thumbnail: z.string().min(1, "Ảnh bìa là bắt buộc"),
     images: z.array(z.string()).default([]),
@@ -87,6 +88,7 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
             brand: "NoBrand",
             origin: "Việt Nam",
             warranty_months: 12,
+            discount_percent: 0,
             category_id: null,
             thumbnail: "",
             images: [],
@@ -124,6 +126,7 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
                 brand: "NoBrand",
                 origin: "Việt Nam",
                 warranty_months: 12,
+                discount_percent: 0,
                 category_id: null,
                 description: "",
                 thumbnail: "",
@@ -185,6 +188,7 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
                 brand: product.brand || "NoBrand",
                 origin: product.origin || "Việt Nam",
                 warranty_months: product.warranty_months ?? 12,
+                discount_percent: product.discount_percent ?? 0,
                 category_id: product.category_id || null,
                 description: product.description || "",
                 thumbnail: product.thumbnail || "",
@@ -252,6 +256,7 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
                         brand: values.brand,
                         origin: values.origin,
                         warranty_months: values.warranty_months ?? 12,
+                        discount_percent: values.discount_percent ?? 0,
                         category_id: values.category_id || null,
                         thumbnail: values.thumbnail,
                         images: values.images || [],
@@ -376,6 +381,7 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
                         brand: values.brand,
                         origin: values.origin,
                         warranty_months: values.warranty_months ?? 12,
+                        discount_percent: values.discount_percent ?? 0,
                         category_id: values.category_id || null,
                         thumbnail: values.thumbnail,
                         images: values.images || [],
@@ -521,7 +527,7 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
                                 <CardContent className="space-y-4">
                                     <InputField control={form.control} name="name" label="Tên sản phẩm" placeholder="Ví dụ: Áo thun nam co giãn..." />
 
-                                    <div className="grid grid-cols-3 gap-4">
+                                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                                         <InputField control={form.control} name="brand" label="Thương hiệu" />
                                         <InputField control={form.control} name="origin" label="Xuất xứ" />
                                         <FormField
@@ -536,6 +542,40 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
                                                     <FormMessage />
                                                 </FormItem>
                                             )}
+                                        />
+                                        <FormField
+                                            control={form.control}
+                                            name="discount_percent"
+                                            render={({ field }) => {
+                                                const variants = form.watch("variants") || [];
+                                                const basePrice = variants.length > 0 ? Number(variants[0].price) || 0 : 0;
+                                                const currentPercent = field.value || 0;
+                                                const computedAmount = basePrice > 0 ? (basePrice * currentPercent) / 100 : 0;
+
+                                                return (
+                                                    <FormItem>
+                                                        <FormLabel>Khuyến mãi</FormLabel>
+                                                        <div className="flex gap-2">
+                                                            <div className="relative flex-1">
+                                                                <Input
+                                                                    type="number"
+                                                                    min={0} max={100}
+                                                                    placeholder="%"
+                                                                    {...field}
+                                                                    className="h-10 pr-6 pl-2"
+                                                                />
+                                                                <span className="absolute right-2 top-2.5 text-slate-400 text-sm">%</span>
+                                                            </div>
+                                                        </div>
+                                                        {currentPercent > 0 && basePrice > 0 && (
+                                                            <p className="text-[10px] text-orange-600 mt-1">
+                                                                Sản phẩm giảm {currentPercent}%, tương đương tiết kiệm {new Intl.NumberFormat('vi-VN').format(Math.round(computedAmount))}đ.
+                                                            </p>
+                                                        )}
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )
+                                            }}
                                         />
                                     </div>
 

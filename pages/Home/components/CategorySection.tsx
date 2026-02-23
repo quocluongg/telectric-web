@@ -155,7 +155,7 @@ export function CategorySection({
             }
 
             let query = supabase.from("products")
-                .select("id, name, thumbnail, brand, category_id")
+                .select("id, name, thumbnail, brand, category_id, discount_percent")
                 .in("category_id", catIds)
                 .order("created_at", { ascending: false })
                 .limit(8);
@@ -174,10 +174,20 @@ export function CategorySection({
                 if (!priceMap[v.product_id] || v.price < priceMap[v.product_id]) priceMap[v.product_id] = v.price;
             });
 
-            setProducts(prods.map((p: any) => ({
-                id: p.id, name: p.name, thumbnail: p.thumbnail, brand: p.brand,
-                price: priceMap[p.id] ?? null, original_price: null,
-            })));
+            setProducts(prods.map((p: any) => {
+                const minPrice = priceMap[p.id] ?? null;
+                const dp = p.discount_percent || 0;
+                let price = minPrice;
+                let original_price = null;
+                if (dp > 0 && minPrice) {
+                    original_price = minPrice;
+                    price = minPrice * (1 - dp / 100);
+                }
+                return {
+                    id: p.id, name: p.name, thumbnail: p.thumbnail, brand: p.brand,
+                    price, original_price,
+                }
+            }));
             setLoadingProds(false);
         };
         go();

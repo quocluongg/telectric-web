@@ -80,6 +80,7 @@ export default async function AdminProductsPage({
                 min_price: stats ? stats.minPrice : 0,
                 max_price: stats ? stats.maxPrice : 0,
                 total_stock: stats?.totalStock || 0,
+                discount_percent: p.discount_percent || 0,
             };
         });
     }

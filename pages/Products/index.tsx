@@ -101,7 +101,7 @@ function ProductsPageInner() {
 
         // Build query
         let query = supabase.from("products")
-            .select("id, name, brand, origin, thumbnail, category_id, created_at", { count: "exact" });
+            .select("id, name, brand, origin, thumbnail, category_id, created_at, discount_percent", { count: "exact" });
 
         if (filters.search.trim()) query = query.ilike("name", `%${filters.search.trim()}%`);
         if (categoryId) query = query.in("category_id", [categoryId, ...categoryChildIds]);
@@ -155,8 +155,9 @@ function ProductsPageInner() {
                     category_name: p.category_id ? (catMap as any)[p.category_id] || null : null,
                     min_price: v ? Math.min(...v.prices) : 0,
                     max_price: v ? Math.max(...v.prices) : 0,
-                    total_stock: v ? v.stocks.reduce((a, b) => a + b, 0) : 0,
+                    total_stock: v ? v.stocks.reduce((a, b: number) => a + b, 0) : 0,
                     variant_count: v ? v.count : 0,
+                    discount_percent: p.discount_percent || 0,
                 };
             });
 
