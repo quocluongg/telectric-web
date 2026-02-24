@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { Zap, Clock, ArrowRight } from "lucide-react";
+import { Zap, ArrowRight, Flame } from "lucide-react";
 import useEmblaCarousel from "embla-carousel-react";
 import { createClient } from "@/lib/supabase/client";
 
@@ -34,7 +34,7 @@ export function FlashSale() {
                 // Fetch items for this campaign
                 const { data: itemsData } = await supabase
                     .from("campaign_items")
-                    .select("*, products(*, categories(name))")
+                    .select("*, products(*, categories(name)), product_variants(price)")
                     .eq("campaign_id", currentCampaign.id);
 
                 if (itemsData) setProducts(itemsData);
@@ -76,106 +76,158 @@ export function FlashSale() {
     const { h, m, s } = formatTime(timeLeft);
 
     return (
-        <section className="py-12 bg-slate-50 dark:bg-industrial-black">
+        <section className="py-8 bg-slate-50 dark:bg-industrial-black">
             <div className="container mx-auto max-w-7xl px-4">
 
-                {/* Header */}
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-                    <div className="flex flex-col md:flex-row md:items-center gap-4 md:gap-8">
-                        <div className="flex items-center gap-3">
-                            <div className="bg-electric-orange text-white p-2 rounded-lg">
-                                <Zap className="w-6 h-6 animate-pulse" fill="currentColor" />
-                            </div>
-                            <h2 className="text-2xl md:text-3xl font-black text-slate-900 dark:text-white uppercase tracking-tight">
+                {/* ===== Header Strip ===== */}
+                <div className="bg-gradient-to-r from-orange-500 to-red-600 rounded-t-xl px-4 py-3 md:px-5 md:py-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 md:gap-6 w-full md:w-auto">
+                        {/* Title */}
+                        <div className="flex items-center gap-2">
+                            <Zap className="w-5 h-5 md:w-6 md:h-6 text-yellow-300 shrink-0" fill="currentColor" />
+                            <span className="text-white font-black text-xl md:text-2xl uppercase tracking-wider whitespace-nowrap">
                                 {campaign.name}
-                            </h2>
+                            </span>
                         </div>
 
                         {/* Countdown */}
-                        <div className="flex items-center gap-2 text-white font-bold">
-                            <div className="bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-3 py-1.5 rounded text-lg w-10 text-center shadow-inner">
+                        <div className="flex items-center gap-1.5 font-mono">
+                            <div className="bg-white text-red-600 font-bold text-sm md:text-base px-2 py-1 rounded min-w-[28px] text-center leading-tight">
                                 {h.toString().padStart(2, "0")}
                             </div>
-                            <span className="text-slate-900 dark:text-white font-black">:</span>
-                            <div className="bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-3 py-1.5 rounded text-lg w-10 text-center shadow-inner">
+                            <span className="text-white font-bold text-sm">:</span>
+                            <div className="bg-white text-red-600 font-bold text-sm md:text-base px-2 py-1 rounded min-w-[28px] text-center leading-tight">
                                 {m.toString().padStart(2, "0")}
                             </div>
-                            <span className="text-slate-900 dark:text-white font-black">:</span>
-                            <div className="bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-3 py-1.5 rounded text-lg w-10 text-center shadow-inner">
+                            <span className="text-white font-bold text-sm">:</span>
+                            <div className="bg-white text-red-600 font-bold text-sm md:text-base px-2 py-1 rounded min-w-[28px] text-center leading-tight">
                                 {s.toString().padStart(2, "0")}
                             </div>
                         </div>
                     </div>
 
-                    <Link href="/products" className="text-sm font-semibold text-slate-500 hover:text-electric-orange dark:text-slate-400 dark:hover:text-electric-orange flex items-center gap-1 transition-colors group">
-                        Xem tất cả <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                    {/* View all */}
+                    <Link href="/products" className="text-white text-sm font-semibold flex items-center gap-1 hover:underline transition-all group whitespace-nowrap hidden md:flex">
+                        Xem tất cả <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
                     </Link>
                 </div>
 
-                {/* Carousel */}
-                <div className="overflow-hidden" ref={emblaRef}>
-                    <div className="flex gap-4">
-                        {products.map((item) => {
-                            // Calculate percentage if normal price is available (assuming here you'd fetch it, using fixed 30% for now or calculate if possible)
-                            // A real implementation would compare product.price and item.sale_price
-                            return (
-                                <Link
-                                    href={`/products/${item.product_id}`}
-                                    key={item.id}
-                                    className="flex-[0_0_80%] sm:flex-[0_0_45%] md:flex-[0_0_30%] lg:flex-[0_0_22%] min-w-0 bg-white dark:bg-[#1e2330] rounded-xl border border-orange-100 dark:border-slate-800 shadow-sm hover:shadow-lg transition-all duration-300 group overflow-hidden relative group/card"
-                                >
-                                    {/* Sale Badge */}
-                                    <div className="absolute top-3 left-3 bg-red-500 text-white text-xs font-bold px-2.5 py-1 rounded-full z-10 shadow-sm">
-                                        Siêu Sale
-                                    </div>
+                {/* ===== Product Cards Carousel ===== */}
+                <div className="bg-white dark:bg-[#1a1f2e] rounded-b-xl border border-slate-200 dark:border-slate-800 shadow-sm p-4 md:p-6">
+                    <div className="overflow-visible" ref={emblaRef}>
+                        <div className="flex gap-4 md:gap-5 pb-4 pt-1">
+                            {products.map((item) => {
+                                const originalPrice = item.product_variants?.price || 0;
+                                const hasOriginalPrice = originalPrice > item.sale_price;
+                                const discountPercent = hasOriginalPrice
+                                    ? Math.round(((originalPrice - item.sale_price) / originalPrice) * 100)
+                                    : 0;
 
-                                    {/* Thumbnail */}
-                                    <div className="aspect-square bg-slate-100 dark:bg-slate-800 relative overflow-hidden">
-                                        {item.products?.thumbnail ? (
-                                            // eslint-disable-next-line @next/next/no-img-element
-                                            <img
-                                                src={item.products.thumbnail}
-                                                alt={item.products.name}
-                                                className="w-full h-full object-cover group-hover/card:scale-105 transition-transform duration-500"
-                                            />
-                                        ) : (
-                                            <div className="w-full h-full flex items-center justify-center">
-                                                <Zap className="w-12 h-12 text-slate-300 dark:text-slate-600" />
+                                const stockQty = item.stock_quantity ?? 100;
+                                const soldCount = item.sold_count || 0;
+                                const soldPercent = Math.min(Math.round((soldCount / stockQty) * 100), 100);
+
+                                return (
+                                    <Link
+                                        href={`/products/${item.product_id}`}
+                                        key={item.id}
+                                        className="flex-[0_0_80%] sm:flex-[0_0_45%] md:flex-[0_0_30%] lg:flex-[0_0_22%] min-w-0 flex flex-col bg-white dark:bg-[#1e2330] 
+                                        border-2 border-slate-200 dark:border-slate-700 
+                                        transition-all duration-200 group relative
+                                        hover:-translate-y-1 hover:-translate-x-1
+                                        hover:border-red-500 hover:shadow-[5px_5px_0px_#ef4444] dark:hover:shadow-[5px_5px_0px_#991b1b]"
+                                    >
+                                        {/* Sharp Discount Ribbon */}
+                                        {discountPercent > 0 && (
+                                            <div className="absolute top-2 -right-2 z-10">
+                                                <div className="bg-red-500 text-white text-[11px] font-black px-2 py-1 shadow-sm flex items-center gap-0.5">
+                                                    <span>GIẢM</span>
+                                                    <span>{discountPercent}%</span>
+                                                </div>
+                                                {/* Fold effect */}
+                                                <div className="w-0 h-0 border-t-[8px] border-t-red-700 border-r-[8px] border-r-transparent absolute -bottom-[8px] right-0"></div>
                                             </div>
                                         )}
-                                    </div>
 
-                                    {/* Info */}
-                                    <div className="p-4">
-                                        <h3 className="text-slate-800 dark:text-slate-200 font-medium text-sm line-clamp-2 h-10 mb-2 group-hover/card:text-electric-orange transition-colors">
-                                            {item.products?.name}
-                                        </h3>
-                                        <div className="flex flex-col">
-                                            <span className="text-lg font-black text-electric-orange">
-                                                {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(item.sale_price)}
-                                            </span>
-                                        </div>
-
-                                        {/* Progress Bar (Fake stock) */}
-                                        <div className="mt-4">
-                                            <div className="flex justify-between text-[10px] text-slate-500 font-medium mb-1 uppercase tracking-wider">
-                                                <span>Mở bán: {item.stock_quantity ?? 'Giới hạn'}</span>
-                                                <span className="text-electric-orange flex items-center gap-1">
-                                                    <Clock className="w-3 h-3" /> Đang Sale
-                                                </span>
-                                            </div>
-                                            <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5 overflow-hidden mt-1">
-                                                <div
-                                                    className="bg-electric-orange h-full rounded-full"
-                                                    style={{ width: `70%` }}
+                                        {/* Thumbnail */}
+                                        <div className="aspect-square relative overflow-hidden bg-white border-b-2 border-slate-100 dark:border-slate-800">
+                                            {item.products?.thumbnail ? (
+                                                // eslint-disable-next-line @next/next/no-img-element
+                                                <img
+                                                    src={item.products.thumbnail}
+                                                    alt={item.products.name}
+                                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                                                 />
+                                            ) : (
+                                                <div className="w-full h-full flex items-center justify-center bg-slate-100 dark:bg-slate-800">
+                                                    <Zap className="w-10 h-10 text-slate-300 dark:text-slate-600" />
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Info Container */}
+                                        <div className="p-3 md:p-4 flex flex-col flex-1">
+                                            {/* Product Name */}
+                                            <h3 className="text-slate-800 dark:text-slate-200 text-sm font-bold line-clamp-2 h-10 mb-3 group-hover:text-red-600 transition-colors leading-snug">
+                                                {item.products?.name}
+                                            </h3>
+
+                                            {/* Pricing Group */}
+                                            <div className="mt-auto flex flex-col pt-2 border-t border-slate-100 dark:border-slate-700/50">
+
+                                                {/* Original Price */}
+                                                <div className="h-4 flex justify-end mb-0.5">
+                                                    {hasOriginalPrice && (
+                                                        <span className="text-slate-400 text-[11px] font-mono line-through">
+                                                            {new Intl.NumberFormat('vi-VN').format(originalPrice)}₫
+                                                        </span>
+                                                    )}
+                                                </div>
+
+                                                <div className="flex items-center justify-between">
+                                                    <span className="text-[10px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                                                        Giá Flash
+                                                    </span>
+                                                    <span className="text-red-500 font-black text-lg md:text-xl font-mono tracking-tight">
+                                                        {new Intl.NumberFormat('vi-VN').format(item.sale_price)}
+                                                        <span className="text-[13px] align-top ml-0.5 underline">₫</span>
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            {/* Industrial Caution Strip Progress Bar */}
+                                            <div className="mt-4 flex flex-col gap-1.5 p-1 mb-1">
+                                                <div className="flex justify-between items-center">
+                                                    <span className="text-[10px] font-black text-slate-600 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                                                        <Zap className="w-3 h-3 text-red-500 fill-red-500" /> ĐÃ BÁN: {soldCount}
+                                                    </span>
+                                                    <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 font-mono">
+                                                        TỒN: {stockQty - soldCount}
+                                                    </span>
+                                                </div>
+
+                                                {/* Caution Strip Container - Skewed for dynamic industrial feel */}
+                                                <div className="w-full h-2.5 bg-slate-200 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 relative overflow-hidden skew-x-[-15deg] mx-1">
+                                                    {/* Striped Fill */}
+                                                    <div
+                                                        className="absolute inset-y-0 left-0 bg-red-500 dark:bg-red-600 bg-[repeating-linear-gradient(45deg,transparent,transparent_4px,rgba(0,0,0,0.15)_4px,rgba(0,0,0,0.15)_8px)] shadow-[inset_0_1px_2px_rgba(255,255,255,0.3)]"
+                                                        style={{ width: `${soldPercent}%` }}
+                                                    />
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                </Link>
-                            )
-                        })}
+                                    </Link>
+                                )
+                            })}
+                        </div>
                     </div>
+                </div>
+
+                {/* Mobile View All */}
+                <div className="mt-4 md:hidden flex justify-center">
+                    <Link href="/products" className="text-red-600 bg-red-50 dark:bg-red-950/30 text-sm font-bold flex items-center gap-2 transition-all px-6 py-2 rounded border border-red-200 dark:border-red-900/50">
+                        Xem tất cả Flash Sale <ArrowRight className="w-4 h-4" />
+                    </Link>
                 </div>
 
             </div>
