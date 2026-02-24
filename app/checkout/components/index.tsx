@@ -24,6 +24,7 @@ interface Province { code: number; name: string; }
 interface District { code: number; name: string; }
 interface Ward { code: number; name: string; }
 
+
 export default function CheckoutPage() {
     const supabase = createClient();
     const { toast } = useToast();
@@ -61,7 +62,6 @@ export default function CheckoutPage() {
 
     // Order state
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [orderSuccess, setOrderSuccess] = useState(false);
     const [orderId, setOrderId] = useState("");
 
     // Validation
@@ -229,6 +229,45 @@ export default function CheckoutPage() {
         return Object.keys(e).length === 0;
     }, [form, selectedProvince, selectedDistrict, selectedWard, cartItems]);
 
+    // --- Handle Payment ---
+    const handlePayment = async (createdOrderId: string) => {
+        try {
+            // 1. Gọi Edge Function để lấy thông tin thanh toán
+            const { data, error } = await supabase.functions.invoke('sepay-init-checkout', {
+                body: { order_id: createdOrderId }
+            });
+
+            if (error) throw error;
+
+            // 2. Tạo một form ẩn và tự động submit sang SePay
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = data.checkoutURL; // URL từ Edge Function trả về
+
+            // Thêm các fields đã được SDK ký (signature) vào form
+            Object.entries(data.fields).forEach(([name, value]) => {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = name;
+                input.value = value as string;
+                form.appendChild(input);
+            });
+
+            document.body.appendChild(form);
+            form.submit();
+            document.body.removeChild(form);
+        } catch (err: any) {
+            console.error('Lỗi khởi tạo thanh toán:', err.message);
+            toast({
+                title: "Lỗi thanh toán",
+                description: "Không thể khởi tạo thanh toán. Vui lòng thử lại.",
+                variant: "destructive"
+            });
+            // Fallback to normal success state if payment init fails
+            router.push(`/payment/success?orderId=${createdOrderId}`);
+        }
+    };
+
     // --- Submit order ---
     const handleSubmit = async () => {
         if (!validate()) return;
@@ -316,9 +355,14 @@ export default function CheckoutPage() {
                 // We don't block the checkout success if email fails
             }
 
-            setOrderSuccess(true);
             clearCart();
             setCartItems([]);
+
+            if (paymentMethod === "bank_transfer") {
+                await handlePayment(newOrderId);
+            } else {
+                router.push(`/payment/success?orderId=${newOrderId}`);
+            }
         } catch (err: any) {
             toast({
                 title: "Lỗi đặt hàng",
@@ -336,46 +380,6 @@ export default function CheckoutPage() {
         return (
             <div className="min-h-screen bg-gray-50 flex items-center justify-center">
                 <Loader2 className="h-8 w-8 animate-spin text-orange-500" />
-            </div>
-        );
-    }
-
-    // --- Success ---
-    if (orderSuccess) {
-        return (
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-                <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full text-center">
-                    <div className="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-6">
-                        <CheckCircle2 className="h-10 w-10 text-green-600" />
-                    </div>
-                    <h1 className="text-2xl font-black text-slate-900 mb-2">Đặt hàng thành công!</h1>
-                    <p className="text-slate-500 mb-4">
-                        Cảm ơn bạn đã đặt hàng. Chúng tôi sẽ liên hệ xác nhận sớm nhất.
-                    </p>
-                    {orderId && (
-                        <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-6">
-                            <p className="text-sm text-orange-700 font-medium">Mã đơn hàng</p>
-                            <p className="text-lg font-mono font-black text-orange-600 mt-1">
-                                #{orderId.slice(0, 8).toUpperCase()}
-                            </p>
-                        </div>
-                    )}
-                    <div className="flex gap-3">
-                        <Button
-                            variant="outline"
-                            className="flex-1"
-                            onClick={() => router.push("/")}
-                        >
-                            Về trang chủ
-                        </Button>
-                        <Button
-                            className="flex-1 bg-orange-600 hover:bg-orange-700"
-                            onClick={() => router.push("/products")}
-                        >
-                            Tiếp tục mua sắm
-                        </Button>
-                    </div>
-                </div>
             </div>
         );
     }
