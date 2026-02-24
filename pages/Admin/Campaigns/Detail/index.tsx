@@ -35,7 +35,9 @@ export default function CampaignDetailPage({ campaignId }: { campaignId: string 
         if (id) {
             fetchCampaignDetails();
             fetchCampaignItems();
+            handleSearchProducts("");
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [id]);
 
     const fetchCampaignDetails = async () => {
@@ -53,10 +55,16 @@ export default function CampaignDetailPage({ campaignId }: { campaignId: string 
         setLoading(false);
     };
 
-    const handleSearchProducts = async () => {
-        if (!searchQuery.trim()) return;
+    const handleSearchProducts = async (param?: any) => {
+        const queryStr = typeof param === 'string' ? param : searchQuery;
         setIsSearching(true);
-        const { data } = await supabase.from("products").select("id, name, thumbnail").ilike("name", `%${searchQuery}%`).limit(10);
+        let query = supabase.from("products").select("id, name, thumbnail");
+        if (queryStr && queryStr.trim()) {
+            query = query.ilike("name", `%${queryStr}%`);
+        } else {
+            query = query.order("created_at", { ascending: false });
+        }
+        const { data } = await query.limit(10);
         if (data) setSearchResults(data);
         setIsSearching(false);
     };
@@ -100,7 +108,7 @@ export default function CampaignDetailPage({ campaignId }: { campaignId: string 
     const resetForm = () => {
         setStep(0);
         setSearchQuery("");
-        setSearchResults([]);
+        handleSearchProducts("");
         setSelectedProduct(null);
         setProductVariants([]);
         setSelectedVariant(null);
@@ -189,12 +197,20 @@ export default function CampaignDetailPage({ campaignId }: { campaignId: string 
                         {step === 0 && (
                             <div className="space-y-3">
                                 <div className="flex gap-2">
-                                    <Input placeholder="Tìm sản phẩm..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} onKeyDown={(e) => e.key === "Enter" && handleSearchProducts()} />
-                                    <Button onClick={handleSearchProducts} disabled={isSearching} className="bg-slate-800 dark:bg-slate-700 px-3">
+                                    <Input
+                                        placeholder="Tìm sản phẩm..."
+                                        value={searchQuery}
+                                        onChange={(e) => {
+                                            setSearchQuery(e.target.value);
+                                            handleSearchProducts(e.target.value);
+                                        }}
+                                        onKeyDown={(e) => e.key === "Enter" && handleSearchProducts(searchQuery)}
+                                    />
+                                    <Button onClick={() => handleSearchProducts(searchQuery)} disabled={isSearching} className="bg-slate-800 dark:bg-slate-700 px-3">
                                         <Search className="h-4 w-4" />
                                     </Button>
                                 </div>
-                                <div className="max-h-60 overflow-y-auto space-y-2">
+                                <div className="max-h-60 overflow-y-auto space-y-2 pr-1 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-slate-200 dark:[&::-webkit-scrollbar-thumb]:bg-slate-700 hover:[&::-webkit-scrollbar-thumb]:bg-slate-300 dark:hover:[&::-webkit-scrollbar-thumb]:bg-slate-600 [&::-webkit-scrollbar-thumb]:rounded-full">
                                     {searchResults.map((prod) => (
                                         <div key={prod.id} onClick={() => handleSelectProduct(prod)} className="flex items-center gap-3 p-2 rounded-lg border border-slate-100 dark:border-slate-800 hover:border-electric-orange cursor-pointer transition-colors">
                                             <div className="h-10 w-10 bg-slate-100 dark:bg-slate-800 rounded flex-shrink-0 overflow-hidden">
