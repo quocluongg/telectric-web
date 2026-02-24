@@ -45,7 +45,7 @@ export default function NewsDetailPage({ article, relatedArticles }: NewsDetailP
             <div className="container mx-auto max-w-7xl px-4 py-8">
                 <div className="flex flex-col lg:flex-row gap-8">
                     {/* Main Content */}
-                    <article className="flex-1">
+                    <article className="flex-1 min-w-0">
                         {/* Back link */}
                         <Link
                             href="/news"
@@ -77,84 +77,117 @@ export default function NewsDetailPage({ article, relatedArticles }: NewsDetailP
                                 <style>{`
                                     .article-body {
                                         color: #475569;
-                                        font-size: 16px;
-                                        line-height: 1.8;
+                                        font-size: 17px !important;
+                                        line-height: 1.8 !important;
                                         overflow: hidden;
+                                        max-width: 100% !important;
                                         word-wrap: break-word;
+                                        word-break: break-word;
                                         overflow-wrap: break-word;
+                                        box-sizing: border-box;
                                     }
                                     .dark .article-body {
                                         color: #94a3b8;
                                     }
-                                    
-                                    /* Center text content */
-                                    .article-body > p, 
-                                    .article-body > h1, 
-                                    .article-body > h2, 
-                                    .article-body > h3, 
-                                    .article-body > h4, 
-                                    .article-body > h5, 
-                                    .article-body > h6, 
-                                    .article-body > ul, 
-                                    .article-body > ol, 
-                                    .article-body > blockquote {
-                                        max-width: 65ch;
-                                        margin-left: auto;
-                                        margin-right: auto;
+
+                                    /* === PASTE SANITIZATION: Strip unwanted paste styles === */
+                                    /* Remove background colors from pasted content */
+                                    .article-body *:not(pre):not(code):not(blockquote) {
+                                        background-color: transparent !important;
+                                        background: transparent !important;
+                                    }
+                                    /* Normalize font properties from pasted content */
+                                    .article-body *:not(pre):not(code) {
+                                        font-size: inherit !important;
+                                        font-family: inherit !important;
+                                        line-height: inherit !important;
+                                        max-width: 100% !important;
+                                        box-sizing: border-box !important;
+                                        word-break: break-word !important;
+                                        overflow-wrap: break-word !important;
                                     }
 
-                                    .article-body img {
-                                        max-width: 100%;
-                                        height: auto;
+                                    /* === Quill alignment support === */
+                                    .article-body .ql-align-center { text-align: center !important; }
+                                    .article-body .ql-align-right { text-align: right !important; }
+                                    .article-body .ql-align-justify { text-align: justify !important; }
+                                    .article-body .ql-indent-1 { padding-left: 3em !important; }
+                                    .article-body .ql-indent-2 { padding-left: 6em !important; }
+                                    .article-body .ql-indent-3 { padding-left: 9em !important; }
+
+                                    /* Override ALL hardcoded colors in dark mode */
+                                    .dark .article-body *[style*="color"] {
+                                        color: inherit !important;
+                                    }
+
+                                    /* Full width content */
+                                    .article-body > p,
+                                    .article-body > h1,
+                                    .article-body > h2,
+                                    .article-body > h3,
+                                    .article-body > h4,
+                                    .article-body > h5,
+                                    .article-body > h6,
+                                    .article-body > ul,
+                                    .article-body > ol,
+                                    .article-body > blockquote {
+                                        max-width: 100% !important;
+                                    }
+
+                                    .article-body img,
+                                    .article-body video,
+                                    .article-body iframe {
+                                        max-width: 100% !important;
+                                        height: auto !important;
                                         border-radius: 12px;
                                         margin: 32px auto;
                                         display: block;
                                         box-shadow: 0 4px 12px rgba(0,0,0,0.08);
                                         object-fit: contain;
                                     }
-                                    
+
                                     .article-body p {
                                         margin-bottom: 20px;
                                     }
-                                    
+
                                     .article-body h1, .article-body h2, .article-body h3, .article-body h4 {
-                                        font-weight: 700;
+                                        font-weight: 700 !important;
                                         margin-top: 40px;
                                         margin-bottom: 16px;
                                         letter-spacing: -0.01em;
-                                        line-height: 1.3;
+                                        line-height: 1.3 !important;
                                     }
-                                    .article-body h1 { font-size: 1.8em; }
-                                    .article-body h2 { font-size: 1.5em; }
-                                    .article-body h3 { font-size: 1.25em; }
-                                    .article-body h4 { font-size: 1.1em; }
-                                    
+                                    .article-body h1 { font-size: 1.8em !important; }
+                                    .article-body h2 { font-size: 1.5em !important; }
+                                    .article-body h3 { font-size: 1.25em !important; }
+                                    .article-body h4 { font-size: 1.1em !important; }
+
                                     .dark .article-body h1,
                                     .dark .article-body h2,
                                     .dark .article-body h3,
                                     .dark .article-body h4 {
-                                        color: #f1f5f9;
+                                        color: #f1f5f9 !important;
                                     }
-                                    
+
                                     .article-body a {
-                                        color: #f97316;
+                                        color: #f97316 !important;
                                         text-decoration: none;
                                         font-weight: 500;
                                     }
                                     .article-body a:hover {
                                         text-decoration: underline;
                                     }
-                                    
+
                                     .article-body strong, .article-body b {
                                         color: #1e293b;
-                                        font-weight: 600;
+                                        font-weight: 600 !important;
                                     }
                                     .dark .article-body strong, .dark .article-body b {
                                         color: #f1f5f9;
                                     }
-                                    
+
                                     .article-body ul, .article-body ol {
-                                        padding-left: 20px;
+                                        padding-left: 20px !important;
                                         margin-bottom: 20px;
                                     }
                                     .article-body ul { list-style: disc inside; }
@@ -162,47 +195,47 @@ export default function NewsDetailPage({ article, relatedArticles }: NewsDetailP
                                     .article-body li {
                                         margin-bottom: 8px;
                                     }
-                                    
+
                                     .article-body blockquote {
                                         border-left: 4px solid #f97316;
-                                        padding: 16px 24px;
+                                        padding: 16px 24px !important;
                                         margin-top: 32px;
                                         margin-bottom: 32px;
-                                        background: #f8fafc;
+                                        background: #f8fafc !important;
                                         border-radius: 0 12px 12px 0;
                                         color: #475569;
                                         font-style: italic;
-                                        font-size: 1.1em;
+                                        font-size: 1.1em !important;
                                     }
                                     .dark .article-body blockquote {
-                                        background: #1e293b;
+                                        background: #1e293b !important;
                                         color: #94a3b8;
                                     }
-                                    
+
                                     .article-body pre {
                                         max-width: 65ch;
                                         margin-left: auto;
                                         margin-right: auto;
-                                        background: #1e293b;
+                                        background: #1e293b !important;
                                         color: #e2e8f0;
                                         padding: 20px;
                                         border-radius: 12px;
                                         overflow-x: auto;
                                         margin-top: 24px;
                                         margin-bottom: 24px;
-                                        font-size: 14px;
-                                        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+                                        font-size: 14px !important;
+                                        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important;
                                     }
                                     .article-body code {
-                                        background: #f1f5f9;
+                                        background: #f1f5f9 !important;
                                         padding: 3px 6px;
                                         border-radius: 6px;
-                                        font-size: 0.9em;
+                                        font-size: 0.9em !important;
                                         color: #ef4444;
                                         font-weight: 500;
                                     }
                                     .dark .article-body code {
-                                        background: #334155;
+                                        background: #334155 !important;
                                         color: #fca5a5;
                                     }
                                 `}</style>
