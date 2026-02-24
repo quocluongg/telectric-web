@@ -22,11 +22,15 @@ export interface ProductCardData {
     max_price: number;
     total_stock: number;
     variant_count: number;
+    discount_percent?: number | null;
 }
 
 export function ProductCard({ product }: { product: ProductCardData }) {
     const isOutOfStock = product.total_stock === 0;
     const hasMultiplePrices = product.min_price !== product.max_price;
+    const dp = product.discount_percent || 0;
+    const minPrice = dp > 0 ? product.min_price * (1 - dp / 100) : product.min_price;
+    const maxPrice = dp > 0 ? product.max_price * (1 - dp / 100) : product.max_price;
 
     return (
         <Link href={`/products/${product.id}`} className="block group">
@@ -46,7 +50,12 @@ export function ProductCard({ product }: { product: ProductCardData }) {
                     )}
 
                     {/* Top badges */}
-                    <div className="absolute top-2.5 left-2.5 flex flex-col gap-1.5">
+                    <div className="absolute top-2.5 left-2.5 flex flex-col gap-1.5 z-20">
+                        {dp > 0 && (
+                            <Badge className="bg-[#ffc107] hover:bg-[#e0a800] text-[#333] text-[11px] px-2 py-0.5 font-bold shadow-sm border-none">
+                                -{dp}%
+                            </Badge>
+                        )}
                         {isOutOfStock && (
                             <Badge className="bg-red-500/90 hover:bg-red-500 text-white text-[10px] px-2 py-0.5 font-semibold backdrop-blur-sm shadow-sm">
                                 Hết hàng
@@ -91,19 +100,39 @@ export function ProductCard({ product }: { product: ProductCardData }) {
                         {isOutOfStock ? (
                             <span className="text-sm font-bold text-red-500">Liên hệ</span>
                         ) : hasMultiplePrices ? (
-                            <div className="flex items-baseline gap-1 flex-wrap">
-                                <span className="text-sm font-extrabold text-orange-600 dark:text-orange-500">
-                                    {formatVND(product.min_price)}
-                                </span>
-                                <span className="text-[10px] text-slate-400">~</span>
-                                <span className="text-[11px] font-medium text-slate-400">
-                                    {formatVND(product.max_price)}
-                                </span>
+                            <div className="flex flex-col gap-0.5">
+                                <div className="flex items-baseline gap-1 flex-wrap">
+                                    <span className="text-sm font-extrabold text-orange-600 dark:text-orange-500">
+                                        {formatVND(minPrice)}
+                                    </span>
+                                    <span className="text-[10px] text-slate-400">~</span>
+                                    <span className="text-[11px] font-medium text-slate-400">
+                                        {formatVND(maxPrice)}
+                                    </span>
+                                </div>
+                                {dp > 0 && (
+                                    <div className="flex items-baseline gap-1">
+                                        <span className="text-[11px] text-slate-400 line-through">
+                                            {formatVND(product.min_price)}
+                                        </span>
+                                        <span className="text-[10px] text-slate-400">~</span>
+                                        <span className="text-[10px] text-slate-400 line-through">
+                                            {formatVND(product.max_price)}
+                                        </span>
+                                    </div>
+                                )}
                             </div>
                         ) : (
-                            <span className="text-sm font-extrabold text-orange-600 dark:text-orange-500">
-                                {formatVND(product.min_price)}
-                            </span>
+                            <div className="flex flex-col gap-0.5">
+                                <span className="text-sm font-extrabold text-orange-600 dark:text-orange-500">
+                                    {formatVND(minPrice)}
+                                </span>
+                                {dp > 0 && (
+                                    <span className="text-[11px] text-slate-400 line-through">
+                                        {formatVND(product.min_price)}
+                                    </span>
+                                )}
+                            </div>
                         )}
                     </div>
 

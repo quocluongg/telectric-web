@@ -23,24 +23,7 @@ export default function NewsDetailPage({ article, relatedArticles }: NewsDetailP
 
     return (
         <div className="bg-gray-50 dark:bg-[#0a0d14] min-h-screen">
-            {/* Breadcrumb */}
-            <div className="bg-white dark:bg-[#0f111a] border-b border-slate-200 dark:border-slate-800">
-                <div className="container mx-auto max-w-7xl px-4 py-3">
-                    <nav className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
-                        <Link href="/" className="hover:text-electric-orange transition-colors">
-                            Trang chủ
-                        </Link>
-                        <span>/</span>
-                        <Link href="/news" className="hover:text-electric-orange transition-colors">
-                            Bài viết
-                        </Link>
-                        <span>/</span>
-                        <span className="text-slate-900 dark:text-white font-medium line-clamp-1">
-                            {article.title}
-                        </span>
-                    </nav>
-                </div>
-            </div>
+
 
             <div className="container mx-auto max-w-7xl px-4 py-8">
                 <div className="flex flex-col lg:flex-row gap-8">

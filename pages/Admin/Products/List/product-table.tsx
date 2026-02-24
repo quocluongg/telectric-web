@@ -47,6 +47,7 @@ export interface ProductRow {
     min_price: number;
     max_price: number;
     total_stock: number;
+    discount_percent: number;
 }
 
 interface ProductTableProps {
@@ -174,12 +175,17 @@ function ProductRow({
             <TableCell>
                 {product.min_price !== null && product.min_price !== undefined ? (
                     <div>
-                        <p className="font-bold text-sm text-red-600">
+                        <div className="flex items-center gap-1.5 font-bold text-sm text-red-600">
                             {product.min_price === product.max_price
                                 ? formatVND(product.min_price)
                                 : `${formatVND(product.min_price)}`
                             }
-                        </p>
+                            {product.discount_percent > 0 && (
+                                <Badge className="bg-[#ffc107] hover:bg-[#e0a800] text-[#333] text-[9px] px-1 py-0 shadow-sm border-none ml-1">
+                                    -{product.discount_percent}%
+                                </Badge>
+                            )}
+                        </div>
                         {product.min_price !== product.max_price && (
                             <p className="text-[10px] text-slate-400">→ {formatVND(product.max_price)}</p>
                         )}

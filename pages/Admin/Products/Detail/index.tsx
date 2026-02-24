@@ -37,6 +37,7 @@ interface Product {
     images: string[];
     created_at: string;
     updated_at: string;
+    discount_percent?: number | null;
 }
 
 // --- HELPER: Format VND ---
@@ -115,13 +116,25 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
         ) || null;
     }, [variants, selectedAttributes]);
 
+    const dp = product?.discount_percent || 0;
+
+    const actualPrice = useMemo(() => {
+        if (!selectedVariant) return null;
+        const basePrice = selectedVariant.price;
+        if (dp > 0) return basePrice * (1 - dp / 100);
+        return basePrice;
+    }, [selectedVariant, dp]);
+
     const priceRange = useMemo(() => {
         if (!variants.length) return null;
-        const prices = variants.map(v => v.price);
+        const prices = variants.map(v => dp > 0 ? v.price * (1 - dp / 100) : v.price);
+        const originalPrices = variants.map(v => v.price);
         const min = Math.min(...prices);
         const max = Math.max(...prices);
-        return { min, max };
-    }, [variants]);
+        const originalMin = Math.min(...originalPrices);
+        const originalMax = Math.max(...originalPrices);
+        return { min, max, originalMin, originalMax };
+    }, [variants, dp]);
 
     // ===== FLASH SALE — Must be after selectedVariant/priceRange =====
     const [flashSale, setFlashSale] = useState<any>(null);
@@ -236,25 +249,10 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
 
     return (
         <DefaultLayout>
-            {/* BREADCRUMB */}
-            <div className="bg-gray-50 border-b">
-                <div className="container mx-auto px-4 py-3">
-                    <nav className="flex items-center gap-2 text-sm text-slate-gray">
-                        <Link href="/" className="hover:text-electric-orange transition-colors flex items-center gap-1">
-                            <Home className="h-3.5 w-3.5" /> Trang chủ
-                        </Link>
-                        <ChevronSep className="h-3.5 w-3.5 text-slate-300" />
-                        <Link href="/products" className="hover:text-electric-orange transition-colors">
-                            Sản phẩm
-                        </Link>
-                        <ChevronSep className="h-3.5 w-3.5 text-slate-300" />
-                        <span className="text-industrial-black font-medium truncate max-w-[200px]">{product.name}</span>
-                    </nav>
-                </div>
-            </div>
+
 
             {/* MAIN CONTENT */}
-            <div className="container mx-auto px-4 py-8">
+            <div className="container mx-auto max-w-7xl px-4 py-8">
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
 
                     {/* ======= LEFT: IMAGE GALLERY ======= */}
@@ -392,19 +390,46 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
                                     </div>
                                 </div>
                             ) : selectedVariant ? (
-                                <div className="flex items-baseline gap-3">
-                                    <span className="text-3xl font-black text-red-600">
-                                        {formatVND(selectedVariant.price)}
-                                    </span>
+                                <div className="flex flex-col gap-1">
+                                    <div className="flex items-baseline gap-3">
+                                        <span className="text-3xl font-black text-red-600">
+                                            {formatVND(actualPrice ?? selectedVariant.price)}
+                                        </span>
+                                        {dp > 0 && (
+                                            <Badge className="bg-[#ffc107] hover:bg-[#e0a800] text-[#333] text-[13px] px-2 py-0.5 font-bold shadow-sm border-none translate-y-[-2px]">
+                                                -{dp}%
+                                            </Badge>
+                                        )}
+                                    </div>
+                                    {dp > 0 && (
+                                        <span className="text-lg text-slate-400 line-through font-medium">
+                                            {formatVND(selectedVariant.price)}
+                                        </span>
+                                    )}
                                 </div>
                             ) : priceRange ? (
-                                <div>
-                                    <span className="text-2xl font-black text-red-600">
-                                        {priceRange.min === priceRange.max
-                                            ? formatVND(priceRange.min)
-                                            : `${formatVND(priceRange.min)} - ${formatVND(priceRange.max)}`
-                                        }
-                                    </span>
+                                <div className="flex flex-col gap-1">
+                                    <div className="flex items-center gap-3">
+                                        <span className="text-2xl font-black text-red-600">
+                                            {priceRange.min === priceRange.max
+                                                ? formatVND(priceRange.min)
+                                                : `${formatVND(priceRange.min)} - ${formatVND(priceRange.max)}`
+                                            }
+                                        </span>
+                                        {dp > 0 && (
+                                            <Badge className="bg-[#ffc107] hover:bg-[#e0a800] text-[#333] text-[13px] px-2 py-0.5 font-bold shadow-sm border-none">
+                                                -{dp}%
+                                            </Badge>
+                                        )}
+                                    </div>
+                                    {dp > 0 && (
+                                        <div className="text-base text-slate-400 line-through font-medium mt-0.5">
+                                            {priceRange.originalMin === priceRange.originalMax
+                                                ? formatVND(priceRange.originalMin)
+                                                : `${formatVND(priceRange.originalMin)} - ${formatVND(priceRange.originalMax)}`
+                                            }
+                                        </div>
+                                    )}
                                     <p className="text-xs text-slate-gray mt-1">Chọn phân loại để xem giá chính xác</p>
                                 </div>
                             ) : (
@@ -521,7 +546,7 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
                                         productName: product.name,
                                         thumbnail: product.thumbnail,
                                         attributes: selectedVariant.attributes,
-                                        price: flashSale?.sale_price ?? selectedVariant.price,
+                                        price: flashSale?.sale_price ?? (actualPrice ?? selectedVariant.price),
                                         quantity: quantity,
                                         stock: selectedVariant.stock
                                     });
@@ -543,7 +568,7 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
                                         productName: product.name,
                                         thumbnail: product.thumbnail,
                                         attributes: selectedVariant.attributes,
-                                        price: flashSale?.sale_price ?? selectedVariant.price,
+                                        price: flashSale?.sale_price ?? (actualPrice ?? selectedVariant.price),
                                         quantity: quantity,
                                         stock: selectedVariant.stock
                                     });
@@ -629,7 +654,18 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
                                                         ))}
                                                     </td>
                                                     <td className="p-3 text-slate-gray font-mono text-xs">{v.sku || "—"}</td>
-                                                    <td className="p-3 text-right font-bold text-red-600">{formatVND(v.price)}</td>
+                                                    <td className="p-3 text-right">
+                                                        <div className="flex flex-col items-end">
+                                                            <span className="font-bold text-red-600">
+                                                                {formatVND(dp > 0 ? v.price * (1 - dp / 100) : v.price)}
+                                                            </span>
+                                                            {dp > 0 && (
+                                                                <span className="text-[11px] text-slate-400 line-through">
+                                                                    {formatVND(v.price)}
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                    </td>
                                                     <td className="p-3 text-right font-medium">{v.stock}</td>
                                                     <td className="p-3 text-center">
                                                         <span className={cn(
