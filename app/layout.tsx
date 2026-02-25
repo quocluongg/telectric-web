@@ -13,20 +13,20 @@ const defaultUrl = process.env.NEXT_PUBLIC_SITE_URL
 
 export const metadata: Metadata = {
   metadataBase: new URL(defaultUrl),
-  title: "TLECTRIC - Chuyên dụng cụ đo lường chính hãng",
+  title: "TElectric - Chuyên dụng cụ đo lường chính hãng",
   description: "Chuyên cung cấp các loại dụng cụ đo lường điện chính hãng, giá tốt nhất thị trường.",
   openGraph: {
-    title: "TLECTRIC - Chuyên dụng cụ đo lường chính hãng",
+    title: "TElectric - Chuyên dụng cụ đo lường chính hãng",
     description: "Chuyên cung cấp các loại dụng cụ đo lường điện chính hãng, giá tốt nhất thị trường.",
     type: "website",
-    siteName: "TLECTRIC",
-    images: ["/banner.png"],
+    siteName: "TElectric",
+    images: ["/img/banner.png"],
   },
   twitter: {
     card: "summary_large_image",
-    title: "TLECTRIC - Chuyên dụng cụ đo lường chính hãng",
+    title: "TElectric - Chuyên dụng cụ đo lường chính hãng",
     description: "Chuyên cung cấp các loại dụng cụ đo lường điện chính hãng, giá tốt nhất thị trường.",
-    images: ["/banner.png"],
+    images: ["/img/banner.png"],
   },
 };
 
