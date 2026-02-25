@@ -264,7 +264,7 @@ export default function CheckoutPage() {
                 variant: "destructive"
             });
             // Fallback to normal success state if payment init fails
-            router.push(`/payment/success?orderId=${createdOrderId}`);
+            router.push(`/payment/success?orderId=${createdOrderId}&method=bank_transfer`);
         }
     };
 
@@ -316,6 +316,15 @@ export default function CheckoutPage() {
             if (error) throw error;
 
             const newOrderId = (data as string) || "";
+
+            // Cập nhật customer_email riêng để tránh lỗi nếu RPC chưa hỗ trợ tham số p_customer_email
+            if (newOrderId && form.email) {
+                await supabase
+                    .from("orders")
+                    .update({ customer_email: form.email })
+                    .eq("id", newOrderId);
+            }
+
             setOrderId(newOrderId);
 
             // --- Send Emails ---
@@ -361,7 +370,7 @@ export default function CheckoutPage() {
             if (paymentMethod === "bank_transfer") {
                 await handlePayment(newOrderId);
             } else {
-                router.push(`/payment/success?orderId=${newOrderId}`);
+                router.push(`/payment/success?orderId=${newOrderId}&method=cod`);
             }
         } catch (err: any) {
             toast({
