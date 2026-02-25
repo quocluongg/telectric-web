@@ -20,13 +20,13 @@ export const metadata: Metadata = {
     description: "Chuyên cung cấp các loại dụng cụ đo lường điện chính hãng, giá tốt nhất thị trường.",
     type: "website",
     siteName: "TLECTRIC",
-    images: ["/banner.jpg"],
+    images: ["/banner.png"],
   },
   twitter: {
     card: "summary_large_image",
     title: "TLECTRIC - Chuyên dụng cụ đo lường chính hãng",
     description: "Chuyên cung cấp các loại dụng cụ đo lường điện chính hãng, giá tốt nhất thị trường.",
-    images: ["/banner.jpg"],
+    images: ["/banner.png"],
   },
 };
 
