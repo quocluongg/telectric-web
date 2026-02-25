@@ -198,6 +198,23 @@ export default function AdminNewsCreate({ editId }: AdminNewsCreateProps) {
             },
             clipboard: {
                 matchVisual: false,
+                matchers: [
+                    [
+                        1, // Node.ELEMENT_NODE
+                        (node: any, delta: any) => {
+                            if (delta.ops) {
+                                delta.ops.forEach((op: any) => {
+                                    if (op.attributes) {
+                                        delete op.attributes.background;
+                                        delete op.attributes.color;
+                                        delete op.attributes.font;
+                                    }
+                                });
+                            }
+                            return delta;
+                        },
+                    ],
+                ],
             },
         }),
         [imageHandler]
@@ -207,7 +224,7 @@ export default function AdminNewsCreate({ editId }: AdminNewsCreateProps) {
         "header",
         "bold", "italic", "underline", "strike",
         "color", "background",
-        "align",
+        "align", "indent",
         "list",
         "blockquote", "code-block",
         "link", "image", "video",
@@ -280,10 +297,10 @@ export default function AdminNewsCreate({ editId }: AdminNewsCreateProps) {
             <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.snow.css" />
             <style>{`
                 .ql-editor {
-                    min-height: 350px;
-                    max-height: 600px;
+                    min-height: 500px;
+                    max-height: 800px;
                     overflow-y: auto;
-                    font-size: 15px;
+                    font-size: 17px;
                     line-height: 1.8;
                 }
                 .ql-toolbar.ql-snow {
@@ -397,29 +414,6 @@ export default function AdminNewsCreate({ editId }: AdminNewsCreateProps) {
                                 </div>
                             </CardContent>
                         </Card>
-
-                        {/* Content Card - Quill Editor */}
-                        <Card>
-                            <CardHeader>
-                                <CardTitle className="flex items-center gap-2">
-                                    <Newspaper className="h-5 w-5 text-orange-600" /> Nội dung bài viết
-                                </CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <ReactQuill
-                                    forwardedRef={quillRef}
-                                    theme="snow"
-                                    value={content}
-                                    onChange={setContent}
-                                    modules={modules}
-                                    formats={formats}
-                                    placeholder="Viết nội dung bài viết tại đây..."
-                                />
-                                <p className="text-xs text-slate-400 mt-2">
-                                    Sử dụng toolbar để định dạng văn bản. Bấm nút hình ảnh trên toolbar để chèn ảnh.
-                                </p>
-                            </CardContent>
-                        </Card>
                     </div>
 
                     {/* RIGHT COLUMN: Media & Settings */}
@@ -509,6 +503,31 @@ export default function AdminNewsCreate({ editId }: AdminNewsCreateProps) {
                                         </Button>
                                     </a>
                                 )}
+                            </CardContent>
+                        </Card>
+                    </div>
+
+                    {/* FULL WIDTH: Content Editor */}
+                    <div className="lg:col-span-12">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="flex items-center gap-2">
+                                    <Newspaper className="h-5 w-5 text-orange-600" /> Nội dung bài viết
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <ReactQuill
+                                    forwardedRef={quillRef}
+                                    theme="snow"
+                                    value={content}
+                                    onChange={setContent}
+                                    modules={modules}
+                                    formats={formats}
+                                    placeholder="Viết nội dung bài viết tại đây..."
+                                />
+                                <p className="text-xs text-slate-400 mt-2">
+                                    Sử dụng toolbar để định dạng văn bản. Bấm nút hình ảnh trên toolbar để chèn ảnh.
+                                </p>
                             </CardContent>
                         </Card>
                     </div>
