@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { sendContactEmail } from "@/actions/contact";
+import { createClient } from "@/lib/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import {
@@ -40,22 +40,28 @@ export default function ContactForm() {
         },
     });
 
+    const supabase = createClient();
+
     async function onSubmit(data: FormValues) {
         setIsLoading(true);
         try {
-            const response = await sendContactEmail(data);
+            const { data: response, error } = await supabase.functions.invoke('contact-email', {
+                body: data
+            });
 
-            if (response.success) {
+            if (error) throw error;
+
+            if (response?.success) {
                 toast({
                     title: "Thành công!",
-                    description: response.message,
+                    description: response.message || "Gửi yêu cầu thành công!",
                     variant: "default",
                 });
                 form.reset();
             } else {
                 toast({
                     title: "Lỗi!",
-                    description: response.message,
+                    description: response?.message || "Có lỗi xảy ra.",
                     variant: "destructive",
                 });
             }
