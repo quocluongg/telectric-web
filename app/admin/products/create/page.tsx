@@ -1,5 +1,5 @@
 import React from 'react'
-import CreateProductPage from '@/pages/Admin/Products/Create'
+import CreateProductPage from '@/views/Admin/Products/Create'
 
 const page = () => {
     return (

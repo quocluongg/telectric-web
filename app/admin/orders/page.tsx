@@ -1,4 +1,4 @@
-import OrderListPage from "@/pages/Admin/Orders/List";
+import OrderListPage from "@/views/Admin/Orders/List";
 
 export default async function Page({
     searchParams,

@@ -1,4 +1,4 @@
-import AdminProductsPage from "@/pages/Admin/Products/List";
+import AdminProductsPage from "@/views/Admin/Products/List";
 
 export default async function Page({
     searchParams,

@@ -1,4 +1,4 @@
-import ContactPage from "@/pages/Contact/ContactPage";
+import ContactPage from "@/views/Contact/ContactPage";
 
 export const metadata = {
     title: "Liên hệ | Đồng Hồ Đo",

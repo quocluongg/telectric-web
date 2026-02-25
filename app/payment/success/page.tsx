@@ -1,4 +1,4 @@
-import PaymentSuccessPage from "@/pages/Payment/Success";
+import PaymentSuccessPage from "@/views/Payment/Success";
 
 export default function Page() {
     return <PaymentSuccessPage />;

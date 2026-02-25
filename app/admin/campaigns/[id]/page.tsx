@@ -1,4 +1,4 @@
-import CampaignDetailPage from "@/pages/Admin/Campaigns/Detail";
+import CampaignDetailPage from "@/views/Admin/Campaigns/Detail";
 
 export default async function Page({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;

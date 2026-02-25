@@ -1,4 +1,4 @@
-import SignUpSuccessPage from "@/pages/Auth/SignUpSuccess";
+import SignUpSuccessPage from "@/views/Auth/SignUpSuccess";
 
 export default function Page() {
   return (

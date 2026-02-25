@@ -1,4 +1,4 @@
-import OrdersPage from "@/pages/Account/Orders"
+import OrdersPage from "@/views/Account/Orders"
 
 const page = () => {
     return (

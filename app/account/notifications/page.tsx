@@ -1,4 +1,4 @@
-import NotificationsPage from "@/pages/Account/Notifications"
+import NotificationsPage from "@/views/Account/Notifications"
 
 const page = () => {
     return (

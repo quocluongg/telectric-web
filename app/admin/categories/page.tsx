@@ -1,4 +1,4 @@
-import AdminCategoriesPage from "@/pages/Admin/Categories";
+import AdminCategoriesPage from "@/views/Admin/Categories";
 
 export default function Page() {
     return <AdminCategoriesPage />;

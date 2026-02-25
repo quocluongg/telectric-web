@@ -1,4 +1,4 @@
-import AdminWarrantyCheckPage from "@/pages/Admin/WarrantyCheck";
+import AdminWarrantyCheckPage from "@/views/Admin/WarrantyCheck";
 
 export default function Page() {
     return <AdminWarrantyCheckPage />;

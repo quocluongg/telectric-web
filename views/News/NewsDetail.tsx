@@ -6,12 +6,23 @@ import Image from "next/image";
 import { Calendar, ArrowLeft, Newspaper, TrendingUp } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 
+// 1. Định nghĩa lại Type cho bài viết liên quan (chỉ cần các trường cần thiết)
+interface RelatedArticleMinimal {
+    id: string | number;
+    title: string;
+    slug: string;
+    thumbnail?: string | null;
+    published_at?: string | null;
+}
+
 interface NewsDetailPageProps {
     article: News;
-    relatedArticles: News[];
+    // 2. Cho phép relatedArticles nhận vào kiểu News hoặc bản rút gọn
+    relatedArticles: (News | RelatedArticleMinimal)[];
 }
 
 export default function NewsDetailPage({ article, relatedArticles }: NewsDetailPageProps) {
+    // ... Giữ nguyên phần logic bên dưới ...
     const formattedDate = article.published_at
         ? new Date(article.published_at).toLocaleDateString("vi-VN", {
             weekday: "long",
@@ -23,13 +34,10 @@ export default function NewsDetailPage({ article, relatedArticles }: NewsDetailP
 
     return (
         <div className="bg-gray-50 dark:bg-[#0a0d14] min-h-screen">
-
-
             <div className="container mx-auto max-w-7xl px-4 py-8">
                 <div className="flex flex-col lg:flex-row gap-8">
                     {/* Main Content */}
                     <article className="flex-1">
-                        {/* Back link */}
                         <Link
                             href="/news"
                             className="inline-flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 hover:text-electric-orange transition-colors mb-6"
@@ -40,12 +48,10 @@ export default function NewsDetailPage({ article, relatedArticles }: NewsDetailP
 
                         <Card className="bg-white dark:bg-[#1e2330] border-slate-200 dark:border-slate-800 overflow-hidden">
                             <CardContent className="p-6 sm:p-8">
-                                {/* Title */}
                                 <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight mb-4 leading-tight">
                                     {article.title}
                                 </h1>
 
-                                {/* Date */}
                                 {formattedDate && (
                                     <div className="flex items-center gap-2 text-sm text-slate-400 dark:text-slate-500 mb-6">
                                         <Calendar size={15} />
@@ -53,10 +59,8 @@ export default function NewsDetailPage({ article, relatedArticles }: NewsDetailP
                                     </div>
                                 )}
 
-                                {/* Divider */}
                                 <div className="w-16 h-1 bg-electric-orange rounded-full mb-6" />
 
-                                {/* Article Content Styles */}
                                 <style>{`
                                     .article-body {
                                         color: #475569;
@@ -69,23 +73,11 @@ export default function NewsDetailPage({ article, relatedArticles }: NewsDetailP
                                     .dark .article-body {
                                         color: #94a3b8;
                                     }
-                                    
-                                    /* Center text content */
-                                    .article-body > p, 
-                                    .article-body > h1, 
-                                    .article-body > h2, 
-                                    .article-body > h3, 
-                                    .article-body > h4, 
-                                    .article-body > h5, 
-                                    .article-body > h6, 
-                                    .article-body > ul, 
-                                    .article-body > ol, 
-                                    .article-body > blockquote {
+                                    .article-body > p, .article-body > h1, .article-body > h2, .article-body > h3, .article-body > h4, .article-body > h5, .article-body > h6, .article-body > ul, .article-body > ol, .article-body > blockquote {
                                         max-width: 65ch;
                                         margin-left: auto;
                                         margin-right: auto;
                                     }
-
                                     .article-body img {
                                         max-width: 100%;
                                         height: auto;
@@ -95,102 +87,8 @@ export default function NewsDetailPage({ article, relatedArticles }: NewsDetailP
                                         box-shadow: 0 4px 12px rgba(0,0,0,0.08);
                                         object-fit: contain;
                                     }
-                                    
-                                    .article-body p {
-                                        margin-bottom: 20px;
-                                    }
-                                    
-                                    .article-body h1, .article-body h2, .article-body h3, .article-body h4 {
-                                        font-weight: 700;
-                                        margin-top: 40px;
-                                        margin-bottom: 16px;
-                                        letter-spacing: -0.01em;
-                                        line-height: 1.3;
-                                    }
-                                    .article-body h1 { font-size: 1.8em; }
-                                    .article-body h2 { font-size: 1.5em; }
-                                    .article-body h3 { font-size: 1.25em; }
-                                    .article-body h4 { font-size: 1.1em; }
-                                    
-                                    .dark .article-body h1,
-                                    .dark .article-body h2,
-                                    .dark .article-body h3,
-                                    .dark .article-body h4 {
-                                        color: #f1f5f9;
-                                    }
-                                    
-                                    .article-body a {
-                                        color: #f97316;
-                                        text-decoration: none;
-                                        font-weight: 500;
-                                    }
-                                    .article-body a:hover {
-                                        text-decoration: underline;
-                                    }
-                                    
-                                    .article-body strong, .article-body b {
-                                        color: #1e293b;
-                                        font-weight: 600;
-                                    }
-                                    .dark .article-body strong, .dark .article-body b {
-                                        color: #f1f5f9;
-                                    }
-                                    
-                                    .article-body ul, .article-body ol {
-                                        padding-left: 20px;
-                                        margin-bottom: 20px;
-                                    }
-                                    .article-body ul { list-style: disc inside; }
-                                    .article-body ol { list-style: decimal inside; }
-                                    .article-body li {
-                                        margin-bottom: 8px;
-                                    }
-                                    
-                                    .article-body blockquote {
-                                        border-left: 4px solid #f97316;
-                                        padding: 16px 24px;
-                                        margin-top: 32px;
-                                        margin-bottom: 32px;
-                                        background: #f8fafc;
-                                        border-radius: 0 12px 12px 0;
-                                        color: #475569;
-                                        font-style: italic;
-                                        font-size: 1.1em;
-                                    }
-                                    .dark .article-body blockquote {
-                                        background: #1e293b;
-                                        color: #94a3b8;
-                                    }
-                                    
-                                    .article-body pre {
-                                        max-width: 65ch;
-                                        margin-left: auto;
-                                        margin-right: auto;
-                                        background: #1e293b;
-                                        color: #e2e8f0;
-                                        padding: 20px;
-                                        border-radius: 12px;
-                                        overflow-x: auto;
-                                        margin-top: 24px;
-                                        margin-bottom: 24px;
-                                        font-size: 14px;
-                                        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-                                    }
-                                    .article-body code {
-                                        background: #f1f5f9;
-                                        padding: 3px 6px;
-                                        border-radius: 6px;
-                                        font-size: 0.9em;
-                                        color: #ef4444;
-                                        font-weight: 500;
-                                    }
-                                    .dark .article-body code {
-                                        background: #334155;
-                                        color: #fca5a5;
-                                    }
                                 `}</style>
 
-                                {/* Article Body */}
                                 <div
                                     className="article-body"
                                     dangerouslySetInnerHTML={{ __html: article.content || "" }}
@@ -216,7 +114,7 @@ export default function NewsDetailPage({ article, relatedArticles }: NewsDetailP
                                 ) : (
                                     <div className="space-y-4">
                                         {relatedArticles.map((a) => (
-                                            <SidebarArticle key={a.id} article={a} />
+                                            <SidebarArticle key={a.id} article={a as any} />
                                         ))}
                                     </div>
                                 )}
@@ -230,7 +128,8 @@ export default function NewsDetailPage({ article, relatedArticles }: NewsDetailP
 }
 
 /* ─── Sidebar Article ─── */
-function SidebarArticle({ article }: { article: News }) {
+// Sửa Type ở đây để nhận vào kiểu News hoặc rút gọn
+function SidebarArticle({ article }: { article: News | RelatedArticleMinimal }) {
     const formattedDate = article.published_at
         ? new Date(article.published_at).toLocaleDateString("vi-VN", {
             day: "2-digit",

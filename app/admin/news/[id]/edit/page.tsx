@@ -1,4 +1,4 @@
-import AdminNewsCreate from "@/pages/Admin/News/Create";
+import AdminNewsCreate from "@/views/Admin/News/Create";
 
 // This page reuses the same form component, but loads the existing article data
 export default async function Page({

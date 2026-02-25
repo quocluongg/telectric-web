@@ -1,4 +1,4 @@
-import AuthErrorPage from "@/pages/Auth/Error";
+import AuthErrorPage from "@/views/Auth/Error";
 
 export default function Page({
   searchParams,

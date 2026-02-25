@@ -1,5 +1,5 @@
 import { Metadata } from "next"
-import BrandPage from "@/pages/Brand"
+import BrandPage from "@/views/Brand"
 import DefaultLayout from "@/components/layout/DefaultLayout"
 
 export const metadata: Metadata = {

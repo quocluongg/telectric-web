@@ -1,4 +1,4 @@
-import AdminUsersPage from "@/pages/Admin/Users";
+import AdminUsersPage from "@/views/Admin/Users";
 
 export default function Page() {
     return <AdminUsersPage />;

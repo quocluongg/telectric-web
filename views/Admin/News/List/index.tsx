@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
-import NewsTable from "@/pages/Admin/News/List/news-table";
+import NewsTable from "@/views/Admin/News/List/news-table";
 
 export default async function AdminNewsPage({
     searchParams,

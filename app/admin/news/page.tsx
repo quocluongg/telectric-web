@@ -1,4 +1,4 @@
-import AdminNewsPage from "@/pages/Admin/News/List";
+import AdminNewsPage from "@/views/Admin/News/List";
 
 export default async function Page({
     searchParams,
