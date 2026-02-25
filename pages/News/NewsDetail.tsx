@@ -12,6 +12,7 @@ interface NewsDetailPageProps {
 }
 
 export default function NewsDetailPage({ article, relatedArticles }: NewsDetailPageProps) {
+    if (!article) return null;
     const formattedDate = article.published_at
         ? new Date(article.published_at).toLocaleDateString("vi-VN", {
             weekday: "long",
