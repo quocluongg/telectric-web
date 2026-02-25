@@ -3,9 +3,13 @@ import { Inter, Outfit } from "next/font/google";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import "./globals.css";
 
-const defaultUrl = process.env.VERCEL_URL
-  ? `https://${process.env.VERCEL_URL}`
-  : "http://localhost:3000";
+const defaultUrl = process.env.NEXT_PUBLIC_SITE_URL
+  ? process.env.NEXT_PUBLIC_SITE_URL
+  : process.env.VERCEL_PROJECT_PRODUCTION_URL
+    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+    : process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
+      : "https://telectric.vn";
 
 export const metadata: Metadata = {
   metadataBase: new URL(defaultUrl),
@@ -16,11 +20,13 @@ export const metadata: Metadata = {
     description: "High-precision measuring instruments for industrial electrical systems.",
     type: "website",
     siteName: "TLECTRIC",
+    images: ["/opengraph-image.png"],
   },
   twitter: {
     card: "summary_large_image",
     title: "TLECTRIC - Industrial Electrical Equipment",
     description: "High-precision measuring instruments for industrial electrical systems.",
+    images: ["/opengraph-image.png"],
   },
 };
 
