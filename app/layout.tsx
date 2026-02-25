@@ -11,6 +11,17 @@ export const metadata: Metadata = {
   metadataBase: new URL(defaultUrl),
   title: "TLECTRIC - Industrial Electrical Equipment",
   description: "High-precision measuring instruments for industrial electrical systems.",
+  openGraph: {
+    title: "TLECTRIC - Industrial Electrical Equipment",
+    description: "High-precision measuring instruments for industrial electrical systems.",
+    type: "website",
+    siteName: "TLECTRIC",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "TLECTRIC - Industrial Electrical Equipment",
+    description: "High-precision measuring instruments for industrial electrical systems.",
+  },
 };
 
 const inter = Inter({

@@ -7,6 +7,18 @@ export const metadata: Metadata = {
     title: "Bài Viết | TELECTRIC - Điểm Tựa Kỹ Thuật",
     description:
         "Chia sẻ kiến thức, kinh nghiệm sử dụng thiết bị đo điện. Cập nhật tin tức mới nhất từ TELECTRIC.",
+    openGraph: {
+        title: "Bài Viết | TELECTRIC - Điểm Tựa Kỹ Thuật",
+        description:
+            "Chia sẻ kiến thức, kinh nghiệm sử dụng thiết bị đo điện. Cập nhật tin tức mới nhất từ TELECTRIC.",
+        type: "website",
+    },
+    twitter: {
+        card: "summary_large_image",
+        title: "Bài Viết | TELECTRIC - Điểm Tựa Kỹ Thuật",
+        description:
+            "Chia sẻ kiến thức, kinh nghiệm sử dụng thiết bị đo điện. Cập nhật tin tức mới nhất từ TELECTRIC.",
+    },
 };
 
 export default async function Page() {
