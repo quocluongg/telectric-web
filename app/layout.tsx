@@ -13,20 +13,20 @@ const defaultUrl = process.env.NEXT_PUBLIC_SITE_URL
 
 export const metadata: Metadata = {
   metadataBase: new URL(defaultUrl),
-  title: "TLECTRIC - Industrial Electrical Equipment",
-  description: "High-precision measuring instruments for industrial electrical systems.",
+  title: "TLECTRIC - Chuyên dụng cụ đo lường chính hãng",
+  description: "Chuyên cung cấp các loại dụng cụ đo lường điện chính hãng, giá tốt nhất thị trường.",
   openGraph: {
-    title: "TLECTRIC - Industrial Electrical Equipment",
-    description: "High-precision measuring instruments for industrial electrical systems.",
+    title: "TLECTRIC - Chuyên dụng cụ đo lường chính hãng",
+    description: "Chuyên cung cấp các loại dụng cụ đo lường điện chính hãng, giá tốt nhất thị trường.",
     type: "website",
     siteName: "TLECTRIC",
-    images: ["/opengraph-image.png"],
+    images: ["/banner.jpg"],
   },
   twitter: {
     card: "summary_large_image",
-    title: "TLECTRIC - Industrial Electrical Equipment",
-    description: "High-precision measuring instruments for industrial electrical systems.",
-    images: ["/opengraph-image.png"],
+    title: "TLECTRIC - Chuyên dụng cụ đo lường chính hãng",
+    description: "Chuyên cung cấp các loại dụng cụ đo lường điện chính hãng, giá tốt nhất thị trường.",
+    images: ["/banner.jpg"],
   },
 };
 
