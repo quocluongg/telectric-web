@@ -1,6 +1,6 @@
 import ProductDetailPage from "@/views/Admin/Products/Detail";
 import { Metadata } from "next";
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@supabase/supabase-js";
 
 interface PageProps {
     params: Promise<{ id: string }>;
@@ -8,7 +8,10 @@ interface PageProps {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
     const { id } = await params;
-    const supabase = await createClient();
+    const supabase = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!
+    );
 
     const { data: product } = await supabase
         .from("products")
