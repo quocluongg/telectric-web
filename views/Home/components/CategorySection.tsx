@@ -17,8 +17,8 @@ interface BrandInfo { name: string; logoUrl?: string | null; }
 interface CategorySectionProps {
     categoryName: string;
     categorySlug: string;
-    accentColor?: string;     // Tailwind bg class e.g. "bg-red-600"
-    accentBorderColor?: string; // Tailwind border class e.g. "border-red-600"
+    accentColor?: string;     // Tailwind bg class e.g. "bg-electric-orange"
+    accentBorderColor?: string; // Tailwind border class e.g. "border-electric-orange"
     icon?: React.ReactNode;
 }
 
@@ -29,69 +29,68 @@ function pct(price: number | null, orig: number | null) {
     return Math.round(((orig - price) / orig) * 100);
 }
 
-/* ─── Classic Product Card ─── */
 function ProductCard({ p }: { p: Product }) {
     const disc = pct(p.price, p.original_price);
 
     return (
-        <div className="group relative flex flex-col bg-white border border-slate-200 rounded-xl hover:border-slate-300 hover:shadow-lg transition-all duration-300 overflow-hidden">
+        <div className="group relative flex flex-col bg-white dark:bg-[#1e2330] border border-slate-200 dark:border-slate-700/50 rounded-xl hover:border-slate-300 dark:hover:border-slate-600 hover:shadow-lg dark:shadow-none dark:hover:shadow-[0_8px_30px_rgb(0,0,0,0.5)] transition-all duration-300 overflow-hidden">
 
             <Link href={`/products/${p.id}`} className="absolute inset-0 z-10">
                 <span className="sr-only">View {p.name}</span>
             </Link>
 
-            {/* Yellow Circle Discount Badge */}
+            {/* Discount Badge */}
             {disc && (
-                <div className="absolute top-2 right-2 z-20 w-9 h-9 bg-[#ffc107] text-[#333] font-bold rounded-full flex items-center justify-center shadow-sm">
+                <div className="absolute top-2 right-2 z-20 px-2 py-1 bg-red-500 text-white font-bold rounded flex items-center justify-center shadow-sm">
                     <span className="text-[11px] leading-none">-{disc}%</span>
                 </div>
             )}
 
             {/* Fixed-height Image Area */}
-            <div className="relative w-full h-[180px] flex-shrink-0 overflow-hidden bg-[#f8f9fa]">
+            <div className="relative w-full h-[180px] flex-shrink-0 overflow-hidden bg-[#f8f9fa] dark:bg-[#151924]">
                 {p.thumbnail ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
                         src={p.thumbnail}
                         alt={p.name}
-                        className="absolute inset-0 w-full h-full object-contain p-3 group-hover:scale-105 transition-transform duration-500"
+                        className="absolute inset-0 w-full h-full object-contain mix-blend-multiply dark:mix-blend-normal p-3 group-hover:scale-105 transition-transform duration-500"
                     />
                 ) : (
                     <div className="absolute inset-0 flex items-center justify-center">
-                        <Zap className="w-12 h-12 text-slate-200" />
+                        <Zap className="w-12 h-12 text-slate-200 dark:text-slate-700" />
                     </div>
                 )}
             </div>
 
             {/* Content Area */}
-            <div className="p-3 flex flex-col gap-1 flex-1 bg-white">
+            <div className="p-3 flex flex-col gap-1 flex-1 bg-white dark:bg-[#1e2330]">
                 {/* Brand Tag */}
                 {p.brand && (
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">
+                    <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest leading-none">
                         {p.brand}
                     </span>
                 )}
 
                 {/* Title */}
-                <h3 className="text-[13px] text-[#333] font-bold leading-snug line-clamp-2 h-[36px] group-hover:text-[#d32f2f] transition-colors mt-0.5">
+                <h3 className="text-[13px] text-slate-800 dark:text-slate-200 font-bold leading-snug line-clamp-2 h-[36px] group-hover:text-electric-orange dark:group-hover:text-electric-orange transition-colors mt-0.5">
                     {p.name}
                 </h3>
 
                 {/* Price */}
-                <div className="mt-auto pt-2 flex items-center gap-2 flex-wrap">
+                <div className="mt-auto pt-2 flex items-center gap-2 flex-wrap border-t border-slate-100 dark:border-slate-800">
                     {p.price ? (
                         <>
-                            <span className="font-bold text-[15px] text-[#d32f2f] leading-none">
+                            <span className="font-bold text-[15px] text-red-600 dark:text-red-500 leading-none">
                                 {fmt(p.price)}
                             </span>
                             {p.original_price && p.original_price > p.price && (
-                                <span className="text-[12px] text-slate-400 line-through leading-none">
+                                <span className="text-[12px] text-slate-400 dark:text-slate-500 line-through leading-none">
                                     {fmt(p.original_price)}
                                 </span>
                             )}
                         </>
                     ) : (
-                        <span className="font-bold text-[15px] text-[#d32f2f]">Liên hệ</span>
+                        <span className="font-bold text-[15px] text-red-600 dark:text-red-500">Liên hệ</span>
                     )}
                 </div>
             </div>
@@ -103,8 +102,8 @@ function ProductCard({ p }: { p: Product }) {
 export function CategorySection({
     categoryName,
     categorySlug,
-    accentColor = "bg-[#e30019]",
-    accentBorderColor = "border-[#e30019]",
+    accentColor = "bg-red-600",
+    accentBorderColor = "border-red-600",
     icon,
 }: CategorySectionProps) {
     const supabase = useMemo(() => createClient(), []);
@@ -201,12 +200,12 @@ export function CategorySection({
         <section className="py-6">
             <div className="container mx-auto max-w-[1300px] px-4">
 
-                <div className="flex flex-col bg-[#f8f9fa] p-2 rounded-xl">
-                    {/* ── Donghodo Header ── */}
-                    <div className="flex flex-col md:flex-row items-stretch bg-white rounded-t-xl overflow-hidden mb-2">
+                <div className="flex flex-col bg-[#f8f9fa] dark:bg-[#151924] p-2 rounded-xl border border-slate-200/50 dark:border-white/5">
+                    {/* ── Category Header ── */}
+                    <div className="flex flex-col md:flex-row items-stretch bg-white dark:bg-[#1e2330] rounded-t-xl overflow-hidden mb-2 shadow-sm border border-slate-100 dark:border-white/5">
 
                         {/* Left Colored Name Block */}
-                        <div className={`bg-[#d32f2f] w-full md:w-auto md:min-w-[280px] flex-shrink-0 flex items-center px-4 py-3 md:py-3 rounded-tl-xl md:rounded-tr-none md:rounded-bl-none`}>
+                        <div className={`${accentColor} w-full md:w-auto md:min-w-[280px] flex-shrink-0 flex items-center px-4 py-3 md:py-3 rounded-tl-xl md:rounded-tr-none md:rounded-bl-none`}>
                             <span className="text-white mr-2 opacity-90">{icon ?? <Zap className="w-5 h-5" />}</span>
                             <h2 className="text-white font-bold text-[16px] uppercase tracking-wide leading-none">
                                 {categoryName}
@@ -214,25 +213,25 @@ export function CategorySection({
                         </div>
 
                         {/* Right Navigation Bar */}
-                        <div className="flex-1 flex flex-col md:flex-row items-start md:items-center justify-between px-4 bg-white relative">
+                        <div className="flex-1 flex flex-col md:flex-row items-start md:items-center justify-between px-4 bg-white dark:bg-[#1e2330] relative">
 
                             <div className="flex items-center gap-6 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] w-full md:w-auto h-[46px]">
                                 <button
                                     onClick={() => { setActiveSubSlug(null); setActiveBrand(null); }}
                                     className={`text-[13px] font-bold whitespace-nowrap transition-colors h-full flex items-center border-b-[2px] ${activeSubSlug === null
-                                        ? "text-[#333] border-[#5a4848]"
-                                        : "text-slate-500 border-transparent hover:text-slate-800"
+                                        ? "text-slate-800 dark:text-white border-slate-800 dark:border-white"
+                                        : "text-slate-500 dark:text-slate-400 border-transparent hover:text-slate-800 dark:hover:text-white"
                                         }`}
                                 >
-                                    Đồng hồ vạn năng
+                                    Tất cả
                                 </button>
                                 {subCategories.map(sub => (
                                     <button
                                         key={sub.id}
                                         onClick={() => { setActiveSubSlug(sub.slug); setActiveBrand(null); }}
                                         className={`text-[13px] font-bold whitespace-nowrap transition-colors h-full flex items-center border-b-[2px] ${activeSubSlug === sub.slug
-                                            ? "text-[#333] border-[#5a4848]"
-                                            : "text-slate-500 border-transparent hover:text-slate-800"
+                                            ? "text-slate-800 dark:text-white border-slate-800 dark:border-white"
+                                            : "text-slate-500 dark:text-slate-400 border-transparent hover:text-slate-800 dark:hover:text-white"
                                             }`}
                                     >
                                         {sub.name}
@@ -242,7 +241,7 @@ export function CategorySection({
 
                             <Link
                                 href={`/products?category=${categorySlug}`}
-                                className={`hidden md:flex flex-shrink-0 items-center text-[13px] font-medium text-[#d32f2f] hover:underline whitespace-nowrap ml-4 transition-colors`}
+                                className={`hidden md:flex flex-shrink-0 items-center text-[13px] font-medium text-electric-orange hover:text-orange-600 dark:hover:text-orange-400 hover:underline whitespace-nowrap ml-4 transition-colors`}
                             >
                                 Xem tất cả <ChevronRight className="w-3.5 h-3.5 ml-0.5" />
                             </Link>
@@ -257,18 +256,18 @@ export function CategorySection({
 
                             {/* Brand List Filter (Donghodo style) */}
                             {brands.length > 0 && (
-                                <div className="bg-white border text-center border-slate-200 rounded-xl overflow-hidden">
+                                <div className="bg-white dark:bg-[#1e2330] border text-center border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm">
                                     <div className="flex flex-col">
                                         {brands.map((b) => (
                                             <button
                                                 key={b.name}
                                                 onClick={() => setActiveBrand(prev => prev === b.name ? null : b.name)}
-                                                className={`flex items-center justify-center p-4 transition-all group hover:bg-slate-50 border-b border-slate-100 last:border-b-0 ${activeBrand === b.name ? 'bg-slate-50 opacity-80' : ''}`}
+                                                className={`flex items-center justify-center p-4 transition-all group hover:bg-slate-50 dark:hover:bg-[#2a3040] border-b border-slate-100 dark:border-slate-800 last:border-b-0 ${activeBrand === b.name ? 'bg-slate-50 dark:bg-[#2a3040] opacity-100' : 'opacity-80'}`}
                                             >
                                                 {b.logoUrl ? (
-                                                    <img src={b.logoUrl} alt={b.name} className="h-6 object-contain mix-blend-multiply" />
+                                                    <img src={b.logoUrl} alt={b.name} className="h-6 object-contain mix-blend-multiply dark:mix-blend-normal" />
                                                 ) : (
-                                                    <span className={`font-black text-[18px] italic uppercase ${activeBrand === b.name ? 'text-[#d32f2f]' : 'text-[#1a237e]'}`}>{b.name}</span>
+                                                    <span className={`font-black text-[18px] italic uppercase ${activeBrand === b.name ? 'text-electric-orange' : 'text-indigo-900 dark:text-indigo-300'}`}>{b.name}</span>
                                                 )}
                                             </button>
                                         ))}
@@ -277,9 +276,9 @@ export function CategorySection({
                             )}
 
                             {/* Classic Vertical Banner */}
-                            <div className="hidden xl:flex flex-1 min-h-[200px] p-5 flex-col items-center relative overflow-hidden text-center rounded-xl group cursor-pointer shadow-sm border border-slate-200/50">
+                            <div className="hidden xl:flex flex-1 min-h-[200px] p-5 flex-col items-center relative overflow-hidden text-center rounded-xl group cursor-pointer shadow-sm border border-slate-200/50 dark:border-white/5">
                                 {/* Colorful Gradient Background */}
-                                <div className="absolute inset-0 bg-[#0f1118] z-0" />
+                                <div className="absolute inset-0 bg-[#0f1118] dark:bg-black z-0" />
                                 <div className={`absolute top-0 right-0 w-3/4 h-3/4 ${accentColor} opacity-20 blur-[80px] z-0 rounded-full`} />
                                 <div className="absolute bottom-0 left-0 w-3/4 h-3/4 bg-blue-600 opacity-20 blur-[80px] z-0 rounded-full" />
 
@@ -294,22 +293,22 @@ export function CategorySection({
                         </div>
 
                         {/* Product Grid */}
-                        <div className="flex-1 min-w-0 bg-white rounded-xl p-3">
+                        <div className="flex-1 min-w-0 bg-white dark:bg-[#1e2330] rounded-xl p-3 shadow-sm border border-slate-100 dark:border-white/5">
                             {loadingProds ? (
                                 <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3">
                                     {Array.from({ length: 8 }).map((_, i) => (
-                                        <div key={i} className="bg-white border border-slate-100 rounded-xl animate-pulse h-[300px] p-2">
-                                            <div className="w-full aspect-square bg-slate-50 rounded-lg mb-2" />
+                                        <div key={i} className="bg-white dark:bg-[#1e2330] border border-slate-100 dark:border-slate-800 rounded-xl animate-pulse h-[300px] p-2">
+                                            <div className="w-full aspect-square bg-slate-50 dark:bg-slate-800 rounded-lg mb-2" />
                                             <div className="px-2 pb-2 space-y-2">
-                                                <div className="h-3 bg-slate-200 rounded w-full" />
-                                                <div className="h-3 bg-slate-200 rounded w-3/4" />
-                                                <div className="h-4 bg-slate-200 rounded w-1/2 mt-3" />
+                                                <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded w-full" />
+                                                <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded w-3/4" />
+                                                <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-1/2 mt-3" />
                                             </div>
                                         </div>
                                     ))}
                                 </div>
                             ) : products.length === 0 ? (
-                                <div className="flex items-center justify-center h-full min-h-[300px] rounded-xl text-slate-400 text-[14px]">
+                                <div className="flex items-center justify-center h-full min-h-[300px] rounded-xl text-slate-400 dark:text-slate-500 text-[14px]">
                                     Không tìm thấy sản phẩm nào.
                                 </div>
                             ) : (

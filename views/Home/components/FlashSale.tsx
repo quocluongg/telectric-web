@@ -132,31 +132,26 @@ export function FlashSale() {
                                         href={`/products/${item.product_id}`}
                                         key={item.id}
                                         className="flex-[0_0_80%] sm:flex-[0_0_45%] md:flex-[0_0_30%] lg:flex-[0_0_22%] min-w-0 flex flex-col bg-white dark:bg-[#1e2330] 
-                                        border-2 border-slate-200 dark:border-slate-700 
-                                        transition-all duration-200 group relative
-                                        hover:-translate-y-1 hover:-translate-x-1
-                                        hover:border-red-500 hover:shadow-[5px_5px_0px_#ef4444] dark:hover:shadow-[5px_5px_0px_#991b1b]"
+                                        border border-slate-200 dark:border-slate-700/50 rounded-xl
+                                        transition-all duration-300 group relative
+                                        hover:-translate-y-1
+                                        hover:border-electric-orange dark:hover:border-electric-orange hover:shadow-lg dark:hover:shadow-[0_8px_30px_rgb(0,0,0,0.5)] overflow-hidden"
                                     >
                                         {/* Sharp Discount Ribbon */}
                                         {discountPercent > 0 && (
-                                            <div className="absolute top-2 -right-2 z-10">
-                                                <div className="bg-red-500 text-white text-[11px] font-black px-2 py-1 shadow-sm flex items-center gap-0.5">
-                                                    <span>GIẢM</span>
-                                                    <span>{discountPercent}%</span>
-                                                </div>
-                                                {/* Fold effect */}
-                                                <div className="w-0 h-0 border-t-[8px] border-t-red-700 border-r-[8px] border-r-transparent absolute -bottom-[8px] right-0"></div>
+                                            <div className="absolute top-2 right-2 z-10 px-2 py-1 bg-red-500 text-white font-bold rounded flex items-center justify-center shadow-sm">
+                                                <span className="text-[11px] leading-none">-{discountPercent}%</span>
                                             </div>
                                         )}
 
                                         {/* Thumbnail */}
-                                        <div className="aspect-square relative overflow-hidden bg-white border-b-2 border-slate-100 dark:border-slate-800">
+                                        <div className="aspect-square relative overflow-hidden bg-white dark:bg-[#151924] border-b border-slate-100 dark:border-slate-800/50">
                                             {item.products?.thumbnail ? (
                                                 // eslint-disable-next-line @next/next/no-img-element
                                                 <img
                                                     src={item.products.thumbnail}
                                                     alt={item.products.name}
-                                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                                    className="w-full h-full object-contain p-4 mix-blend-multiply dark:mix-blend-normal group-hover:scale-105 transition-transform duration-500"
                                                 />
                                             ) : (
                                                 <div className="w-full h-full flex items-center justify-center bg-slate-100 dark:bg-slate-800">
@@ -168,7 +163,7 @@ export function FlashSale() {
                                         {/* Info Container */}
                                         <div className="p-3 md:p-4 flex flex-col flex-1">
                                             {/* Product Name */}
-                                            <h3 className="text-slate-800 dark:text-slate-200 text-sm font-bold line-clamp-2 h-10 mb-3 group-hover:text-red-600 transition-colors leading-snug">
+                                            <h3 className="text-slate-800 dark:text-slate-200 text-sm font-bold line-clamp-2 h-10 mb-3 group-hover:text-electric-orange dark:group-hover:text-electric-orange transition-colors leading-snug">
                                                 {item.products?.name}
                                             </h3>
 
@@ -195,23 +190,23 @@ export function FlashSale() {
                                                 </div>
                                             </div>
 
-                                            {/* Industrial Caution Strip Progress Bar */}
-                                            <div className="mt-4 flex flex-col gap-1.5 p-1 mb-1">
-                                                <div className="flex justify-between items-center">
-                                                    <span className="text-[10px] font-black text-slate-600 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1">
-                                                        <Zap className="w-3 h-3 text-red-500 fill-red-500" /> ĐÃ BÁN: {soldCount}
+                                            {/* Clean Progress Bar */}
+                                            <div className="mt-4 flex flex-col gap-1.5 mb-1 bg-slate-50 dark:bg-slate-800/50 p-2 rounded-lg border border-slate-100 dark:border-slate-800">
+                                                <div className="flex justify-between items-center px-1">
+                                                    <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                                                        <Zap className="w-3 h-3 text-electric-orange fill-electric-orange" /> BÁN {soldCount}
                                                     </span>
-                                                    <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 font-mono">
-                                                        TỒN: {stockQty - soldCount}
+                                                    <span className="text-[10px] font-medium text-slate-400 dark:text-slate-500">
+                                                        CÒN: {stockQty - soldCount}
                                                     </span>
                                                 </div>
 
-                                                {/* Caution Strip Container - Skewed for dynamic industrial feel */}
-                                                <div className="w-full h-2.5 bg-slate-200 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 relative overflow-hidden skew-x-[-15deg] mx-1">
-                                                    {/* Striped Fill */}
+                                                {/* Progress Container */}
+                                                <div className="w-full h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden mx-auto">
+                                                    {/* Fill */}
                                                     <div
-                                                        className="absolute inset-y-0 left-0 bg-red-500 dark:bg-red-600 bg-[repeating-linear-gradient(45deg,transparent,transparent_4px,rgba(0,0,0,0.15)_4px,rgba(0,0,0,0.15)_8px)] shadow-[inset_0_1px_2px_rgba(255,255,255,0.3)]"
-                                                        style={{ width: `${soldPercent}%` }}
+                                                        className="h-full bg-gradient-to-r from-orange-400 to-red-500 rounded-full"
+                                                        style={{ width: `${Math.max(soldPercent, 5)}%` }} // Ensure minimum bar visibility
                                                     />
                                                 </div>
                                             </div>
