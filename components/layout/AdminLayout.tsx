@@ -11,15 +11,29 @@ import {
     Users,
     Megaphone,
     LogOut,
-    Settings,
-    ShieldCheck, // Icon cho Bảo hành
-    SearchCheck,  // Icon cho Tra cứu
-    Zap // Icon Siêu sale
+    ShieldCheck,
+    SearchCheck,
+    Zap,
+    Menu,
+    Sun,
+    Moon
 } from 'lucide-react'
+import {
+    Sheet,
+    SheetContent,
+    SheetTrigger,
+} from "@/components/ui/sheet"
+import { useTheme } from "next-themes"
 
 const AdminLayout = ({ children }: { children: React.ReactNode }) => {
-
     const pathname = usePathname()
+    const { theme, setTheme } = useTheme()
+    const [mounted, setMounted] = React.useState(false)
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false)
+
+    React.useEffect(() => {
+        setMounted(true)
+    }, [])
 
     const menuItems = [
         { path: '/admin', icon: <LayoutDashboard size={20} />, label: 'Dashboard' },
@@ -35,60 +49,89 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
         { path: '/admin/news', icon: <Megaphone size={20} />, label: 'Bài viết' },
     ]
 
+    const SidebarContent = () => (
+        <>
+            <div className="p-6 border-b border-gray-100 dark:border-white/5">
+                <Link href="/admin" onClick={() => setIsMobileMenuOpen(false)} className="text-xl font-bold text-orange-600 tracking-tight flex items-center gap-2">
+                    <div className="w-8 h-8 bg-orange-600 rounded flex items-center justify-center text-white">T</div>
+                    TLECTRIC
+                </Link>
+            </div>
+
+            <nav className="flex-1 p-4 space-y-1 overflow-y-auto mt-2">
+                {menuItems.map((item) => {
+                    const isActive = item.path === '/admin'
+                        ? pathname === '/admin'
+                        : pathname?.startsWith(item.path)
+
+                    return (
+                        <Link
+                            key={item.path}
+                            href={item.path}
+                            onClick={() => setIsMobileMenuOpen(false)}
+                            className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${isActive
+                                ? 'bg-orange-600 text-white shadow-lg shadow-orange-200 dark:shadow-none font-semibold'
+                                : 'text-slate-500 dark:text-slate-400 hover:bg-orange-50 dark:hover:bg-slate-800/80 hover:text-orange-600 dark:hover:text-electric-orange font-medium'
+                                }`}
+                        >
+                            {item.icon}
+                            <span className="text-sm">{item.label}</span>
+                        </Link>
+                    )
+                })}
+            </nav>
+
+            <div className="p-4 border-t border-gray-100 dark:border-white/5">
+                <button className="flex items-center gap-3 px-4 py-3 w-full text-slate-500 dark:text-slate-400 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-xl transition-colors text-sm font-medium">
+                    <LogOut size={20} />
+                    <span>Đăng xuất</span>
+                </button>
+            </div>
+        </>
+    )
+
     return (
-        <div className="flex min-h-screen bg-gray-50 dark:bg-slate-900 transition-colors duration-300">
-            {/* SIDEBAR */}
-            <aside className="w-64 bg-white dark:bg-slate-800 border-r border-gray-200 dark:border-gray-700 flex flex-col fixed h-full z-20">
-                <div className="p-6 border-b border-gray-100 dark:border-gray-700">
-                    <Link href="/admin/dashboard" className="text-xl font-bold text-orange-600 tracking-tight flex items-center gap-2">
-                        <div className="w-8 h-8 bg-orange-600 rounded flex items-center justify-center text-white">T</div>
-                        TLECTRIC
-                    </Link>
-                </div>
+        <div className="flex min-h-screen bg-slate-50 dark:bg-[#0f1219] transition-colors duration-300">
 
-                <nav className="flex-1 p-4 space-y-1 overflow-y-auto mt-4">
-                    {menuItems.map((item) => {
-                        const isActive = item.path === '/admin'
-                            ? pathname === '/admin'
-                            : pathname?.startsWith(item.path)
-
-                        return (
-                            <Link
-                                key={item.path}
-                                href={item.path}
-                                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${isActive
-                                    ? 'bg-orange-600 text-white shadow-lg shadow-orange-200 dark:shadow-none'
-                                    : 'text-slate-500 dark:text-slate-400 hover:bg-orange-50 dark:hover:bg-slate-700 hover:text-orange-600'
-                                    }`}
-                            >
-                                {item.icon}
-                                <span className="font-medium text-sm">{item.label}</span>
-                            </Link>
-                        )
-                    })}
-                </nav>
-
-                <div className="p-4 border-t border-gray-100 dark:border-gray-700">
-                    <button className="flex items-center gap-3 px-4 py-3 w-full text-slate-500 hover:text-red-500 transition-colors text-sm font-medium">
-                        <LogOut size={20} />
-                        <span>Đăng xuất</span>
-                    </button>
-                </div>
+            {/* DESKTOP SIDEBAR */}
+            <aside className="hidden lg:flex w-64 bg-white dark:bg-[#1e2330] border-r border-slate-200 dark:border-white/5 flex-col fixed h-full z-20">
+                <SidebarContent />
             </aside>
 
             {/* MAIN CONTENT AREA */}
-            <div className="flex-1 ml-64 flex flex-col">
+            <div className="flex-1 lg:ml-64 flex flex-col min-w-0">
                 {/* Header */}
-                <header className="h-16 bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-700 flex items-center justify-between px-8 sticky top-0 z-10">
-                    <div className="flex items-center gap-2">
-                        <h2 className="font-semibold text-slate-800 dark:text-white capitalize text-lg">
-                            {/* Hiển thị tiêu đề trang dựa trên path */}
+                <header className="h-16 bg-white/80 dark:bg-[#1e2330]/80 backdrop-blur-md border-b border-slate-200 dark:border-white/5 flex items-center justify-between px-4 lg:px-8 sticky top-0 z-10 w-full">
+                    <div className="flex items-center gap-3">
+                        {/* Mobile Menu Trigger */}
+                        <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+                            <SheetTrigger className="lg:hidden p-2 -ml-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg">
+                                <Menu size={20} />
+                            </SheetTrigger>
+                            <SheetContent side="left" className="p-0 w-72 bg-white dark:bg-[#1e2330] border-r-slate-200 dark:border-white/5">
+                                <SidebarContent />
+                            </SheetContent>
+                        </Sheet>
+
+                        <h2 className="font-semibold text-slate-800 dark:text-slate-100 capitalize text-lg">
                             {[...menuItems].reverse().find(item =>
                                 item.path === '/admin' ? pathname === '/admin' : pathname?.startsWith(item.path)
                             )?.label || 'Quản trị'}
                         </h2>
                     </div>
 
+                    {/* Theme Toggle */}
+                    {mounted ? (
+                        <button
+                            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                            className="p-2 text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                            aria-label="Toggle Theme"
+                        >
+                            {theme === "dark" ? <Sun size={20} className="text-electric-orange" /> : <Moon size={20} />}
+                        </button>
+                    ) : (
+                        <div className="w-9 h-9 opacity-50" />
+                    )}
                 </header>
 
                 {/* Page Content */}

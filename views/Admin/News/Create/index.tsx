@@ -292,7 +292,7 @@ export default function AdminNewsCreate({ editId }: AdminNewsCreateProps) {
     }
 
     return (
-        <div className="min-h-screen bg-slate-50/50 dark:bg-slate-900/50 pb-24">
+        <div className="min-h-screen bg-slate-50 dark:bg-[#0f1219] pb-24">
             {/* Quill CSS */}
             <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.snow.css" />
             <style>{`
@@ -359,7 +359,7 @@ export default function AdminNewsCreate({ editId }: AdminNewsCreateProps) {
                     {/* LEFT COLUMN: Main content */}
                     <div className="lg:col-span-8 space-y-6">
                         {/* Basic Info Card */}
-                        <Card>
+                        <Card className="bg-white dark:bg-[#1e2330] border-slate-200 dark:border-white/5">
                             <CardHeader>
                                 <CardTitle className="flex items-center gap-2">
                                     <Type className="h-5 w-5 text-orange-600" /> Thông tin cơ bản
@@ -376,7 +376,7 @@ export default function AdminNewsCreate({ editId }: AdminNewsCreateProps) {
                                         value={title}
                                         onChange={(e) => setTitle(e.target.value)}
                                         placeholder="Nhập tiêu đề bài viết..."
-                                        className="text-lg h-12"
+                                        className="text-lg h-12 bg-white dark:bg-[#0f1219] border-slate-200 dark:border-white/5"
                                     />
                                 </div>
 
@@ -395,6 +395,7 @@ export default function AdminNewsCreate({ editId }: AdminNewsCreateProps) {
                                                 setSlugManual(true);
                                             }}
                                             placeholder="tieu-de-bai-viet"
+                                            className="bg-white dark:bg-[#0f1219] border-slate-200 dark:border-white/5"
                                         />
                                     </div>
                                 </div>
@@ -410,6 +411,7 @@ export default function AdminNewsCreate({ editId }: AdminNewsCreateProps) {
                                         onChange={(e) => setExcerpt(e.target.value)}
                                         placeholder="Mô tả ngắn gọn nội dung bài viết..."
                                         rows={3}
+                                        className="bg-white dark:bg-[#0f1219] border-slate-200 dark:border-white/5"
                                     />
                                 </div>
                             </CardContent>
@@ -419,7 +421,7 @@ export default function AdminNewsCreate({ editId }: AdminNewsCreateProps) {
                     {/* RIGHT COLUMN: Media & Settings */}
                     <div className="lg:col-span-4 space-y-6">
                         {/* Thumbnail Card */}
-                        <Card>
+                        <Card className="bg-white dark:bg-[#1e2330] border-slate-200 dark:border-white/5">
                             <CardHeader>
                                 <CardTitle className="flex items-center gap-2 text-base">
                                     <ImageIcon className="h-4 w-4" /> Ảnh thumbnail
@@ -440,7 +442,7 @@ export default function AdminNewsCreate({ editId }: AdminNewsCreateProps) {
                                 ) : (
                                     <div
                                         onClick={() => fileInputRef.current?.click()}
-                                        className="border-2 border-dashed rounded-xl p-8 flex flex-col items-center cursor-pointer bg-slate-50 hover:bg-slate-100 dark:bg-slate-800/50 dark:hover:bg-slate-800 hover:border-orange-400 transition-colors"
+                                        className="border-2 border-dashed rounded-xl p-8 flex flex-col items-center cursor-pointer bg-slate-50 hover:bg-slate-100 dark:bg-[#0f1219] dark:hover:bg-slate-800/80 hover:border-orange-400 dark:border-white/10 dark:hover:border-orange-500 transition-colors"
                                     >
                                         <Upload className="h-8 w-8 text-slate-400 mb-2" />
                                         <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Bấm để tải ảnh</p>
@@ -462,14 +464,14 @@ export default function AdminNewsCreate({ editId }: AdminNewsCreateProps) {
                         </Card>
 
                         {/* Publish Toggle Card */}
-                        <Card>
+                        <Card className="bg-white dark:bg-[#1e2330] border-slate-200 dark:border-white/5">
                             <CardHeader>
                                 <CardTitle className="flex items-center gap-2 text-base">
                                     <Globe className="h-4 w-4" /> Trạng thái xuất bản
                                 </CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <label className="flex items-center gap-3 cursor-pointer p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700 hover:border-orange-300 transition-colors">
+                                <label className="flex items-center gap-3 cursor-pointer p-3 bg-slate-50 dark:bg-[#0f1219] rounded-lg border border-slate-200 dark:border-white/5 hover:border-orange-300 dark:hover:border-orange-500/50 transition-colors">
                                     <input
                                         type="checkbox"
                                         checked={isPublished}
@@ -497,7 +499,7 @@ export default function AdminNewsCreate({ editId }: AdminNewsCreateProps) {
 
                                 {editId && slug && (
                                     <a href={`/news/${slug}`} target="_blank" rel="noopener noreferrer" className="block mt-3">
-                                        <Button type="button" variant="outline" className="w-full gap-2" size="sm">
+                                        <Button type="button" variant="outline" className="w-full gap-2 dark:border-white/10 dark:text-slate-200 dark:hover:bg-white/5" size="sm">
                                             <Eye size={14} />
                                             Xem bài viết
                                         </Button>
@@ -509,7 +511,7 @@ export default function AdminNewsCreate({ editId }: AdminNewsCreateProps) {
 
                     {/* FULL WIDTH: Content Editor */}
                     <div className="lg:col-span-12">
-                        <Card>
+                        <Card className="bg-white dark:bg-[#1e2330] border-slate-200 dark:border-white/5">
                             <CardHeader>
                                 <CardTitle className="flex items-center gap-2">
                                     <Newspaper className="h-5 w-5 text-orange-600" /> Nội dung bài viết
@@ -533,7 +535,7 @@ export default function AdminNewsCreate({ editId }: AdminNewsCreateProps) {
                     </div>
 
                     {/* FIXED FOOTER */}
-                    <div className="fixed bottom-0 left-0 right-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-t border-slate-200 dark:border-slate-700 p-4 z-50 shadow-lg">
+                    <div className="fixed bottom-0 left-0 right-0 bg-white/80 dark:bg-[#1e2330]/80 backdrop-blur-md border-t border-slate-200 dark:border-white/5 p-4 z-[99] shadow-lg">
                         <div className="max-w-7xl mx-auto flex items-center justify-between px-6">
                             <div className="hidden md:block text-sm text-muted-foreground">
                                 Đang chỉnh sửa: <span className="font-medium text-slate-900 dark:text-white">{title || "Bài viết mới"}</span>
@@ -542,7 +544,7 @@ export default function AdminNewsCreate({ editId }: AdminNewsCreateProps) {
                                 <Button
                                     type="button"
                                     variant="outline"
-                                    className="flex-1 md:flex-none"
+                                    className="flex-1 md:flex-none dark:border-white/10 dark:text-slate-200 dark:hover:bg-white/5"
                                     onClick={() => router.push("/admin/news")}
                                 >
                                     Huỷ bỏ

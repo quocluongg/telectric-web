@@ -711,7 +711,7 @@ export function OrderTable({
     return (
         <div className="space-y-5">
             {/* ===== STAT CARDS ===== */}
-            <div className="grid grid-cols-3 lg:grid-cols-6 gap-2.5">
+            <div className="grid grid-cols-2 lg:grid-cols-6 gap-2.5">
                 {statCards.map((stat) => {
                     const isActive = activeFilter === stat.key;
                     return (
@@ -721,8 +721,8 @@ export function OrderTable({
                             className={cn(
                                 "rounded-xl p-3 text-left transition-all duration-200 border group",
                                 isActive
-                                    ? `${stat.activeBg} border-transparent shadow-lg scale-[1.02]`
-                                    : `${stat.bg} border-gray-200 hover:shadow-md hover:scale-[1.01]`
+                                    ? `${stat.activeBg} border-transparent shadow-lg scale-[1.02] dark:shadow-none`
+                                    : `${stat.bg} dark:bg-[#1e2330] border-slate-200 dark:border-white/5 hover:shadow-md hover:scale-[1.01]`
                             )}
                         >
                             <div className={cn(
@@ -733,7 +733,7 @@ export function OrderTable({
                             </div>
                             <p className={cn(
                                 "text-xl font-black",
-                                isActive ? "text-white" : "text-slate-900"
+                                isActive ? "text-white" : "text-slate-900 dark:text-slate-100"
                             )}>
                                 {stat.value}
                             </p>
@@ -749,7 +749,7 @@ export function OrderTable({
             </div>
 
             {/* ===== SEARCH BAR ===== */}
-            <div className="bg-white rounded-xl border p-3 flex flex-col sm:flex-row gap-2.5">
+            <div className="bg-white dark:bg-[#1e2330] rounded-xl border border-slate-200 dark:border-white/5 p-3 flex flex-col sm:flex-row gap-2.5">
                 <div className="flex-1 relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                     <Input
@@ -757,16 +757,16 @@ export function OrderTable({
                         value={searchInput}
                         onChange={(e) => setSearchInput(e.target.value)}
                         onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-                        className="pl-10 h-10 border-slate-200 focus-visible:ring-orange-200"
+                        className="pl-10 h-10 border-slate-200 dark:border-slate-700 bg-transparent text-slate-900 dark:text-slate-100 focus-visible:ring-orange-200"
                     />
                 </div>
                 <div className="flex gap-2">
-                    <Button onClick={handleSearch} className="bg-orange-600 hover:bg-orange-700 h-10 px-5">
+                    <Button onClick={handleSearch} className="bg-orange-600 hover:bg-orange-700 h-10 px-5 text-white flex-1 sm:flex-none">
                         <Search className="h-4 w-4 mr-1.5" /> Tìm
                     </Button>
                     <Button
                         variant="outline"
-                        className="h-10"
+                        className="h-10 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
                         onClick={() => {
                             setSearchInput("");
                             router.push("/admin/orders");
@@ -778,158 +778,160 @@ export function OrderTable({
             </div>
 
             {/* ===== TABLE ===== */}
-            <div className="bg-white rounded-xl border overflow-hidden">
-                <Table>
-                    <TableHeader>
-                        <TableRow className="bg-slate-50/80 hover:bg-slate-50/80">
-                            <TableHead className="font-bold text-slate-600 text-xs uppercase tracking-wider w-[100px]">
-                                <Hash className="h-3 w-3 inline mr-1" /> Mã đơn
-                            </TableHead>
-                            <TableHead className="font-bold text-slate-600 text-xs uppercase tracking-wider">
-                                <User className="h-3 w-3 inline mr-1" /> Khách hàng
-                            </TableHead>
-                            <TableHead className="font-bold text-slate-600 text-xs uppercase tracking-wider text-center w-[60px]">SP</TableHead>
-                            <TableHead className="font-bold text-slate-600 text-xs uppercase tracking-wider text-right">Tổng tiền</TableHead>
-                            <TableHead className="font-bold text-slate-600 text-xs uppercase tracking-wider text-center">Trạng thái</TableHead>
-                            <TableHead className="font-bold text-slate-600 text-xs uppercase tracking-wider text-center">Thanh toán</TableHead>
-                            <TableHead className="font-bold text-slate-600 text-xs uppercase tracking-wider">
-                                <Calendar className="h-3 w-3 inline mr-1" /> Ngày
-                            </TableHead>
-                            <TableHead className="w-[50px]" />
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {orders.length === 0 ? (
-                            <TableRow>
-                                <TableCell colSpan={8} className="text-center py-20">
-                                    <div className="flex flex-col items-center gap-3">
-                                        <div className="h-16 w-16 rounded-2xl bg-slate-100 flex items-center justify-center">
-                                            <ShoppingBag className="h-8 w-8 text-slate-300" />
-                                        </div>
-                                        <div>
-                                            <p className="font-semibold text-slate-500">Không có đơn hàng</p>
-                                            <p className="text-sm text-slate-400 mt-0.5">Thử thay đổi bộ lọc hoặc từ khóa</p>
-                                        </div>
-                                    </div>
-                                </TableCell>
+            <div className="bg-white dark:bg-[#1e2330] rounded-xl border border-slate-200 dark:border-white/5 overflow-hidden">
+                <div className="overflow-x-auto">
+                    <Table className="min-w-[800px]">
+                        <TableHeader>
+                            <TableRow className="bg-slate-50/80 dark:bg-slate-800/50 hover:bg-slate-50/80 dark:hover:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800">
+                                <TableHead className="font-bold text-slate-600 dark:text-slate-300 text-xs uppercase tracking-wider w-[100px]">
+                                    <Hash className="h-3 w-3 inline mr-1" /> Mã đơn
+                                </TableHead>
+                                <TableHead className="font-bold text-slate-600 dark:text-slate-300 text-xs uppercase tracking-wider min-w-[180px]">
+                                    <User className="h-3 w-3 inline mr-1" /> Khách hàng
+                                </TableHead>
+                                <TableHead className="font-bold text-slate-600 dark:text-slate-300 text-xs uppercase tracking-wider text-center w-[60px]">SP</TableHead>
+                                <TableHead className="font-bold text-slate-600 dark:text-slate-300 text-xs uppercase tracking-wider text-right min-w-[120px]">Tổng tiền</TableHead>
+                                <TableHead className="font-bold text-slate-600 dark:text-slate-300 text-xs uppercase tracking-wider text-center min-w-[140px]">Trạng thái</TableHead>
+                                <TableHead className="font-bold text-slate-600 dark:text-slate-300 text-xs uppercase tracking-wider text-center min-w-[120px]">Thanh toán</TableHead>
+                                <TableHead className="font-bold text-slate-600 dark:text-slate-300 text-xs uppercase tracking-wider min-w-[140px]">
+                                    <Calendar className="h-3 w-3 inline mr-1" /> Ngày
+                                </TableHead>
+                                <TableHead className="w-[50px]" />
                             </TableRow>
-                        ) : (
-                            orders.map((order: any) => {
-                                const payStatus = PAYMENT_STATUS_CONFIG[order.payment_status] || PAYMENT_STATUS_CONFIG.unpaid;
-                                const itemCount = order.order_items?.length || 0;
-
-                                return (
-                                    <TableRow
-                                        key={order.id}
-                                        className="hover:bg-orange-50/40 transition-colors cursor-pointer group"
-                                        onClick={() => { setDetailOrder(order); setShowDetail(true); }}
-                                    >
-                                        {/* Order ID */}
-                                        <TableCell>
-                                            <span className="font-mono text-xs font-bold text-orange-600 bg-orange-50 px-2 py-1 rounded">
-                                                #{order.id?.slice(0, 8)}
-                                            </span>
-                                        </TableCell>
-
-                                        {/* Customer */}
-                                        <TableCell>
-                                            <div>
-                                                <p className="font-semibold text-sm text-slate-900 group-hover:text-orange-700 transition-colors">
-                                                    {order.customer_name}
-                                                </p>
-                                                <p className="text-xs text-slate-400 mt-0.5 flex items-center gap-1">
-                                                    <Phone className="h-3 w-3" /> {order.customer_phone}
-                                                </p>
+                        </TableHeader>
+                        <TableBody>
+                            {orders.length === 0 ? (
+                                <TableRow>
+                                    <TableCell colSpan={8} className="text-center py-20">
+                                        <div className="flex flex-col items-center gap-3">
+                                            <div className="h-16 w-16 rounded-2xl bg-slate-100 flex items-center justify-center">
+                                                <ShoppingBag className="h-8 w-8 text-slate-300" />
                                             </div>
-                                        </TableCell>
-
-                                        {/* Item Count */}
-                                        <TableCell className="text-center">
-                                            <Badge variant="secondary" className="font-bold text-[11px] px-2 py-0.5 bg-slate-100">
-                                                {itemCount}
-                                            </Badge>
-                                        </TableCell>
-
-                                        {/* Total */}
-                                        <TableCell className="text-right">
-                                            <span className="font-bold text-sm text-slate-900">{formatVND(order.total_amount)}</span>
-                                        </TableCell>
-
-                                        {/* Status */}
-                                        <TableCell className="text-center">
-                                            <StatusBadge status={order.status} />
-                                        </TableCell>
-
-                                        {/* Payment */}
-                                        <TableCell className="text-center">
-                                            <span className={cn(
-                                                "text-[11px] font-bold px-2 py-1 rounded-full border",
-                                                payStatus.className
-                                            )}>
-                                                {payStatus.label}
-                                            </span>
-                                        </TableCell>
-
-                                        {/* Date */}
-                                        <TableCell>
                                             <div>
-                                                <p className="text-xs text-slate-600">{formatDate(order.created_at)}</p>
-                                                <p className="text-[10px] text-slate-400">{timeAgo(order.created_at)}</p>
+                                                <p className="font-semibold text-slate-500">Không có đơn hàng</p>
+                                                <p className="text-sm text-slate-400 mt-0.5">Thử thay đổi bộ lọc hoặc từ khóa</p>
                                             </div>
-                                        </TableCell>
+                                        </div>
+                                    </TableCell>
+                                </TableRow>
+                            ) : (
+                                orders.map((order: any) => {
+                                    const payStatus = PAYMENT_STATUS_CONFIG[order.payment_status] || PAYMENT_STATUS_CONFIG.unpaid;
+                                    const itemCount = order.order_items?.length || 0;
 
-                                        {/* Actions */}
-                                        <TableCell onClick={(e) => e.stopPropagation()}>
-                                            <DropdownMenu>
-                                                <DropdownMenuTrigger asChild>
-                                                    <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                        <MoreHorizontal className="h-4 w-4" />
-                                                    </Button>
-                                                </DropdownMenuTrigger>
-                                                <DropdownMenuContent align="end" className="w-48">
-                                                    <DropdownMenuItem onClick={() => { setDetailOrder(order); setShowDetail(true); }}>
-                                                        <Eye className="h-4 w-4 mr-2 text-blue-600" /> Xem chi tiết
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuSeparator />
-                                                    <DropdownMenuItem
-                                                        onClick={() => { setStatusOrder(order); setShowStatus(true); }}
-                                                        disabled={STATUS_TRANSITIONS[order.status]?.length === 0}
-                                                    >
-                                                        <RefreshCw className="h-4 w-4 mr-2 text-orange-600" /> Cập nhật trạng thái
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuSeparator />
-                                                    <DropdownMenuItem onClick={() => printBill(order)}>
-                                                        <Printer className="h-4 w-4 mr-2 text-violet-600" /> In hóa đơn
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuSeparator />
-                                                    <DropdownMenuItem
-                                                        onClick={() => {
-                                                            navigator.clipboard.writeText(order.id);
-                                                            toast({ title: "✓ Đã copy mã đơn!" });
-                                                        }}
-                                                    >
-                                                        <Copy className="h-4 w-4 mr-2 text-slate-500" /> Copy mã đơn
-                                                    </DropdownMenuItem>
-                                                </DropdownMenuContent>
-                                            </DropdownMenu>
-                                        </TableCell>
-                                    </TableRow>
-                                );
-                            })
-                        )}
-                    </TableBody>
-                </Table>
+                                    return (
+                                        <TableRow
+                                            key={order.id}
+                                            className="hover:bg-orange-50/40 transition-colors cursor-pointer group"
+                                            onClick={() => { setDetailOrder(order); setShowDetail(true); }}
+                                        >
+                                            {/* Order ID */}
+                                            <TableCell>
+                                                <span className="font-mono text-xs font-bold text-orange-600 bg-orange-50 px-2 py-1 rounded">
+                                                    #{order.id?.slice(0, 8)}
+                                                </span>
+                                            </TableCell>
+
+                                            {/* Customer */}
+                                            <TableCell>
+                                                <div>
+                                                    <p className="font-semibold text-sm text-slate-900 group-hover:text-orange-700 transition-colors">
+                                                        {order.customer_name}
+                                                    </p>
+                                                    <p className="text-xs text-slate-400 mt-0.5 flex items-center gap-1">
+                                                        <Phone className="h-3 w-3" /> {order.customer_phone}
+                                                    </p>
+                                                </div>
+                                            </TableCell>
+
+                                            {/* Item Count */}
+                                            <TableCell className="text-center">
+                                                <Badge variant="secondary" className="font-bold text-[11px] px-2 py-0.5 bg-slate-100">
+                                                    {itemCount}
+                                                </Badge>
+                                            </TableCell>
+
+                                            {/* Total */}
+                                            <TableCell className="text-right">
+                                                <span className="font-bold text-sm text-slate-900">{formatVND(order.total_amount)}</span>
+                                            </TableCell>
+
+                                            {/* Status */}
+                                            <TableCell className="text-center">
+                                                <StatusBadge status={order.status} />
+                                            </TableCell>
+
+                                            {/* Payment */}
+                                            <TableCell className="text-center">
+                                                <span className={cn(
+                                                    "text-[11px] font-bold px-2 py-1 rounded-full border",
+                                                    payStatus.className
+                                                )}>
+                                                    {payStatus.label}
+                                                </span>
+                                            </TableCell>
+
+                                            {/* Date */}
+                                            <TableCell>
+                                                <div>
+                                                    <p className="text-xs text-slate-600">{formatDate(order.created_at)}</p>
+                                                    <p className="text-[10px] text-slate-400">{timeAgo(order.created_at)}</p>
+                                                </div>
+                                            </TableCell>
+
+                                            {/* Actions */}
+                                            <TableCell onClick={(e) => e.stopPropagation()}>
+                                                <DropdownMenu>
+                                                    <DropdownMenuTrigger asChild>
+                                                        <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                            <MoreHorizontal className="h-4 w-4" />
+                                                        </Button>
+                                                    </DropdownMenuTrigger>
+                                                    <DropdownMenuContent align="end" className="w-48">
+                                                        <DropdownMenuItem onClick={() => { setDetailOrder(order); setShowDetail(true); }}>
+                                                            <Eye className="h-4 w-4 mr-2 text-blue-600" /> Xem chi tiết
+                                                        </DropdownMenuItem>
+                                                        <DropdownMenuSeparator />
+                                                        <DropdownMenuItem
+                                                            onClick={() => { setStatusOrder(order); setShowStatus(true); }}
+                                                            disabled={STATUS_TRANSITIONS[order.status]?.length === 0}
+                                                        >
+                                                            <RefreshCw className="h-4 w-4 mr-2 text-orange-600" /> Cập nhật trạng thái
+                                                        </DropdownMenuItem>
+                                                        <DropdownMenuSeparator />
+                                                        <DropdownMenuItem onClick={() => printBill(order)}>
+                                                            <Printer className="h-4 w-4 mr-2 text-violet-600" /> In hóa đơn
+                                                        </DropdownMenuItem>
+                                                        <DropdownMenuSeparator />
+                                                        <DropdownMenuItem
+                                                            onClick={() => {
+                                                                navigator.clipboard.writeText(order.id);
+                                                                toast({ title: "✓ Đã copy mã đơn!" });
+                                                            }}
+                                                        >
+                                                            <Copy className="h-4 w-4 mr-2 text-slate-500" /> Copy mã đơn
+                                                        </DropdownMenuItem>
+                                                    </DropdownMenuContent>
+                                                </DropdownMenu>
+                                            </TableCell>
+                                        </TableRow>
+                                    );
+                                })
+                            )}
+                        </TableBody>
+                    </Table>
+                </div>
             </div>
 
             {/* ===== PAGINATION ===== */}
             {totalPages > 1 && (
                 <div className="flex items-center justify-between px-1">
-                    <p className="text-sm text-slate-500">
-                        <span className="font-semibold text-slate-700">{(currentPage - 1) * pageSize + 1}</span>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">
+                        <span className="font-semibold text-slate-700 dark:text-slate-200">{(currentPage - 1) * pageSize + 1}</span>
                         {" - "}
-                        <span className="font-semibold text-slate-700">{Math.min(currentPage * pageSize, totalCount)}</span>
+                        <span className="font-semibold text-slate-700 dark:text-slate-200">{Math.min(currentPage * pageSize, totalCount)}</span>
                         {" / "}
-                        <span className="font-semibold text-slate-700">{totalCount}</span>
+                        <span className="font-semibold text-slate-700 dark:text-slate-200">{totalCount}</span>
                         {" đơn hàng"}
                     </p>
                     <div className="flex items-center gap-1.5">
@@ -937,7 +939,7 @@ export function OrderTable({
                             variant="outline" size="sm"
                             disabled={currentPage <= 1}
                             onClick={() => handlePageChange(currentPage - 1)}
-                            className="h-9 w-9 p-0"
+                            className="h-9 w-9 p-0 dark:border-slate-700 dark:text-slate-300"
                         >
                             <ChevronLeft className="h-4 w-4" />
                         </Button>
@@ -958,8 +960,8 @@ export function OrderTable({
                                     variant={currentPage === pageNum ? "default" : "outline"}
                                     size="sm"
                                     className={cn(
-                                        "w-9 h-9 p-0 text-sm font-bold",
-                                        currentPage === pageNum && "bg-orange-600 hover:bg-orange-700"
+                                        "w-9 h-9 p-0 text-sm font-bold dark:border-slate-700 dark:text-slate-300",
+                                        currentPage === pageNum && "bg-orange-600 hover:bg-orange-700 text-white dark:border-orange-600"
                                     )}
                                     onClick={() => handlePageChange(pageNum)}
                                 >
@@ -971,7 +973,7 @@ export function OrderTable({
                             variant="outline" size="sm"
                             disabled={currentPage >= totalPages}
                             onClick={() => handlePageChange(currentPage + 1)}
-                            className="h-9 w-9 p-0"
+                            className="h-9 w-9 p-0 dark:border-slate-700 dark:text-slate-300"
                         >
                             <ChevronRight className="h-4 w-4" />
                         </Button>

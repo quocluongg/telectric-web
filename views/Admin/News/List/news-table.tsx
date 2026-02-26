@@ -75,7 +75,7 @@ function NewsTableToolbar({
                             setSearchValue(e.target.value);
                             onSearch(e.target.value);
                         }}
-                        className="pl-9 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 h-10"
+                        className="pl-9 bg-slate-50 dark:bg-[#0f1219] border-slate-200 dark:border-white/5 text-slate-900 dark:text-slate-100 h-10"
                     />
                 </div>
                 {selectedCount > 0 && (
@@ -90,8 +90,8 @@ function NewsTableToolbar({
                     </Button>
                 )}
             </div>
-            <div className="flex items-center gap-2">
-                <Button asChild className="bg-orange-600 hover:bg-orange-700 text-white shadow-sm">
+            <div className="flex items-center gap-2 mt-2 sm:mt-0 w-full sm:w-auto">
+                <Button asChild className="bg-orange-600 hover:bg-orange-700 text-white shadow-sm flex-1 sm:flex-none">
                     <Link href="/admin/news/create">
                         <Plus className="h-4 w-4 mr-2" /> Thêm bài viết
                     </Link>
@@ -118,7 +118,7 @@ function NewsRow({
     const router = useRouter();
 
     return (
-        <TableRow className="border-slate-100 dark:border-slate-800 hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition-colors group">
+        <TableRow className="border-slate-100 dark:border-white/5 hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition-colors group">
             <TableCell className="w-[40px]">
                 <Checkbox checked={isSelected} onCheckedChange={onToggleSelect} />
             </TableCell>
@@ -126,7 +126,7 @@ function NewsRow({
             {/* Thumbnail + Title */}
             <TableCell>
                 <div className="flex items-center gap-3">
-                    <div className="w-14 h-10 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700 bg-white flex-shrink-0">
+                    <div className="w-14 h-10 rounded-lg overflow-hidden border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-[#0f1219] flex-shrink-0">
                         {article.thumbnail ? (
                             <Image
                                 src={article.thumbnail}
@@ -180,7 +180,7 @@ function NewsRow({
                             <MoreHorizontal className="h-4 w-4" />
                         </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-48">
+                    <DropdownMenuContent align="end" className="w-48 dark:bg-[#1e2330] dark:border-white/5">
                         <DropdownMenuItem onClick={() => window.open(`/news/${article.slug}`, "_blank")}>
                             <Eye className="h-4 w-4 mr-2" /> Xem bài viết
                         </DropdownMenuItem>
@@ -190,8 +190,8 @@ function NewsRow({
                         <DropdownMenuItem onClick={() => navigator.clipboard.writeText(article.id)}>
                             <Copy className="h-4 w-4 mr-2" /> Sao chép ID
                         </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={onDelete} className="text-red-600 focus:text-red-600">
+                        <DropdownMenuSeparator className="dark:bg-white/5" />
+                        <DropdownMenuItem onClick={onDelete} className="text-red-600 focus:text-red-600 dark:text-red-400">
                             <Trash2 className="h-4 w-4 mr-2" /> Xoá bài viết
                         </DropdownMenuItem>
                     </DropdownMenuContent>
@@ -267,10 +267,10 @@ function PaginationBar({
             <p className="text-xs text-slate-500">
                 Hiển thị <strong>{from}-{to}</strong> trong <strong>{totalCount}</strong> bài viết
             </p>
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1 mt-2 sm:mt-0">
                 <Button
                     variant="outline" size="icon"
-                    className="h-8 w-8"
+                    className="h-8 w-8 dark:border-slate-700 dark:text-slate-300"
                     disabled={currentPage <= 1}
                     onClick={() => onPageChange(currentPage - 1)}
                 >
@@ -293,7 +293,7 @@ function PaginationBar({
                             key={pageNum}
                             variant={currentPage === pageNum ? "default" : "outline"}
                             size="icon"
-                            className={`h-8 w-8 text-xs ${currentPage === pageNum ? "bg-orange-600 hover:bg-orange-700 text-white" : ""}`}
+                            className={`h-8 w-8 text-xs dark:border-slate-700 dark:text-slate-300 ${currentPage === pageNum ? "bg-orange-600 hover:bg-orange-700 text-white dark:border-orange-600" : ""}`}
                             onClick={() => onPageChange(pageNum)}
                         >
                             {pageNum}
@@ -303,7 +303,7 @@ function PaginationBar({
 
                 <Button
                     variant="outline" size="icon"
-                    className="h-8 w-8"
+                    className="h-8 w-8 dark:border-slate-700 dark:text-slate-300"
                     disabled={currentPage >= totalPages}
                     onClick={() => onPageChange(currentPage + 1)}
                 >
@@ -420,7 +420,7 @@ export default function NewsTable({
             {/* STATS ROW */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                 {stats.map((stat, i) => (
-                    <Card key={i} className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
+                    <Card key={i} className="bg-white dark:bg-[#1e2330] border-slate-200 dark:border-white/5">
                         <CardContent className="p-4">
                             <p className="text-xs text-slate-500 uppercase tracking-wider font-medium">{stat.label}</p>
                             <p className={`text-2xl font-bold mt-1 ${stat.color}`}>{stat.value}</p>
@@ -430,9 +430,9 @@ export default function NewsTable({
             </div>
 
             {/* MAIN TABLE CARD */}
-            <Card className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
+            <Card className="bg-white dark:bg-[#1e2330] border-slate-200 dark:border-white/5">
                 <CardHeader className="pb-4">
-                    <div className="flex items-center justify-between mb-4">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
                         <CardTitle className="text-base font-bold flex items-center gap-2 text-slate-900 dark:text-white">
                             <Newspaper className="h-5 w-5 text-orange-600" />
                             Quản lý bài viết
@@ -440,7 +440,7 @@ export default function NewsTable({
                         <Button
                             variant="ghost" size="sm"
                             onClick={() => router.refresh()}
-                            className="text-slate-500 hover:text-orange-600"
+                            className="text-slate-500 hover:text-orange-600 self-end sm:self-auto"
                         >
                             <RefreshCw className={`h-4 w-4 mr-1 ${isPending ? "animate-spin" : ""}`} />
                             Làm mới
@@ -454,10 +454,10 @@ export default function NewsTable({
                 </CardHeader>
 
                 <CardContent>
-                    <div className="rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
-                        <Table>
+                    <div className="rounded-lg border border-slate-200 dark:border-white/5 overflow-x-auto whitespace-nowrap">
+                        <Table className="min-w-[700px]">
                             <TableHeader>
-                                <TableRow className="bg-slate-50 dark:bg-slate-900/50 border-slate-200 dark:border-slate-700">
+                                <TableRow className="bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-white/5">
                                     <TableHead className="w-[40px]">
                                         <Checkbox
                                             checked={initialArticles.length > 0 && selectedIds.size === initialArticles.length}

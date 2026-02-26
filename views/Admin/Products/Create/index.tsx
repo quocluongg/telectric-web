@@ -511,14 +511,14 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
     }
 
     return (
-        <div className="min-h-screen bg-slate-50/50 pb-24">
+        <div className="min-h-screen bg-slate-50 dark:bg-[#0f1219] pb-24">
             <div className="max-w-7xl mx-auto p-6">
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="grid grid-cols-1 lg:grid-cols-12 gap-8">
 
                         {/* CỘT TRÁI: THÔNG TIN CHÍNH */}
                         <div className="lg:col-span-8 space-y-6">
-                            <Card>
+                            <Card className="bg-white dark:bg-[#1e2330] border-slate-200 dark:border-white/5">
                                 <CardHeader>
                                     <CardTitle className="flex items-center gap-2">
                                         <Package className="h-5 w-5 text-primary" /> Thông tin cơ bản
@@ -537,7 +537,7 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
                                                 <FormItem>
                                                     <FormLabel>Bảo hành (tháng)</FormLabel>
                                                     <FormControl>
-                                                        <Input type="number" min={0} placeholder="12" {...field} className="h-10" />
+                                                        <Input type="number" min={0} placeholder="12" {...field} className="h-10 bg-white dark:bg-[#0f1219] border-slate-200 dark:border-white/5" />
                                                     </FormControl>
                                                     <FormMessage />
                                                 </FormItem>
@@ -562,7 +562,7 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
                                                                     min={0} max={100}
                                                                     placeholder="%"
                                                                     {...field}
-                                                                    className="h-10 pr-6 pl-2"
+                                                                    className="h-10 pr-6 pl-2 bg-white dark:bg-[#0f1219] border-slate-200 dark:border-white/5"
                                                                 />
                                                                 <span className="absolute right-2 top-2.5 text-slate-400 text-sm">%</span>
                                                             </div>
@@ -590,7 +590,7 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
                                                     <select
                                                         value={field.value || ""}
                                                         onChange={e => field.onChange(e.target.value || null)}
-                                                        className="w-full h-10 px-3 rounded-md border bg-white dark:bg-slate-800 text-sm outline-none focus:ring-2 focus:ring-orange-200 focus:border-orange-400 transition-all"
+                                                        className="w-full h-10 px-3 rounded-md border bg-white dark:bg-[#0f1219] border-slate-200 dark:border-white/5 text-sm outline-none focus:ring-2 focus:ring-orange-200 focus:border-orange-400 transition-all"
                                                     >
                                                         <option value="">— Chưa phân loại</option>
                                                         {categories.filter(c => !c.parent_id).map(parent => (
@@ -615,7 +615,7 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
                                             <FormItem>
                                                 <FormLabel>Mô tả sản phẩm</FormLabel>
                                                 <FormControl>
-                                                    <Textarea {...field} rows={6} placeholder="Nhập mô tả chi tiết sản phẩm..." />
+                                                    <Textarea {...field} rows={6} placeholder="Nhập mô tả chi tiết sản phẩm..." className="bg-white dark:bg-[#0f1219] border-slate-200 dark:border-white/5" />
                                                 </FormControl>
                                                 <FormMessage />
                                             </FormItem>
@@ -625,7 +625,7 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
                             </Card>
 
                             {/* PHẦN BIẾN THỂ */}
-                            <Card>
+                            <Card className="bg-white dark:bg-[#1e2330] border-slate-200 dark:border-white/5">
                                 <CardHeader>
                                     <CardTitle className="flex items-center gap-2">
                                         <Layers className="h-5 w-5 text-primary" /> Phân loại sản phẩm
@@ -633,7 +633,7 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
                                 </CardHeader>
                                 <CardContent className="space-y-6">
                                     {attrFields.map((field, index) => (
-                                        <div key={field.id} className="p-4 border rounded-lg bg-slate-50 relative group">
+                                        <div key={field.id} className="p-4 border border-slate-200 dark:border-white/5 rounded-lg bg-slate-50 dark:bg-[#0f1219] relative group">
                                             <Button
                                                 type="button"
                                                 variant="destructive"
@@ -648,7 +648,7 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
                                                 <InputField control={form.control} name={`attrGroups.${index}.name`} label="Tên nhóm" placeholder="Màu sắc..." />
                                                 <div className="md:col-span-2 space-y-2">
                                                     <FormLabel>Giá trị phân loại</FormLabel>
-                                                    <div className="flex flex-wrap gap-2 p-2 border rounded-md bg-white min-h-[42px]">
+                                                    <div className="flex flex-wrap gap-2 p-2 border border-slate-200 dark:border-white/5 rounded-md bg-white dark:bg-[#1e2330] min-h-[42px]">
                                                         {form.watch(`attrGroups.${index}.values`).map((val: string, vIdx: number) => (
                                                             <span key={vIdx} className="bg-primary/10 text-primary border border-primary/20 px-2 py-1 rounded text-sm flex items-center gap-1">
                                                                 {val}
@@ -659,7 +659,7 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
                                                             </span>
                                                         ))}
                                                         <input
-                                                            className="flex-1 outline-none text-sm min-w-[120px]"
+                                                            className="flex-1 outline-none bg-transparent text-sm min-w-[120px]"
                                                             placeholder="Nhấn Enter để thêm..."
                                                             onKeyDown={(e) => {
                                                                 if (e.key === "Enter") {
@@ -689,9 +689,9 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
 
                                     {/* BẢNG BIẾN THỂ */}
                                     {form.watch("variants").length > 0 && (
-                                        <div className="mt-4 overflow-x-auto border rounded-lg">
-                                            <table className="w-full text-sm text-left">
-                                                <thead className="bg-slate-50 border-b">
+                                        <div className="mt-4 overflow-x-auto border border-slate-200 dark:border-white/5 rounded-lg whitespace-nowrap">
+                                            <table className="w-full min-w-[800px] text-sm text-left">
+                                                <thead className="bg-slate-50 dark:bg-[#0f1219] border-b border-slate-200 dark:border-white/5">
                                                     <tr>
                                                         <th className="p-3 font-semibold">Biến thể</th>
                                                         <th className="p-3 font-semibold w-32">Giá bán</th>
@@ -702,25 +702,25 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
                                                 </thead>
                                                 <tbody>
                                                     {form.watch("variants").map((variant: { attributes: Record<string, string>; price: number; stock: number; sku?: string }, vIdx: number) => (
-                                                        <tr key={vIdx} className="border-b last:border-0 hover:bg-slate-50/50">
-                                                            <td className="p-3 font-medium text-slate-700">
+                                                        <tr key={vIdx} className="border-b border-slate-200 dark:border-white/5 last:border-0 hover:bg-slate-50/50 dark:hover:bg-slate-800/50">
+                                                            <td className="p-3 font-medium text-slate-700 dark:text-slate-300">
                                                                 {Object.values(variant.attributes).join(" / ")}
                                                             </td>
                                                             <td className="p-3">
-                                                                <Input type="number" {...form.register(`variants.${vIdx}.price`)} className="h-9" />
+                                                                <Input type="number" {...form.register(`variants.${vIdx}.price`)} className="h-9 bg-white dark:bg-[#0f1219] border-slate-200 dark:border-white/5" />
                                                             </td>
                                                             <td className="p-3">
-                                                                <Input type="number" {...form.register(`variants.${vIdx}.stock`)} className="h-9" />
+                                                                <Input type="number" {...form.register(`variants.${vIdx}.stock`)} className="h-9 bg-white dark:bg-[#0f1219] border-slate-200 dark:border-white/5" />
                                                             </td>
                                                             <td className="p-3">
-                                                                <Input {...form.register(`variants.${vIdx}.sku`)} placeholder="SKU..." className="h-9" />
+                                                                <Input {...form.register(`variants.${vIdx}.sku`)} placeholder="SKU..." className="h-9 bg-white dark:bg-[#0f1219] border-slate-200 dark:border-white/5" />
                                                             </td>
                                                             <td className="p-3 text-center">
                                                                 <Button
                                                                     type="button"
                                                                     variant="ghost"
                                                                     size="icon"
-                                                                    className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50"
+                                                                    className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
                                                                     onClick={() => {
                                                                         const variant = form.getValues(`variants.${vIdx}`);
                                                                         setDeletedCombos(prev => [...prev, JSON.stringify(variant.attributes)]);
@@ -742,7 +742,7 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
                         {/* CỘT PHẢI: HÌNH ẢNH & MEDIA */}
                         <div className="lg:col-span-4 space-y-6">
                             {/* THUMBNAIL */}
-                            <Card>
+                            <Card className="bg-white dark:bg-[#1e2330] border-slate-200 dark:border-white/5">
                                 <CardHeader>
                                     <CardTitle className="flex items-center gap-2 text-base">
                                         <ImageIcon className="h-4 w-4" /> Ảnh bìa sản phẩm
@@ -750,7 +750,7 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
                                 </CardHeader>
                                 <CardContent>
                                     {form.watch("thumbnail") ? (
-                                        <div className="relative rounded-lg overflow-hidden border group">
+                                        <div className="relative rounded-lg overflow-hidden border border-slate-200 dark:border-white/5 group">
                                             {/* eslint-disable-next-line @next/next/no-img-element */}
                                             <img src={form.watch("thumbnail")} alt="Thumbnail" className="w-full aspect-square object-cover" />
                                             <button
@@ -763,7 +763,7 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
                                         </div>
                                     ) : (
                                         <div
-                                            className="border-2 border-dashed rounded-xl p-8 flex flex-col items-center cursor-pointer bg-slate-50 hover:bg-slate-100 transition-colors relative"
+                                            className="border-2 border-dashed border-slate-200 dark:border-white/5 rounded-xl p-8 flex flex-col items-center cursor-pointer bg-slate-50 dark:bg-[#0f1219] hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-colors relative"
                                             onClick={() => thumbInputRef.current?.click()}
                                         >
                                             <input
@@ -796,7 +796,7 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
                             </Card>
 
                             {/* GALLERY */}
-                            <Card>
+                            <Card className="bg-white dark:bg-[#1e2330] border-slate-200 dark:border-white/5">
                                 <CardHeader>
                                     <CardTitle className="flex items-center gap-2 text-base">
                                         <ImageIcon className="h-4 w-4" /> Album hình ảnh ({(form.watch("images") || []).length}/{MAX_GALLERY_FILES})
@@ -805,7 +805,7 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
                                 <CardContent className="space-y-3">
                                     <div className="grid grid-cols-3 gap-2">
                                         {(form.watch("images") || []).map((url: string, i: number) => (
-                                            <div key={i} className="relative aspect-square rounded-lg overflow-hidden border group">
+                                            <div key={i} className="relative aspect-square rounded-lg overflow-hidden border border-slate-200 dark:border-white/5 group">
                                                 {/* eslint-disable-next-line @next/next/no-img-element */}
                                                 <img src={url} alt={`Gallery ${i + 1}`} className="w-full h-full object-cover" />
                                                 <button
@@ -821,7 +821,7 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
 
                                     {(form.watch("images") || []).length < MAX_GALLERY_FILES && (
                                         <div
-                                            className="border-2 border-dashed rounded-lg p-4 flex flex-col items-center cursor-pointer bg-slate-50 hover:bg-slate-100 transition-colors"
+                                            className="border-2 border-dashed border-slate-200 dark:border-white/5 rounded-lg p-4 flex flex-col items-center cursor-pointer bg-slate-50 dark:bg-[#0f1219] hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-colors"
                                             onClick={() => galleryInputRef.current?.click()}
                                         >
                                             <input
@@ -850,13 +850,13 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
                         </div>
 
                         {/* FIXED FOOTER */}
-                        <div className="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-md border-t p-4 z-50 shadow-lg">
+                        <div className="fixed bottom-0 left-0 right-0 bg-white/80 dark:bg-[#1e2330]/80 backdrop-blur-md border-t border-slate-200 dark:border-white/5 p-4 z-[99] shadow-lg">
                             <div className="max-w-7xl mx-auto flex items-center justify-between px-6">
                                 <div className="hidden md:block text-sm text-muted-foreground">
-                                    Đang chỉnh sửa: <span className="font-medium text-slate-900">{form.watch("name") || "Sản phẩm mới"}</span>
+                                    Đang chỉnh sửa: <span className="font-medium text-slate-900 dark:text-white">{form.watch("name") || "Sản phẩm mới"}</span>
                                 </div>
                                 <div className="flex gap-3 w-full md:w-auto">
-                                    <Button type="button" variant="outline" className="flex-1 md:flex-none" onClick={() => window.history.back()}>
+                                    <Button type="button" variant="outline" className="flex-1 md:flex-none dark:border-white/10 dark:text-slate-200 dark:hover:bg-white/5" onClick={() => window.history.back()}>
                                         Hủy bỏ
                                     </Button>
                                     <Button type="submit" className="bg-[#020080] hover:bg-[#020080]/90 px-10 flex-1 md:flex-none" disabled={form.formState.isSubmitting}>

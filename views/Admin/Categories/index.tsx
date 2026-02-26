@@ -228,11 +228,11 @@ export default function AdminCategoriesPage() {
                     <Loader2 className="h-8 w-8 animate-spin text-orange-500" />
                 </div>
             ) : categories.length === 0 ? (
-                <Card>
+                <Card className="bg-white dark:bg-[#1e2330] border-slate-200 dark:border-white/5">
                     <CardContent className="flex flex-col items-center py-16 text-center">
-                        <FolderTree className="h-16 w-16 text-slate-300 mb-4" />
-                        <h3 className="text-lg font-bold text-slate-700 mb-2">Chưa có danh mục nào</h3>
-                        <p className="text-sm text-slate-500 mb-4">Bắt đầu bằng cách thêm danh mục đầu tiên</p>
+                        <FolderTree className="h-16 w-16 text-slate-300 dark:text-slate-600 mb-4" />
+                        <h3 className="text-lg font-bold text-slate-700 dark:text-slate-200 mb-2">Chưa có danh mục nào</h3>
+                        <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">Bắt đầu bằng cách thêm danh mục đầu tiên</p>
                         <Button onClick={() => openAddDialog()} className="bg-orange-600 hover:bg-orange-700 text-white">
                             <Plus className="h-4 w-4 mr-2" /> Thêm danh mục
                         </Button>
@@ -256,7 +256,7 @@ export default function AdminCategoriesPage() {
 
             {/* Add/Edit Dialog */}
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-                <DialogContent className="sm:max-w-md">
+                <DialogContent className="sm:max-w-md bg-white dark:bg-[#1e2330] border-slate-200 dark:border-white/5">
                     <DialogHeader>
                         <DialogTitle className="flex items-center gap-2">
                             {editingId ? <Pencil className="h-5 w-5 text-orange-500" /> : <Plus className="h-5 w-5 text-orange-500" />}
@@ -279,7 +279,7 @@ export default function AdminCategoriesPage() {
                                     if (!editingId) setFormSlug(generateSlug(e.target.value));
                                 }}
                                 placeholder="Ví dụ: Thiết bị điện"
-                                className="mt-1.5"
+                                className="mt-1.5 bg-white dark:bg-[#0f1219] border-slate-200 dark:border-white/5"
                             />
                         </div>
                         <div>
@@ -288,7 +288,7 @@ export default function AdminCategoriesPage() {
                                 value={formSlug}
                                 onChange={e => setFormSlug(e.target.value)}
                                 placeholder="thiet-bi-dien"
-                                className="mt-1.5 font-mono text-xs"
+                                className="mt-1.5 font-mono text-xs bg-white dark:bg-[#0f1219] border-slate-200 dark:border-white/5"
                             />
                         </div>
                         <div>
@@ -296,7 +296,7 @@ export default function AdminCategoriesPage() {
                             <select
                                 value={formParentId || ""}
                                 onChange={e => setFormParentId(e.target.value || null)}
-                                className="w-full mt-1.5 h-10 px-3 rounded-md border bg-white dark:bg-slate-800 text-sm outline-none focus:ring-2 focus:ring-orange-200 focus:border-orange-400 transition-all"
+                                className="w-full mt-1.5 h-10 px-3 rounded-md border bg-white dark:bg-[#0f1219] border-slate-200 dark:border-white/5 text-sm outline-none focus:ring-2 focus:ring-orange-200 focus:border-orange-400 transition-all"
                             >
                                 <option value="">— Không có (Danh mục gốc)</option>
                                 {categories
@@ -314,7 +314,7 @@ export default function AdminCategoriesPage() {
                                 onChange={e => setFormDescription(e.target.value)}
                                 rows={3}
                                 placeholder="Mô tả ngắn về danh mục..."
-                                className="w-full mt-1.5 px-3 py-2 rounded-md border text-sm outline-none focus:ring-2 focus:ring-orange-200 focus:border-orange-400 transition-all resize-none"
+                                className="w-full mt-1.5 px-3 py-2 rounded-md border text-sm outline-none focus:ring-2 focus:ring-orange-200 focus:border-orange-400 transition-all resize-none bg-white dark:bg-[#0f1219] border-slate-200 dark:border-white/5"
                             />
                         </div>
                     </div>
@@ -330,7 +330,7 @@ export default function AdminCategoriesPage() {
 
             {/* Delete Dialog */}
             <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-                <DialogContent className="sm:max-w-sm">
+                <DialogContent className="sm:max-w-sm bg-white dark:bg-[#1e2330] border-slate-200 dark:border-white/5">
                     <DialogHeader>
                         <DialogTitle className="text-red-600 flex items-center gap-2">
                             <Trash2 className="h-5 w-5" /> Xóa danh mục
@@ -374,11 +374,11 @@ function CategoryCard({
     const [expanded, setExpanded] = useState(true);
 
     return (
-        <div className={cn(depth > 0 && "ml-6 border-l-2 border-orange-100 pl-4")}>
+        <div className={cn(depth > 0 && "ml-6 border-l-2 border-orange-100 dark:border-orange-900/40 pl-4")}>
             <div className={cn(
-                "flex items-center gap-3 p-4 rounded-xl border bg-white dark:bg-slate-800 dark:border-slate-700",
+                "flex items-center gap-3 p-4 rounded-xl border bg-white dark:bg-[#1e2330] dark:border-white/5",
                 "hover:shadow-md transition-all group",
-                depth === 0 ? "border-slate-200" : "border-slate-100"
+                depth === 0 ? "border-slate-200" : "border-slate-100 dark:border-white/5"
             )}>
                 {/* Expand toggle */}
                 {children.length > 0 ? (
@@ -389,7 +389,7 @@ function CategoryCard({
                         <ChevronRight className={cn("h-4 w-4 transition-transform", expanded && "rotate-90")} />
                     </button>
                 ) : (
-                    <div className="h-7 w-7 rounded-lg bg-slate-50 dark:bg-slate-700 flex items-center justify-center">
+                    <div className="h-7 w-7 rounded-lg bg-slate-50 dark:bg-[#0f1219] border dark:border-white/5 flex items-center justify-center">
                         <Layers className="h-3.5 w-3.5 text-slate-400" />
                     </div>
                 )}
@@ -416,7 +416,7 @@ function CategoryCard({
                         <Button
                             variant="ghost"
                             size="icon"
-                            className="h-8 w-8 text-green-600 hover:text-green-700 hover:bg-green-50"
+                            className="h-8 w-8 text-green-600 hover:text-green-700 hover:bg-green-50 dark:hover:bg-green-900/20"
                             onClick={() => onAddChild(category.id)}
                             title="Thêm danh mục con"
                         >
@@ -426,7 +426,7 @@ function CategoryCard({
                     <Button
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                        className="h-8 w-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20"
                         onClick={() => onEdit(category)}
                         title="Chỉnh sửa"
                     >
@@ -435,7 +435,7 @@ function CategoryCard({
                     <Button
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50"
+                        className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
                         onClick={() => onDelete(category)}
                         title="Xóa"
                     >

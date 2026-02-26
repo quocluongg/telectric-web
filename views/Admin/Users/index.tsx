@@ -211,7 +211,7 @@ export default function AdminUsersPage() {
                         placeholder="Tìm theo tên, email, username..."
                         value={searchQuery}
                         onChange={(e) => { setSearchQuery(e.target.value); setPage(0) }}
-                        className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-sm text-slate-800 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500/30 focus:border-violet-500/50 transition-all"
+                        className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-[#0f1219] border border-gray-200 dark:border-white/5 rounded-xl text-sm text-slate-800 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500/30 focus:border-violet-500/50 transition-all"
                     />
                 </div>
                 <div className="flex items-center gap-2">
@@ -221,7 +221,7 @@ export default function AdminUsersPage() {
                             id="admin-users-filter"
                             value={roleFilter}
                             onChange={(e) => { setRoleFilter(e.target.value); setPage(0) }}
-                            className="pl-8 pr-8 py-2.5 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-sm text-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500/30 appearance-none cursor-pointer"
+                            className="pl-8 pr-8 py-2.5 bg-white dark:bg-[#0f1219] border border-gray-200 dark:border-white/5 rounded-xl text-sm text-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500/30 appearance-none cursor-pointer"
                         >
                             <option value="all">Tất cả vai trò</option>
                             <option value="admin">Admin</option>
@@ -231,7 +231,7 @@ export default function AdminUsersPage() {
                     </div>
                     <button
                         onClick={() => fetchUsers()}
-                        className="p-2.5 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-slate-500 hover:text-violet-500 transition-colors"
+                        className="p-2.5 bg-white dark:bg-[#1e2330] border border-gray-200 dark:border-white/5 rounded-xl text-slate-500 dark:text-slate-400 hover:text-violet-500 dark:hover:text-violet-400 transition-colors"
                         title="Làm mới"
                     >
                         <RefreshCw size={18} />
@@ -241,13 +241,13 @@ export default function AdminUsersPage() {
 
             {/* User cards grid */}
             {loading ? (
-                <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-2xl p-12 flex flex-col items-center gap-3">
+                <div className="bg-white dark:bg-[#1e2330] border border-gray-200 dark:border-white/5 rounded-2xl p-12 flex flex-col items-center gap-3">
                     <Loader2 size={28} className="animate-spin text-violet-500" />
                     <p className="text-slate-400 text-sm">Đang tải danh sách...</p>
                 </div>
             ) : users.length === 0 ? (
-                <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-2xl p-12 text-center">
-                    <div className="w-16 h-16 bg-slate-100 dark:bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                <div className="bg-white dark:bg-[#1e2330] border border-gray-200 dark:border-white/5 rounded-2xl p-12 text-center">
+                    <div className="w-16 h-16 bg-slate-100 dark:bg-[#0f1219] rounded-full flex items-center justify-center mx-auto mb-4 border dark:border-white/5">
                         <Users size={28} className="text-slate-300 dark:text-slate-500" />
                     </div>
                     <h3 className="text-slate-600 dark:text-slate-300 font-semibold mb-1">Không tìm thấy</h3>
@@ -260,7 +260,7 @@ export default function AdminUsersPage() {
                         return (
                             <div
                                 key={user.id}
-                                className="group bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-2xl overflow-hidden hover:shadow-lg hover:border-violet-200 dark:hover:border-violet-500/20 transition-all duration-300"
+                                className="group bg-white dark:bg-[#1e2330] border border-gray-200 dark:border-white/5 rounded-2xl overflow-hidden hover:shadow-lg hover:border-violet-200 dark:hover:border-violet-500/20 transition-all duration-300"
                             >
                                 {/* Role indicator bar */}
                                 <div className={`h-1 w-full ${user.role === 'admin' ? 'bg-gradient-to-r from-rose-500 to-pink-500' : user.role === 'moderator' ? 'bg-gradient-to-r from-violet-500 to-purple-500' : 'bg-gradient-to-r from-slate-300 to-slate-400 dark:from-slate-600 dark:to-slate-700'}`} />
@@ -273,10 +273,10 @@ export default function AdminUsersPage() {
                                             <img
                                                 src={user.avatar_url}
                                                 alt={user.full_name || 'Avatar'}
-                                                className="w-12 h-12 rounded-xl object-cover border-2 border-white dark:border-slate-700 shadow-sm flex-shrink-0"
+                                                className="w-12 h-12 rounded-xl object-cover border-2 border-white dark:border-white/5 shadow-sm flex-shrink-0"
                                             />
                                         ) : (
-                                            <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-sm font-bold flex-shrink-0 ${user.role === 'admin' ? 'bg-gradient-to-br from-rose-500 to-pink-500 text-white' : user.role === 'moderator' ? 'bg-gradient-to-br from-violet-500 to-purple-500 text-white' : 'bg-gradient-to-br from-slate-200 to-slate-300 dark:from-slate-600 dark:to-slate-700 text-slate-600 dark:text-slate-300'}`}>
+                                            <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-sm font-bold flex-shrink-0 ${user.role === 'admin' ? 'bg-gradient-to-br from-rose-500 to-pink-500 text-white' : user.role === 'moderator' ? 'bg-gradient-to-br from-violet-500 to-purple-500 text-white' : 'bg-gradient-to-br from-slate-200 to-slate-300 dark:from-slate-700 dark:to-slate-800 text-slate-600 dark:text-slate-300'}`}>
                                                 {getInitials(user.full_name, user.email)}
                                             </div>
                                         )}
@@ -323,8 +323,8 @@ export default function AdminUsersPage() {
                                     </div>
 
                                     {/* Actions */}
-                                    <div className="flex items-center justify-between pt-3 border-t border-gray-100 dark:border-slate-700/50">
-                                        <span className="text-[10px] text-slate-300 dark:text-slate-600 font-mono truncate max-w-[160px]">{user.id}</span>
+                                    <div className="flex items-center justify-between pt-3 border-t border-gray-100 dark:border-white/5">
+                                        <span className="text-[10px] text-slate-300 dark:text-slate-500 font-mono truncate max-w-[160px]">{user.id}</span>
                                         <button
                                             onClick={() => openEdit(user)}
                                             className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-500 hover:text-violet-600 hover:bg-violet-50 dark:hover:bg-violet-500/10 rounded-lg transition-colors"
@@ -342,7 +342,7 @@ export default function AdminUsersPage() {
 
             {/* Pagination */}
             {totalPages > 1 && (
-                <div className="flex items-center justify-between bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-2xl px-4 py-3">
+                <div className="flex items-center justify-between bg-white dark:bg-[#1e2330] border border-gray-200 dark:border-white/5 rounded-2xl px-4 py-3">
                     <span className="text-xs text-slate-400">
                         Hiển thị {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, totalCount)} / {totalCount}
                     </span>
@@ -360,7 +360,7 @@ export default function AdminUsersPage() {
                         <button
                             onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
                             disabled={page >= totalPages - 1}
-                            className="p-1.5 rounded-lg text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-30 transition-colors"
+                            className="p-1.5 rounded-lg text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-30 transition-colors"
                         >
                             <ChevronRight size={18} />
                         </button>
@@ -373,9 +373,9 @@ export default function AdminUsersPage() {
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
                     <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setEditingUser(null)} />
 
-                    <div className="relative bg-white dark:bg-slate-800 rounded-2xl w-full max-w-md shadow-2xl border border-gray-200 dark:border-slate-700 overflow-hidden">
+                    <div className="relative bg-white dark:bg-[#1e2330] rounded-2xl w-full max-w-md shadow-2xl border border-gray-200 dark:border-white/5 overflow-hidden">
                         {/* Modal header */}
-                        <div className="border-b border-gray-100 dark:border-slate-700 px-6 py-4 flex items-center justify-between">
+                        <div className="border-b border-gray-100 dark:border-white/5 px-6 py-4 flex items-center justify-between">
                             <h3 className="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
                                 <UserCog size={20} className="text-violet-500" />
                                 Chỉnh sửa người dùng
@@ -386,7 +386,7 @@ export default function AdminUsersPage() {
                         </div>
 
                         {/* User preview */}
-                        <div className="px-6 pt-5 pb-4 flex items-center gap-3 bg-slate-50/50 dark:bg-slate-900/30">
+                        <div className="px-6 pt-5 pb-4 flex items-center gap-3 bg-slate-50/50 dark:bg-black/20">
                             {editingUser.avatar_url ? (
                                 <img src={editingUser.avatar_url} alt="" className="w-10 h-10 rounded-xl object-cover" />
                             ) : (
@@ -412,7 +412,7 @@ export default function AdminUsersPage() {
                                         type="text"
                                         value={editForm.full_name}
                                         onChange={e => setEditForm(prev => ({ ...prev, full_name: e.target.value }))}
-                                        className="w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl text-sm text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500/30 transition-all"
+                                        className="w-full px-3 py-2.5 bg-slate-50 dark:bg-[#0f1219] border border-gray-200 dark:border-white/5 rounded-xl text-sm text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500/30 transition-all"
                                         placeholder="Nguyễn Văn A"
                                     />
                                 </div>
@@ -425,7 +425,7 @@ export default function AdminUsersPage() {
                                         type="text"
                                         value={editForm.username}
                                         onChange={e => setEditForm(prev => ({ ...prev, username: e.target.value }))}
-                                        className="w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl text-sm text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500/30 transition-all"
+                                        className="w-full px-3 py-2.5 bg-slate-50 dark:bg-[#0f1219] border border-gray-200 dark:border-white/5 rounded-xl text-sm text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500/30 transition-all"
                                         placeholder="username"
                                     />
                                 </div>
@@ -440,7 +440,7 @@ export default function AdminUsersPage() {
                                     type="email"
                                     value={editForm.email}
                                     onChange={e => setEditForm(prev => ({ ...prev, email: e.target.value }))}
-                                    className="w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl text-sm text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500/30 transition-all"
+                                    className="w-full px-3 py-2.5 bg-slate-50 dark:bg-[#0f1219] border border-gray-200 dark:border-white/5 rounded-xl text-sm text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500/30 transition-all"
                                     placeholder="user@email.com"
                                 />
                             </div>
@@ -454,7 +454,7 @@ export default function AdminUsersPage() {
                                     type="url"
                                     value={editForm.website}
                                     onChange={e => setEditForm(prev => ({ ...prev, website: e.target.value }))}
-                                    className="w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl text-sm text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500/30 transition-all"
+                                    className="w-full px-3 py-2.5 bg-slate-50 dark:bg-[#0f1219] border border-gray-200 dark:border-white/5 rounded-xl text-sm text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500/30 transition-all"
                                     placeholder="https://..."
                                 />
                             </div>
@@ -493,10 +493,10 @@ export default function AdminUsersPage() {
                         </div>
 
                         {/* Footer */}
-                        <div className="border-t border-gray-100 dark:border-slate-700 px-6 py-4 flex justify-end gap-3">
+                        <div className="border-t border-gray-100 dark:border-white/5 px-6 py-4 flex justify-end gap-3">
                             <button
                                 onClick={() => setEditingUser(null)}
-                                className="px-4 py-2.5 text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl transition-colors font-medium"
+                                className="px-4 py-2.5 text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/50 rounded-xl transition-colors font-medium"
                             >
                                 Huỷ
                             </button>
@@ -519,7 +519,7 @@ export default function AdminUsersPage() {
 // Stats card component
 function StatCard({ label, value, icon, color }: { label: string; value: number; icon: React.ReactNode; color: string }) {
     return (
-        <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-2xl p-4 hover:shadow-md transition-shadow">
+        <div className="bg-white dark:bg-[#1e2330] border border-gray-200 dark:border-white/5 rounded-2xl p-4 hover:shadow-md transition-shadow">
             <div className="flex items-center justify-between mb-3">
                 <div className={`w-9 h-9 rounded-xl bg-gradient-to-br ${color} flex items-center justify-center text-white shadow-sm`}>
                     {icon}
