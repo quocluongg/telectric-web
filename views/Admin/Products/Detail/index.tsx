@@ -258,7 +258,7 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
 
                     {/* ======= LEFT: IMAGE GALLERY ======= */}
-                    <div className="lg:col-span-5 flex flex-col gap-4">
+                    <div className="lg:col-span-5 flex flex-col gap-4 sticky top-24 self-start">
                         {/* Main Image */}
                         <div className="relative aspect-square rounded-2xl overflow-hidden bg-white dark:bg-[#0f1219] border border-gray-200 dark:border-white/5 shadow-sm group">
                             {allImages[selectedImage] && (
@@ -394,12 +394,12 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
                                 </div>
                             ) : selectedVariant ? (
                                 selectedVariant.vat_percent && selectedVariant.vat_percent > 0 ? (
-                                    <div className="flex flex-col gap-3 w-full max-w-lg mb-2">
+                                    <div className="flex flex-col gap-3 w-full mb-2">
                                         {/* Giá chưa VAT */}
-                                        <div className="border border-blue-100 dark:border-blue-900/30 bg-[#f4f8fd] dark:bg-blue-950/20 rounded-lg p-4">
+                                        <div className="border border-slate-200/60 dark:border-blue-900/30 bg-slate-50/50 dark:bg-blue-950/20 rounded-xl p-5">
                                             <p className="text-[11px] font-bold text-[#4285f4] dark:text-blue-400 tracking-wider mb-2 uppercase">Giá chưa bao gồm VAT</p>
                                             <div className="flex items-baseline gap-3">
-                                                <span className="text-2xl font-black text-red-600 dark:text-red-500">
+                                                <span className="text-3xl font-black text-red-600 dark:text-red-500 tracking-tight">
                                                     {formatVND(actualPrice ?? selectedVariant.price)}
                                                 </span>
                                                 {dp > 0 && (
@@ -409,17 +409,18 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
                                                 )}
                                             </div>
                                             {dp > 0 && (
-                                                <span className="text-sm text-slate-400 dark:text-slate-500 line-through font-medium mt-1 font-mono">
+                                                <span className="text-base text-slate-400 dark:text-slate-500 line-through font-medium mt-1 font-mono flex">
                                                     {formatVND(selectedVariant.price)}
                                                 </span>
                                             )}
                                         </div>
 
                                         {/* Giá đã VAT */}
-                                        <div className="border border-blue-100 dark:border-blue-900/30 bg-[#f4f8fd] dark:bg-blue-950/20 rounded-lg p-4">
+                                        <div className="border border-blue-200/60 dark:border-blue-900/30 bg-blue-50/30 dark:bg-blue-950/20 rounded-xl p-5 relative overflow-hidden">
+                                            <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-full blur-[40px] -translate-y-1/2 translate-x-1/2 pointer-events-none" />
                                             <p className="text-[11px] font-bold text-[#4285f4] dark:text-blue-400 tracking-wider mb-2 uppercase">Giá đã bao gồm VAT ({selectedVariant.vat_percent}%)</p>
                                             <div className="flex items-baseline gap-3">
-                                                <span className="text-2xl font-black text-red-600 dark:text-red-500">
+                                                <span className="text-3xl font-black text-red-600 dark:text-red-500 tracking-tight">
                                                     {formatVND((actualPrice ?? selectedVariant.price) * (1 + selectedVariant.vat_percent / 100))}
                                                 </span>
                                                 {dp > 0 && (
@@ -429,7 +430,7 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
                                                 )}
                                             </div>
                                             {dp > 0 && (
-                                                <span className="text-sm text-slate-400 dark:text-slate-500 line-through font-medium mt-1 font-mono flex">
+                                                <span className="text-base text-slate-400 dark:text-slate-500 line-through font-medium mt-1 font-mono flex">
                                                     {formatVND(selectedVariant.price * (1 + selectedVariant.vat_percent / 100))}
                                                 </span>
                                             )}
