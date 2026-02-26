@@ -3,9 +3,6 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Package, Eye } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 
 function formatVND(value: number) {
     return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(value);
@@ -29,121 +26,168 @@ export function ProductCard({ product }: { product: ProductCardData }) {
     const isOutOfStock = product.total_stock === 0;
     const hasMultiplePrices = product.min_price !== product.max_price;
     const dp = product.discount_percent || 0;
+
+    // According to the original visual, only the final price is shown
     const minPrice = dp > 0 ? product.min_price * (1 - dp / 100) : product.min_price;
     const maxPrice = dp > 0 ? product.max_price * (1 - dp / 100) : product.max_price;
 
     return (
-        <Link href={`/products/${product.id}`} className="block group">
-            <Card className="overflow-hidden border border-slate-200 dark:border-slate-700/60 bg-white dark:bg-slate-800/80 hover:shadow-lg hover:shadow-orange-500/5 dark:hover:shadow-orange-500/5 transition-all duration-300 hover:-translate-y-0.5 h-full flex flex-col">
-                {/* Image */}
-                <div className="relative aspect-square overflow-hidden bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
-                    {product.thumbnail ? (
-                        <img
+        <article
+            className="group relative bg-white dark:bg-slate-900 rounded-xl sm:rounded-[16px] border border-slate-200/80 dark:border-slate-800 shadow-sm hover:border-orange-500 dark:hover:border-orange-500 transition-all duration-300 overflow-hidden flex flex-col h-full"
+            itemScope
+            itemType="https://schema.org/Product"
+        >
+            <meta itemProp="productID" content={product.id} />
+
+            <Link
+                href={`/products/${product.id}`}
+                className="absolute inset-0 z-10"
+                aria-label={`Xem chi tiết sản phẩm ${product.name}`}
+                itemProp="url"
+            >
+                <span className="sr-only">Chi tiết {product.name}</span>
+            </Link>
+
+            {/* Image Container */}
+            <div className="relative aspect-square w-full bg-transparent p-3 sm:p-4 pb-0 sm:pb-0 overflow-visible flex items-center justify-center isolate border-none">
+                {product.thumbnail ? (
+                    <div className="relative w-full h-[180px] sm:h-[220px] rounded-[8px] overflow-hidden bg-transparent">
+                        <Image
+                            itemProp="image"
                             src={product.thumbnail}
                             alt={product.name}
-                            className="w-full h-full object-contain p-3 group-hover:scale-105 transition-transform duration-500 ease-out"
+                            fill
+                            className="object-contain mix-blend-multiply dark:mix-blend-normal group-hover:scale-105 transition-transform duration-500 will-change-transform z-0"
+                            sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
                         />
-                    ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                            <Package className="h-14 w-14 text-slate-200 dark:text-slate-700" />
+                        {/* Hover Overlay */}
+                        <div className="absolute inset-0 z-10 flex items-end justify-center pb-2 sm:pb-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+                            <div className="absolute inset-0 bg-transparent group-hover:bg-black/5 dark:group-hover:bg-black/20 transition-colors duration-300" />
+                            <span className="relative z-20 bg-white/95 dark:bg-slate-800 text-slate-800 dark:text-slate-200 text-[12px] sm:text-[13px] font-semibold px-4 py-1.5 sm:py-2 rounded-full shadow-md flex items-center gap-1.5 sm:gap-2 transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300 backdrop-blur-sm border-none">
+                                <Eye className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-600 dark:text-slate-300" />
+                                Xem chi tiết
+                            </span>
                         </div>
-                    )}
+                    </div>
+                ) : (
+                    <div className="w-full h-[180px] sm:h-[220px] rounded-[8px] flex items-center justify-center text-slate-300 dark:text-slate-600 bg-slate-50 dark:bg-slate-800/50">
+                        <Package className="h-10 w-10 sm:h-14 sm:w-14 stroke-1" />
+                    </div>
+                )}
 
-                    {/* Top badges */}
-                    <div className="absolute top-2.5 left-2.5 flex flex-col gap-1.5 z-20">
-                        {dp > 0 && (
-                            <Badge className="bg-[#ffc107] hover:bg-[#e0a800] text-[#333] text-[11px] px-2 py-0.5 font-bold shadow-sm border-none">
-                                -{dp}%
-                            </Badge>
-                        )}
-                        {isOutOfStock && (
-                            <Badge className="bg-red-500/90 hover:bg-red-500 text-white text-[10px] px-2 py-0.5 font-semibold backdrop-blur-sm shadow-sm">
-                                Hết hàng
-                            </Badge>
-                        )}
-                        {product.category_name && (
-                            <Badge variant="secondary" className="text-[10px] px-2 py-0.5 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm shadow-sm">
-                                {product.category_name}
-                            </Badge>
-                        )}
+                {/* Status Badges - Top left */}
+                <div className="absolute top-3 left-3 sm:top-4 sm:left-4 z-20 flex flex-col gap-1.5 items-start pointer-events-none">
+                    {dp > 0 && !isOutOfStock && (
+                        <span className="bg-[#ff424e] text-white text-[11px] sm:text-[12px] font-bold px-2 py-0.5 rounded shadow-sm leading-none">
+                            -{dp}%
+                        </span>
+                    )}
+                </div>
+
+                {/* Meta Badges - Top right */}
+                {product.category_name && (
+                    <div className="absolute top-3 right-3 sm:top-4 sm:right-4 z-20 pointer-events-none">
+                        <span className="bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 text-[10px] sm:text-[11px] font-semibold px-2 py-1 rounded shadow-sm truncate max-w-[100px] block leading-none" itemProp="category">
+                            {product.category_name}
+                        </span>
+                    </div>
+                )}
+
+                {/* Origin - Bottom left on Image */}
+                {product.origin && (
+                    <div className="absolute bottom-1 left-3 sm:bottom-1 sm:left-4 z-20 pointer-events-none">
+                        <span className="bg-slate-600/95 dark:bg-slate-700/95 text-white text-[10px] font-semibold px-3 py-1 rounded-full shadow-sm block leading-none">
+                            {product.origin}
+                        </span>
+                    </div>
+                )}
+            </div>
+
+            {/* Content Area */}
+            <div className="p-3 sm:p-4 flex flex-col flex-1 bg-white dark:bg-slate-900 relative z-20 pt-2 sm:pt-3">
+                <header className="mb-2">
+                    {/* Brand */}
+                    <div className="mb-1.5" itemProp="brand" itemScope itemType="https://schema.org/Brand">
+                        <span className="text-[12px] sm:text-[13px] font-bold text-slate-400 dark:text-slate-500 uppercase truncate block" itemProp="name">
+                            {product.brand || "KHÁC"}
+                        </span>
                     </div>
 
-                    {/* Hover overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-4">
-                        <span className="inline-flex items-center gap-1.5 bg-white/95 dark:bg-slate-800/95 text-slate-800 dark:text-white text-xs font-semibold px-4 py-2 rounded-full shadow-lg backdrop-blur-sm translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
-                            <Eye className="h-3.5 w-3.5" /> Xem chi tiết
-                        </span>
+                    {/* Title */}
+                    <h3
+                        className="text-[14px] sm:text-[15px] font-bold text-slate-800 dark:text-slate-100 leading-[1.4] line-clamp-2 h-[40px] sm:h-[42px] group-hover:text-orange-500 dark:group-hover:text-orange-400 transition-colors"
+                        title={product.name}
+                        itemProp="name"
+                    >
+                        {product.name}
+                    </h3>
+                </header>
+
+                {/* Metadata Row: Variant Count & Stock Status */}
+                <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400">
+                        <Package className="w-4 h-4 stroke-[1.5]" />
+                        <span className="text-[12px] sm:text-[13px] font-medium">{product.variant_count} phiên bản</span>
+                    </div>
+
+                    <div className="flex items-center gap-1.5">
+                        {!isOutOfStock ? (
+                            product.total_stock <= 5 ? (
+                                <>
+                                    <span className="w-1.5 h-1.5 rounded-full bg-orange-500"></span>
+                                    <span className="text-[12px] sm:text-[13px] font-bold text-orange-500">Sắp hết</span>
+                                </>
+                            ) : (
+                                <>
+                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                    <span className="text-[12px] sm:text-[13px] font-bold text-emerald-500">Sẵn hàng</span>
+                                </>
+                            )
+                        ) : (
+                            <>
+                                <span className="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+                                <span className="text-[12px] sm:text-[13px] font-bold text-slate-400">Hết hàng</span>
+                            </>
+                        )}
                     </div>
                 </div>
 
-                {/* Content */}
-                <CardContent className="p-3.5 flex flex-col flex-1 gap-1.5">
-                    {/* Brand */}
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-orange-500/80">
-                        {product.brand}
-                    </span>
+                {/* Filler */}
+                <div className="flex-1"></div>
 
-                    {/* Name */}
-                    <h3 className="text-[13px] font-semibold text-slate-800 dark:text-slate-100 line-clamp-2 leading-snug group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors flex-1">
-                        {product.name}
-                    </h3>
+                {/* Pricing Block */}
+                <footer
+                    className="mt-2 bg-[#f8f9fa] dark:bg-slate-800/40 rounded-[8px] p-2.5 sm:p-3 border-none flex items-center"
+                    itemProp="offers"
+                    itemScope
+                    itemType="https://schema.org/AggregateOffer"
+                >
+                    <meta itemProp="lowPrice" content={minPrice.toString()} />
+                    <meta itemProp="highPrice" content={maxPrice.toString()} />
+                    <meta itemProp="priceCurrency" content="VND" />
+                    <meta itemProp="offerCount" content={product.variant_count.toString()} />
 
-                    {/* Variants */}
-                    {product.variant_count > 1 && (
-                        <span className="text-[10px] text-slate-400 dark:text-slate-500">
-                            {product.variant_count} phiên bản
-                        </span>
-                    )}
-
-                    {/* Price */}
-                    <div className="pt-1 border-t border-slate-100 dark:border-slate-700/50 mt-auto">
-                        {isOutOfStock ? (
-                            <span className="text-sm font-bold text-red-500">Liên hệ</span>
-                        ) : hasMultiplePrices ? (
-                            <div className="flex flex-col gap-0.5">
-                                <div className="flex items-baseline gap-1 flex-wrap">
-                                    <span className="text-sm font-extrabold text-orange-600 dark:text-orange-500">
-                                        {formatVND(minPrice)}
-                                    </span>
-                                    <span className="text-[10px] text-slate-400">~</span>
-                                    <span className="text-[11px] font-medium text-slate-400">
+                    {isOutOfStock ? (
+                        <div className="text-[14px] sm:text-[15px] font-bold text-slate-500 dark:text-slate-400">
+                            Đang cập nhật
+                        </div>
+                    ) : (
+                        <div className="flex items-baseline gap-1.5 flex-wrap w-full">
+                            <span className="text-[15px] sm:text-[16px] font-bold text-red-600 dark:text-red-500 tracking-tight leading-none whitespace-nowrap">
+                                {formatVND(minPrice)}
+                            </span>
+                            {hasMultiplePrices && (
+                                <>
+                                    <span className="text-[13px] font-medium text-slate-400 dark:text-slate-500 mx-0.5">~</span>
+                                    <span className="text-[13px] sm:text-[14px] font-medium text-slate-500 dark:text-slate-400 leading-none whitespace-nowrap">
                                         {formatVND(maxPrice)}
                                     </span>
-                                </div>
-                                {dp > 0 && (
-                                    <div className="flex items-baseline gap-1">
-                                        <span className="text-[11px] text-slate-400 line-through">
-                                            {formatVND(product.min_price)}
-                                        </span>
-                                        <span className="text-[10px] text-slate-400">~</span>
-                                        <span className="text-[10px] text-slate-400 line-through">
-                                            {formatVND(product.max_price)}
-                                        </span>
-                                    </div>
-                                )}
-                            </div>
-                        ) : (
-                            <div className="flex flex-col gap-0.5">
-                                <span className="text-sm font-extrabold text-orange-600 dark:text-orange-500">
-                                    {formatVND(minPrice)}
-                                </span>
-                                {dp > 0 && (
-                                    <span className="text-[11px] text-slate-400 line-through">
-                                        {formatVND(product.min_price)}
-                                    </span>
-                                )}
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Low stock warning */}
-                    {!isOutOfStock && product.total_stock > 0 && product.total_stock <= 5 && (
-                        <span className="text-[10px] text-amber-600 dark:text-amber-400 font-medium">
-                            Chỉ còn {product.total_stock} sản phẩm
-                        </span>
+                                </>
+                            )}
+                        </div>
                     )}
-                </CardContent>
-            </Card>
-        </Link>
+                </footer>
+            </div>
+        </article>
     );
 }
