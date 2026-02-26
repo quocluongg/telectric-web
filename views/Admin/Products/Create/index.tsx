@@ -852,14 +852,14 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
                         {/* FIXED FOOTER */}
                         <div className="fixed bottom-0 left-0 right-0 bg-white/80 dark:bg-[#1e2330]/80 backdrop-blur-md border-t border-slate-200 dark:border-white/5 p-4 z-[99] shadow-lg">
                             <div className="max-w-7xl mx-auto flex items-center justify-between px-6">
-                                <div className="hidden md:block text-sm text-muted-foreground">
-                                    Đang chỉnh sửa: <span className="font-medium text-slate-900 dark:text-white">{form.watch("name") || "Sản phẩm mới"}</span>
+                                <div className="hidden md:block text-sm text-slate-500 dark:text-slate-400">
+                                    Đang chỉnh sửa: <span className="font-bold text-slate-900 dark:text-white">{form.watch("name") || "Sản phẩm mới"}</span>
                                 </div>
                                 <div className="flex gap-3 w-full md:w-auto">
                                     <Button type="button" variant="outline" className="flex-1 md:flex-none dark:border-white/10 dark:text-slate-200 dark:hover:bg-white/5" onClick={() => window.history.back()}>
                                         Hủy bỏ
                                     </Button>
-                                    <Button type="submit" className="bg-[#020080] hover:bg-[#020080]/90 px-10 flex-1 md:flex-none" disabled={form.formState.isSubmitting}>
+                                    <Button type="submit" className="bg-[#020080] hover:bg-[#020080]/80 text-white px-10 flex-1 md:flex-none shadow-md transition-all duration-200" disabled={form.formState.isSubmitting}>
                                         {form.formState.isSubmitting ? <Loader2 className="animate-spin mr-2" /> : <Save className="mr-2 h-4 w-4" />}
                                         Lưu sản phẩm
                                     </Button>
