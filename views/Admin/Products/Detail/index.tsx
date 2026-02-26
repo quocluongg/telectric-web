@@ -23,6 +23,7 @@ interface ProductVariant {
     sku: string | null;
     price: number;
     stock: number;
+    vat_percent?: number;
     attributes: Record<string, string>;
     created_at: string;
 }
@@ -392,23 +393,67 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
                                     </div>
                                 </div>
                             ) : selectedVariant ? (
-                                <div className="flex flex-col gap-1">
-                                    <div className="flex items-baseline gap-3">
-                                        <span className="text-3xl sm:text-4xl font-black text-red-600 dark:text-red-500 tracking-tight">
-                                            {formatVND(actualPrice ?? selectedVariant.price)}
-                                        </span>
+                                selectedVariant.vat_percent && selectedVariant.vat_percent > 0 ? (
+                                    <div className="flex flex-col gap-3 w-full max-w-lg mb-2">
+                                        {/* Giá chưa VAT */}
+                                        <div className="border border-blue-100 dark:border-blue-900/30 bg-[#f4f8fd] dark:bg-blue-950/20 rounded-lg p-4">
+                                            <p className="text-[11px] font-bold text-[#4285f4] dark:text-blue-400 tracking-wider mb-2 uppercase">Giá chưa bao gồm VAT</p>
+                                            <div className="flex items-baseline gap-3">
+                                                <span className="text-2xl font-black text-red-600 dark:text-red-500">
+                                                    {formatVND(actualPrice ?? selectedVariant.price)}
+                                                </span>
+                                                {dp > 0 && (
+                                                    <Badge className="bg-[#ffc107] hover:bg-[#e0a800] dark:bg-yellow-500/20 dark:text-yellow-500 dark:hover:bg-yellow-500/30 text-[#333] text-[13px] px-2.5 py-0.5 font-bold shadow-sm border-none translate-y-[-2px]">
+                                                        -{dp}%
+                                                    </Badge>
+                                                )}
+                                            </div>
+                                            {dp > 0 && (
+                                                <span className="text-sm text-slate-400 dark:text-slate-500 line-through font-medium mt-1 font-mono">
+                                                    {formatVND(selectedVariant.price)}
+                                                </span>
+                                            )}
+                                        </div>
+
+                                        {/* Giá đã VAT */}
+                                        <div className="border border-blue-100 dark:border-blue-900/30 bg-[#f4f8fd] dark:bg-blue-950/20 rounded-lg p-4">
+                                            <p className="text-[11px] font-bold text-[#4285f4] dark:text-blue-400 tracking-wider mb-2 uppercase">Giá đã bao gồm VAT ({selectedVariant.vat_percent}%)</p>
+                                            <div className="flex items-baseline gap-3">
+                                                <span className="text-2xl font-black text-red-600 dark:text-red-500">
+                                                    {formatVND((actualPrice ?? selectedVariant.price) * (1 + selectedVariant.vat_percent / 100))}
+                                                </span>
+                                                {dp > 0 && (
+                                                    <Badge className="bg-[#ffc107] hover:bg-[#e0a800] dark:bg-yellow-500/20 dark:text-yellow-500 dark:hover:bg-yellow-500/30 text-[#333] text-[13px] px-2.5 py-0.5 font-bold shadow-sm border-none translate-y-[-2px]">
+                                                        -{dp}%
+                                                    </Badge>
+                                                )}
+                                            </div>
+                                            {dp > 0 && (
+                                                <span className="text-sm text-slate-400 dark:text-slate-500 line-through font-medium mt-1 font-mono flex">
+                                                    {formatVND(selectedVariant.price * (1 + selectedVariant.vat_percent / 100))}
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="flex flex-col gap-1">
+                                        <div className="flex items-baseline gap-3">
+                                            <span className="text-3xl sm:text-4xl font-black text-red-600 dark:text-red-500 tracking-tight">
+                                                {formatVND(actualPrice ?? selectedVariant.price)}
+                                            </span>
+                                            {dp > 0 && (
+                                                <Badge className="bg-[#ffc107] hover:bg-[#e0a800] dark:bg-yellow-500/20 dark:text-yellow-500 dark:hover:bg-yellow-500/30 text-[#333] text-[13px] px-2.5 py-0.5 font-bold shadow-sm border-none translate-y-[-4px]">
+                                                    -{dp}%
+                                                </Badge>
+                                            )}
+                                        </div>
                                         {dp > 0 && (
-                                            <Badge className="bg-[#ffc107] hover:bg-[#e0a800] dark:bg-yellow-500/20 dark:text-yellow-500 dark:hover:bg-yellow-500/30 text-[#333] text-[13px] px-2.5 py-0.5 font-bold shadow-sm border-none translate-y-[-4px]">
-                                                -{dp}%
-                                            </Badge>
+                                            <span className="text-lg text-slate-400 dark:text-slate-500 line-through font-medium">
+                                                {formatVND(selectedVariant.price)}
+                                            </span>
                                         )}
                                     </div>
-                                    {dp > 0 && (
-                                        <span className="text-lg text-slate-400 dark:text-slate-500 line-through font-medium">
-                                            {formatVND(selectedVariant.price)}
-                                        </span>
-                                    )}
-                                </div>
+                                )
                             ) : priceRange ? (
                                 <div className="flex flex-col gap-1">
                                     <div className="flex items-center gap-3">

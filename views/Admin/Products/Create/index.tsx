@@ -34,6 +34,7 @@ const productSchema = z.object({
         attributes: z.record(z.string(), z.string()),
         price: z.coerce.number().min(0, "Giá không được âm"),
         stock: z.coerce.number().min(0, "Kho không được âm"),
+        vat_percent: z.coerce.number().min(0, "VAT không được âm").max(100, "VAT tối đa 100").default(0),
         sku: z.string().optional()
     })).default([])
 }) as any;
@@ -179,6 +180,7 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
                 attributes: v.attributes,
                 price: v.price,
                 stock: v.stock,
+                vat_percent: v.vat_percent || 0,
                 sku: v.sku || ""
             }));
 
@@ -235,6 +237,7 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
                     attributes: combo,
                     price: 0,
                     stock: 0,
+                    vat_percent: 0,
                     sku: ""
                 };
             });
@@ -295,6 +298,7 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
                                 sku: v.sku || null,
                                 price: Number(v.price) || 0,
                                 stock: Number(v.stock) || 0,
+                                vat_percent: Number(v.vat_percent || 0),
                                 attributes: v.attributes,
                             },
                         });
@@ -304,6 +308,7 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
                             sku: v.sku || null,
                             price: Number(v.price) || 0,
                             stock: Number(v.stock) || 0,
+                            vat_percent: Number(v.vat_percent || 0),
                             attributes: v.attributes,
                         });
                     }
@@ -398,6 +403,7 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
                         sku: v.sku || null,
                         price: Number(v.price) || 0,
                         stock: Number(v.stock) || 0,
+                        vat_percent: Number(v.vat_percent || 0),
                         attributes: v.attributes,
                     }));
 
@@ -696,6 +702,7 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
                                                         <th className="p-3 font-semibold">Biến thể</th>
                                                         <th className="p-3 font-semibold w-32">Giá bán</th>
                                                         <th className="p-3 font-semibold w-28">Kho hàng</th>
+                                                        <th className="p-3 font-semibold w-28">Thuế VAT (%)</th>
                                                         <th className="p-3 font-semibold">Mã SKU</th>
                                                         <th className="p-3 font-semibold w-12 text-center">Xóa</th>
                                                     </tr>
@@ -711,6 +718,9 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
                                                             </td>
                                                             <td className="p-3">
                                                                 <Input type="number" {...form.register(`variants.${vIdx}.stock`)} className="h-9 bg-white dark:bg-[#0f1219] border-slate-200 dark:border-white/5" />
+                                                            </td>
+                                                            <td className="p-3">
+                                                                <Input type="number" {...form.register(`variants.${vIdx}.vat_percent`)} className="h-9 bg-white dark:bg-[#0f1219] border-slate-200 dark:border-white/5" />
                                                             </td>
                                                             <td className="p-3">
                                                                 <Input {...form.register(`variants.${vIdx}.sku`)} placeholder="SKU..." className="h-9 bg-white dark:bg-[#0f1219] border-slate-200 dark:border-white/5" />
