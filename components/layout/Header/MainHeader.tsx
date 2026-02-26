@@ -136,10 +136,10 @@ export const MainHeader = () => {
 
     return (
         <div className="w-full bg-white dark:bg-industrial-black py-4 border-b border-slate-200 dark:border-white/5 relative z-20 transition-colors duration-300">
-            <div className="container mx-auto max-w-7xl px-4 flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className="container mx-auto max-w-7xl px-4 flex flex-wrap items-center justify-between gap-y-4 gap-x-4">
 
                 {/* Logo */}
-                <Link href="/" className="flex items-center gap-2 group">
+                <Link href="/" className="flex items-center gap-2 group order-1">
                     <div className="bg-electric-orange text-white p-1.5 rounded transform group-hover:scale-105 transition-transform duration-300">
                         <Zap size={24} fill="currentColor" />
                     </div>
@@ -151,7 +151,7 @@ export const MainHeader = () => {
                 </Link>
 
                 {/* Search Bar with Dropdown */}
-                <div className="flex-1 w-full max-w-2xl px-4">
+                <div className="w-full md:flex-1 md:w-auto md:max-w-2xl px-0 md:px-4 order-3 md:order-2">
                     <div ref={searchContainerRef} className="relative w-full group">
                         <form onSubmit={handleSearch} className="relative flex items-center w-full">
                             <Input
@@ -236,7 +236,7 @@ export const MainHeader = () => {
                 </div>
 
                 {/* Actions: Cart & Login */}
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 order-2 md:order-3">
                     <CartPopover />
 
                     {user ? (
