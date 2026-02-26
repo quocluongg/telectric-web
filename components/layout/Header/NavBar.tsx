@@ -55,7 +55,6 @@ export const NavBar = () => {
                         <NavItem href="/" icon={<Home size={16} />} label="Trang Chủ" onClick={() => setIsMobileMenuOpen(false)} />
                         <NavItem href="/products" icon={<Package size={16} />} label="Sản Phẩm" onClick={() => setIsMobileMenuOpen(false)} />
                         <NavItem href="/brands" icon={<Zap size={16} />} label="Thương Hiệu" onClick={() => setIsMobileMenuOpen(false)} />
-                        <NavItem href="/promotions" icon={<Percent size={16} />} label="Khuyến Mãi" onClick={() => setIsMobileMenuOpen(false)} />
                         <NavItem href="/news" icon={<Megaphone size={16} />} label="Bài viết" onClick={() => setIsMobileMenuOpen(false)} />
                         <NavItem href="/warranty-check" icon={<ShieldCheck size={16} />} label="Tra cứu BH" onClick={() => setIsMobileMenuOpen(false)} />
                         <NavItem href="/contact" icon={<LifeBuoy size={16} />} label="Liên Hệ" onClick={() => setIsMobileMenuOpen(false)} />
