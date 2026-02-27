@@ -37,6 +37,7 @@ export function LoginForm({
 }: LoginFormProps) {
     const [showPassword, setShowPassword] = useState(false)
     const [isLoading, setIsLoading] = useState(false)
+    const [adminChoice, setAdminChoice] = useState<{ show: boolean, name: string | null }>({ show: false, name: null })
     const { toast } = useToast()
     const router = useRouter()
     const supabase = createClient()
@@ -52,7 +53,7 @@ export function LoginForm({
     async function onSubmit(values: z.infer<typeof formSchema>) {
         setIsLoading(true)
         try {
-            const { error } = await supabase.auth.signInWithPassword({
+            const { data, error } = await supabase.auth.signInWithPassword({
                 email: values.identifier,
                 password: values.password,
             })
@@ -66,8 +67,19 @@ export function LoginForm({
                 return
             }
 
+            // Check admin role
+            const { data: profile } = await supabase
+                .from("profiles")
+                .select("role, full_name")
+                .eq("id", data.user.id)
+                .single()
+
+            if (profile?.role === "admin" || profile?.role === "moderator") {
+                setAdminChoice({ show: true, name: profile.full_name })
+                return // Stop execution here to show choice UI
+            }
+
             toast({
-                // variant: "success", 
                 title: "Thành công",
                 description: "Đăng nhập thành công",
             })
@@ -90,6 +102,65 @@ export function LoginForm({
         } finally {
             setIsLoading(false)
         }
+    }
+
+    const handleAdminChoice = (choice: 'admin' | 'store') => {
+        toast({
+            title: "Thành công",
+            description: "Đăng nhập thành công",
+        })
+
+        if (choice === 'admin') {
+            router.push('/admin/dashboard')
+        } else {
+            const searchParams = new URLSearchParams(window.location.search)
+            const redirectTo = searchParams.get("redirect")
+            if (redirectTo) {
+                router.push(redirectTo)
+            } else {
+                router.refresh()
+            }
+        }
+        onClose?.()
+    }
+
+    if (adminChoice.show) {
+        return (
+            <div className="w-full space-y-8 py-4">
+                <div className="space-y-3 text-center">
+                    <div className="mx-auto w-16 h-16 bg-electric-orange/10 rounded-full flex items-center justify-center mb-4">
+                        <span className="text-2xl font-bold tracking-tight text-electric-orange">T</span>
+                    </div>
+                    <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
+                        Chào mừng quản trị viên,
+                    </h2>
+                    <p className="text-lg font-medium text-electric-orange">
+                        {adminChoice.name || "Admin"}
+                    </p>
+                    <p className="text-sm text-slate-500 dark:text-slate-400 max-w-xs mx-auto pt-2">
+                        Bạn muốn tiếp tục phiên làm việc tại giao diện nào?
+                    </p>
+                </div>
+
+                <div className="grid grid-cols-1 gap-4 mt-6">
+                    <Button
+                        onClick={() => handleAdminChoice('admin')}
+                        className="w-full h-14 bg-slate-900 border border-slate-800 hover:bg-slate-800 text-white dark:bg-slate-800 dark:border-slate-700 dark:hover:bg-slate-700 font-bold text-base flex items-center justify-center gap-2 group transition-all"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-electric-orange group-hover:scale-110 transition-transform"><rect width="18" height="18" x="3" y="3" rx="2" /><path d="M3 9h18" /><path d="M9 21V9" /></svg>
+                        Vào trang Quản Trị
+                    </Button>
+                    <Button
+                        onClick={() => handleAdminChoice('store')}
+                        variant="outline"
+                        className="w-full h-14 border-electric-orange/30 bg-electric-orange/5 hover:bg-electric-orange/10 hover:border-electric-orange/50 text-electric-orange font-bold text-base flex items-center justify-center gap-2 transition-all dark:bg-[#1e2330] dark:border-slate-800 dark:text-white dark:hover:border-electric-orange/50 dark:hover:text-electric-orange"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="opacity-80"><circle cx="8" cy="21" r="1" /><circle cx="19" cy="21" r="1" /><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" /></svg>
+                        Tiếp tục mua sắm
+                    </Button>
+                </div>
+            </div>
+        )
     }
 
     return (
