@@ -109,9 +109,8 @@ function printBill(order: any) {
         <!-- Header -->
         <div style="display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #ea580c;padding-bottom:20px;margin-bottom:24px;">
             <div>
-                <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
-                    <div style="width:36px;height:36px;background:#ea580c;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:18px;">T</div>
-                    <span style="font-size:22px;font-weight:900;color:#1a1a1a;letter-spacing:-0.5px;">TLECTRIC</span>
+                <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px;">
+                    <img src="https://quocluong.id.vn/img/logo-telectric.png" alt="TLECTRIC" style="height:80px;width:auto;object-fit:contain;" />
                 </div>
                 <div style="font-size:12px;color:#888;margin-top:4px;">Thiết bị điện công nghiệp chính hãng</div>
             </div>

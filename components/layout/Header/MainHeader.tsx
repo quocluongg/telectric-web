@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Search, Zap, User, LogOut, Settings, UserCircle, ChevronDown, ShoppingCart, Loader2 } from "lucide-react";
+import { Search, Zap, User, LogOut, Settings, UserCircle, ChevronDown, ShoppingCart, Loader2, Shield } from "lucide-react";
 import Image from "next/image";
 import { Input } from "@/components/ui/input";
 import { AuthModal } from "@/components/auth/AuthModal";
@@ -52,6 +52,7 @@ function useDebounce<T>(value: T, delay: number): T {
 
 export const MainHeader = () => {
     const [user, setUser] = useState<SupabaseUser | null>(null);
+    const [userRole, setUserRole] = useState<string | null>(null);
     const supabase = createClient();
     const router = useRouter();
 
@@ -114,15 +115,31 @@ export const MainHeader = () => {
     };
 
     useEffect(() => {
+        const fetchUserRole = async (userId: string) => {
+            const { data } = await supabase
+                .from("profiles")
+                .select("role")
+                .eq("id", userId)
+                .maybeSingle();
+            setUserRole(data?.role || null);
+        };
+
         const getUser = async () => {
             const { data: { user } } = await supabase.auth.getUser();
             setUser(user);
+            if (user) fetchUserRole(user.id);
         };
 
         getUser();
 
         const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-            setUser(session?.user ?? null);
+            const newUser = session?.user ?? null;
+            setUser(newUser);
+            if (newUser) {
+                fetchUserRole(newUser.id);
+            } else {
+                setUserRole(null);
+            }
         });
 
         return () => subscription.unsubscribe();
@@ -130,6 +147,7 @@ export const MainHeader = () => {
 
     const handleLogout = async () => {
         await supabase.auth.signOut();
+        setUserRole(null);
         router.push("/");
         router.refresh();
     };
@@ -139,15 +157,12 @@ export const MainHeader = () => {
             <div className="container mx-auto max-w-7xl px-4 flex flex-wrap items-center justify-between gap-y-4 gap-x-4">
 
                 {/* Logo */}
-                <Link href="/" className="flex items-center gap-2 group order-1">
-                    <div className="bg-electric-orange text-white p-1.5 rounded transform group-hover:scale-105 transition-transform duration-300">
-                        <Zap size={24} fill="currentColor" />
-                    </div>
-                    <div className="flex flex-col">
-                        <span className="text-xl font-bold text-slate-900 dark:text-white tracking-tight leading-none group-hover:text-electric-orange transition-colors">
-                            TLECTRIC
-                        </span>
-                    </div>
+                <Link href="/" className="flex items-center group order-1">
+                    <img
+                        src="/img/logo-telectric.png"
+                        alt="TLECTRIC Logo"
+                        className="h-16 w-auto md:h-28 object-contain transition-transform duration-300 group-hover:scale-105"
+                    />
                 </Link>
 
                 {/* Search Bar with Dropdown */}
@@ -253,6 +268,14 @@ export const MainHeader = () => {
                             <DropdownMenuContent className="w-56 bg-white dark:bg-[#1e2330] border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200" align="end">
                                 <DropdownMenuLabel>Tài khoản của tôi</DropdownMenuLabel>
                                 <DropdownMenuSeparator className="bg-slate-200 dark:bg-slate-700" />
+                                {(userRole === "admin" || userRole === "moderator") && (
+                                    <DropdownMenuItem asChild>
+                                        <Link href="/admin" className="focus:bg-electric-orange/10 focus:text-electric-orange cursor-pointer w-full flex items-center font-bold text-electric-orange">
+                                            <Shield className="mr-2 h-4 w-4" />
+                                            <span>Trang quản trị</span>
+                                        </Link>
+                                    </DropdownMenuItem>
+                                )}
                                 <DropdownMenuItem asChild>
                                     <Link href="/account" className="focus:bg-slate-100 dark:focus:bg-[#2a3040] focus:text-slate-900 dark:focus:text-white cursor-pointer w-full flex items-center">
                                         <UserCircle className="mr-2 h-4 w-4" />

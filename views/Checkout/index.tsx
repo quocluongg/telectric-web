@@ -406,11 +406,12 @@ export default function CheckoutPage() {
             {/* Header */}
             <header className="bg-white dark:bg-[#1c212c] border-b border-gray-200 dark:border-white/10 sticky top-0 z-50">
                 <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-                    <Link href="/" className="flex items-center gap-2">
-                        <div className="h-8 w-8 bg-orange-600 rounded-lg flex items-center justify-center">
-                            <span className="text-white font-black text-sm">T</span>
-                        </div>
-                        <span className="font-black text-xl tracking-tight text-slate-900 dark:text-white">TLECTRIC</span>
+                    <Link href="/" className="flex items-center">
+                        <img
+                            src="/img/logo-telectric.png"
+                            alt="TLECTRIC Logo"
+                            className="h-24 w-auto object-contain"
+                        />
                     </Link>
                     <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400 font-medium">
                         <ShieldCheck className="h-4 w-4 text-green-500" />

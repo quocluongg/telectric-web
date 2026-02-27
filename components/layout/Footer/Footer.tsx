@@ -78,8 +78,7 @@ const Footer = () => {
 
                 <div className="border-t border-gray-200 dark:border-gray-800 pt-8 text-center">
                     <p className="text-slate-500 dark:text-slate-gray text-xs">
-                        &copy; 2026 <strong>T - Electric
-                        </strong>. All rights reserved.
+                        &copy; 2026 <strong>TLECTRIC</strong>. All rights reserved.
                     </p>
                 </div>
             </div>

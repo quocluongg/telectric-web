@@ -162,11 +162,12 @@ export default function WarrantyCheckPage() {
                         <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
                         <span className="text-sm font-medium">Về trang chủ</span>
                     </Link>
-                    <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg flex items-center justify-center text-white font-bold text-sm shadow-lg shadow-orange-500/20">
-                            T
-                        </div>
-                        <span className="text-white font-semibold tracking-tight">TLECTRIC</span>
+                    <div className="flex items-center">
+                        <img
+                            src="/img/logo-telectric.png"
+                            alt="TLECTRIC Logo"
+                            className="h-24 w-auto object-contain"
+                        />
                     </div>
                 </div>
             </header>
