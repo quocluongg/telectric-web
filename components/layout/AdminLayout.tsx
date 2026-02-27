@@ -61,7 +61,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
 
     const SidebarContent = () => (
         <>
-            <div className="p-6 border-b border-gray-100 dark:border-white/5 space-y-4">
+            <div className="p-6 border-b border-gray-100 dark:border-white/5">
                 <Link href="/admin" onClick={() => setIsMobileMenuOpen(false)} className="block transition-transform duration-200 hover:scale-[1.02]">
                     <img
                         src="/img/logo-telectric.png"
@@ -69,14 +69,6 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
                         className="h-24 w-auto object-contain"
                     />
                 </Link>
-
-                <button
-                    onClick={handleLogout}
-                    className="flex items-center gap-3 px-4 py-3 w-full text-slate-500 dark:text-slate-400 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-xl transition-all text-sm font-medium border border-transparent hover:border-red-100 dark:hover:border-red-500/20"
-                >
-                    <LogOut size={20} />
-                    <span>Đăng xuất</span>
-                </button>
             </div>
 
             <nav className="flex-1 p-4 space-y-1 overflow-y-auto mt-2">
