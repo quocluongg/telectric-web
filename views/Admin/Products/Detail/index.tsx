@@ -251,7 +251,7 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
     return (
         <DefaultLayout>
             {/* BACKGROUND GRADIENT INJECTION FOR PREMIUM FEEL */}
-            <div className="absolute inset-0 z-[-1] pointer-events-none bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-50/50 via-white to-white dark:from-[#111827] dark:via-[#0b0f19] dark:to-[#0b0f19]" />
+            <div className="absolute inset-0 z-[-1] pointer-events-none bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900/10 via-[#12141c] to-[#12141c] dark:from-[#1e293b]/20 dark:via-[#12141c] dark:to-[#12141c]" />
 
             {/* MAIN CONTENT */}
             <div className="container mx-auto max-w-[1400px] px-4 sm:px-6 py-10 lg:py-14">
@@ -260,7 +260,7 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
                     {/* ======= LEFT: IMAGE GALLERY ======= */}
                     <div className="lg:col-span-5 flex flex-col gap-4 sticky top-24 self-start">
                         {/* Main Image */}
-                        <div className="relative aspect-square rounded-2xl overflow-hidden bg-white dark:bg-[#0f1219] border border-gray-200 dark:border-white/5 shadow-sm group">
+                        <div className="relative aspect-square rounded-2xl overflow-hidden bg-white dark:bg-[#1c212c] border border-gray-200 dark:border-white/5 shadow-sm group">
                             {allImages[selectedImage] && (
                                 // eslint-disable-next-line @next/next/no-img-element
                                 <img
@@ -296,7 +296,7 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
                                         key={idx}
                                         onClick={() => setSelectedImage(idx)}
                                         className={cn(
-                                            "flex-shrink-0 w-[72px] h-[72px] sm:w-[84px] sm:h-[84px] rounded-xl overflow-hidden border-2 transition-all p-1 bg-white dark:bg-[#0f1219]",
+                                            "flex-shrink-0 w-[72px] h-[72px] sm:w-[84px] sm:h-[84px] rounded-xl overflow-hidden border-2 transition-all p-1 bg-white dark:bg-[#1c212c]",
                                             selectedImage === idx
                                                 ? "border-electric-orange shadow-md shadow-orange-500/20"
                                                 : "border-gray-200 dark:border-slate-800 hover:border-electric-orange/50"
@@ -344,7 +344,7 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
                         </div>
 
                         {/* Product Name */}
-                        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-industrial-black dark:text-slate-50 leading-tight mb-4 tracking-tight">
+                        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-industrial-black dark:text-slate-100 leading-tight mb-4 tracking-tight">
                             {product.name}
                         </h1>
 
@@ -365,7 +365,7 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
                         </div>
 
                         {/* ====== PRICE SECTION ====== */}
-                        <div className="bg-white dark:bg-[#0f1219] border border-gray-200 dark:border-white/5 rounded-2xl p-6 sm:p-8 mb-8 shadow-sm">
+                        <div className="bg-white dark:bg-[#1c212c] border border-gray-200 dark:border-white/5 rounded-2xl p-6 sm:p-8 mb-8 shadow-sm">
                             {flashSale ? (
                                 <div className="flex flex-col gap-3">
                                     <div className="flex flex-wrap items-center gap-3 mb-1">
@@ -374,11 +374,11 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
                                         </Badge>
                                         <div className="text-sm font-bold text-red-500 flex items-center gap-1.5 bg-red-50 dark:bg-red-500/10 px-3 py-1 rounded-full border border-red-100 dark:border-red-500/20">
                                             <Clock className="w-4 h-4" /> Bảng đếm ngược:
-                                            <span className="font-mono bg-white dark:bg-[#0f1219] px-1.5 py-0.5 rounded shadow-sm mx-0.5">{formatTime(timeLeft).h}</span>
+                                            <span className="font-mono bg-white dark:bg-[#1c212c] px-1.5 py-0.5 rounded shadow-sm mx-0.5">{formatTime(timeLeft).h}</span>
                                             :
-                                            <span className="font-mono bg-white dark:bg-[#0f1219] px-1.5 py-0.5 rounded shadow-sm mx-0.5">{formatTime(timeLeft).m}</span>
+                                            <span className="font-mono bg-white dark:bg-[#1c212c] px-1.5 py-0.5 rounded shadow-sm mx-0.5">{formatTime(timeLeft).m}</span>
                                             :
-                                            <span className="font-mono bg-white dark:bg-[#0f1219] px-1.5 py-0.5 rounded shadow-sm mx-0.5">{formatTime(timeLeft).s}</span>
+                                            <span className="font-mono bg-white dark:bg-[#1c212c] px-1.5 py-0.5 rounded shadow-sm mx-0.5">{formatTime(timeLeft).s}</span>
                                         </div>
                                     </div>
                                     <div className="flex items-baseline gap-4 mt-2">
@@ -386,7 +386,7 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
                                             {formatVND(flashSale.sale_price)}
                                         </span>
                                         {selectedVariant && (
-                                            <span className="text-lg text-slate-400 dark:text-slate-500 line-through font-medium">
+                                            <span className="text-lg text-slate-400 dark:text-slate-1000 line-through font-medium">
                                                 {formatVND(selectedVariant.price)}
                                             </span>
                                         )}
@@ -409,7 +409,7 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
                                                 )}
                                             </div>
                                             {dp > 0 && (
-                                                <span className="text-base text-slate-400 dark:text-slate-500 line-through font-medium mt-1 font-mono flex">
+                                                <span className="text-base text-slate-400 dark:text-slate-1000 line-through font-medium mt-1 font-mono flex">
                                                     {formatVND(selectedVariant.price)}
                                                 </span>
                                             )}
@@ -430,7 +430,7 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
                                                 )}
                                             </div>
                                             {dp > 0 && (
-                                                <span className="text-base text-slate-400 dark:text-slate-500 line-through font-medium mt-1 font-mono flex">
+                                                <span className="text-base text-slate-400 dark:text-slate-1000 line-through font-medium mt-1 font-mono flex">
                                                     {formatVND(selectedVariant.price * (1 + selectedVariant.vat_percent / 100))}
                                                 </span>
                                             )}
@@ -449,7 +449,7 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
                                             )}
                                         </div>
                                         {dp > 0 && (
-                                            <span className="text-lg text-slate-400 dark:text-slate-500 line-through font-medium">
+                                            <span className="text-lg text-slate-400 dark:text-slate-1000 line-through font-medium">
                                                 {formatVND(selectedVariant.price)}
                                             </span>
                                         )}
@@ -471,7 +471,7 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
                                         )}
                                     </div>
                                     {dp > 0 && (
-                                        <div className="text-base text-slate-400 dark:text-slate-500 line-through font-medium mt-0.5">
+                                        <div className="text-base text-slate-400 dark:text-slate-1000 line-through font-medium mt-0.5">
                                             {priceRange.originalMin === priceRange.originalMax
                                                 ? formatVND(priceRange.originalMin)
                                                 : `${formatVND(priceRange.originalMin)} - ${formatVND(priceRange.originalMax)}`
@@ -510,8 +510,8 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
                                                             isActive
                                                                 ? "border-orange-500 bg-orange-50 dark:bg-orange-500/10 text-orange-600 shadow-[0_0_15px_rgba(249,115,22,0.15)] ring-2 ring-orange-100 dark:ring-orange-500/20"
                                                                 : isAvailable
-                                                                    ? "border-slate-200 dark:border-slate-700 bg-white dark:bg-[#0f1219] text-slate-700 dark:text-slate-300 hover:border-orange-300 dark:hover:border-orange-500/50 hover:text-orange-500 hover:bg-orange-50/50 dark:hover:bg-orange-500/10"
-                                                                    : "border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-[#1a1f2e] text-slate-400 dark:text-slate-600 hover:border-slate-200 dark:hover:border-slate-700"
+                                                                    ? "border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1c212c] text-slate-700 dark:text-slate-300 hover:border-orange-300 dark:hover:border-orange-500/50 hover:text-orange-500 hover:bg-orange-50/50 dark:hover:bg-orange-500/10"
+                                                                    : "border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-[#1c212c]/80 text-slate-400 dark:text-slate-600 hover:border-slate-200 dark:hover:border-slate-700"
                                                         )}
                                                     >
                                                         {isActive && (
@@ -541,7 +541,7 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
                         <div className="flex items-center gap-6 mb-8 flex-wrap">
                             <div>
                                 <p className="text-sm font-bold text-industrial-black dark:text-slate-200 mb-3 tracking-wide">Số lượng</p>
-                                <div className="flex items-center bg-white dark:bg-[#0f1219] border border-gray-200 dark:border-white/10 rounded-xl overflow-hidden shadow-sm">
+                                <div className="flex items-center bg-white dark:bg-[#1c212c] border border-gray-200 dark:border-white/10 rounded-xl overflow-hidden shadow-sm">
                                     <button
                                         onClick={() => setQuantity(q => Math.max(1, q - 1))}
                                         className="h-11 w-11 flex items-center justify-center hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors text-industrial-black dark:text-slate-300"
@@ -594,7 +594,7 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
                                         productName: product.name,
                                         thumbnail: product.thumbnail,
                                         attributes: selectedVariant.attributes,
-                                        price: flashSale?.sale_price ?? (actualPrice ?? selectedVariant.price),
+                                        price: flashSale?.sale_price ?? ((actualPrice ?? selectedVariant.price) * (1 + (selectedVariant.vat_percent || 0) / 100)),
                                         quantity: quantity,
                                         stock: selectedVariant.stock
                                     });
@@ -616,7 +616,7 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
                                         productName: product.name,
                                         thumbnail: product.thumbnail,
                                         attributes: selectedVariant.attributes,
-                                        price: flashSale?.sale_price ?? (actualPrice ?? selectedVariant.price),
+                                        price: flashSale?.sale_price ?? ((actualPrice ?? selectedVariant.price) * (1 + (selectedVariant.vat_percent || 0) / 100)),
                                         quantity: quantity,
                                         stock: selectedVariant.stock
                                     });
@@ -654,8 +654,8 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
 
                     {/* Description */}
                     <div className="lg:col-span-8">
-                        <div className="bg-white dark:bg-[#0f1219] border border-gray-200 dark:border-white/5 rounded-2xl overflow-hidden shadow-sm">
-                            <div className="bg-slate-50 dark:bg-[#1a1f2e] text-industrial-black dark:text-slate-200 px-6 py-4 font-black uppercase tracking-widest text-sm border-b border-gray-200 dark:border-white/5">
+                        <div className="bg-white dark:bg-[#1c212c] border border-gray-200 dark:border-white/5 rounded-2xl overflow-hidden shadow-sm">
+                            <div className="bg-slate-50 dark:bg-[#1c212c]/80 text-industrial-black dark:text-slate-200 px-6 py-4 font-black uppercase tracking-widest text-sm border-b border-gray-200 dark:border-white/5">
                                 Mô tả sản phẩm
                             </div>
                             <div className="p-6 md:p-8">
@@ -671,13 +671,13 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
 
                         {/* Variants Table */}
                         {variants.length > 0 && (
-                            <div className="bg-white dark:bg-[#0f1219] border border-gray-200 dark:border-white/5 rounded-2xl overflow-hidden mt-8 shadow-sm">
-                                <div className="bg-slate-50 dark:bg-[#1a1f2e] text-industrial-black dark:text-slate-200 px-6 py-4 font-black uppercase tracking-widest text-sm border-b border-gray-200 dark:border-white/5 flex items-center gap-2">
+                            <div className="bg-white dark:bg-[#1c212c] border border-gray-200 dark:border-white/5 rounded-2xl overflow-hidden mt-8 shadow-sm">
+                                <div className="bg-slate-50 dark:bg-[#1c212c]/80 text-industrial-black dark:text-slate-200 px-6 py-4 font-black uppercase tracking-widest text-sm border-b border-gray-200 dark:border-white/5 flex items-center gap-2">
                                     <Layers className="h-4 w-4" /> Tất cả phân loại ({variants.length})
                                 </div>
                                 <div className="overflow-x-auto">
                                     <table className="w-full text-sm">
-                                        <thead className="bg-white dark:bg-[#0f1219] border-b border-gray-200 dark:border-white/5">
+                                        <thead className="bg-white dark:bg-[#1c212c] border-b border-gray-200 dark:border-white/5">
                                             <tr>
                                                 <th className="px-6 py-4 text-left font-bold text-slate-500 dark:text-slate-400 uppercase text-xs tracking-wider">Phân loại</th>
                                                 <th className="px-6 py-4 text-left font-bold text-slate-500 dark:text-slate-400 uppercase text-xs tracking-wider">SKU</th>
@@ -694,7 +694,7 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
                                                         "transition-colors cursor-pointer group",
                                                         selectedVariant?.id === v.id
                                                             ? "bg-orange-50/50 dark:bg-orange-500/10"
-                                                            : "hover:bg-slate-50 dark:hover:bg-slate-800/50 bg-white dark:bg-[#0f1219]"
+                                                            : "hover:bg-slate-50 dark:hover:bg-[#2a3040] bg-white dark:bg-[#1c212c]"
                                                     )}
                                                     onClick={() => setSelectedAttributes(v.attributes)}
                                                 >
@@ -712,7 +712,7 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
                                                                 {formatVND(dp > 0 ? v.price * (1 - dp / 100) : v.price)}
                                                             </span>
                                                             {dp > 0 && (
-                                                                <span className="text-[11px] text-slate-400 dark:text-slate-500 line-through font-mono mt-0.5">
+                                                                <span className="text-[11px] text-slate-400 dark:text-slate-1000 line-through font-mono mt-0.5">
                                                                     {formatVND(v.price)}
                                                                 </span>
                                                             )}
@@ -743,7 +743,7 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
                     {/* Sidebar */}
                     <div className="lg:col-span-4 space-y-6 lg:space-y-8">
                         {/* Contact CTA */}
-                        <div className="bg-white dark:bg-[#0f1219] border border-gray-200 dark:border-white/5 rounded-2xl p-6 shadow-sm relative overflow-hidden group">
+                        <div className="bg-white dark:bg-[#1c212c] border border-gray-200 dark:border-white/5 rounded-2xl p-6 shadow-sm relative overflow-hidden group">
                             <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/10 rounded-full blur-[40px] -translate-y-1/2 translate-x-1/2 pointer-events-none transition-all duration-500 group-hover:bg-orange-500/20" />
                             <h3 className="font-black text-industrial-black dark:text-slate-200 mb-3 text-sm uppercase tracking-widest flex items-center gap-2">
                                 <span className="w-1.5 h-1.5 rounded-full bg-electric-orange animate-pulse" />
@@ -765,7 +765,7 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
                         </div>
 
                         {/* Product Info */}
-                        <div className="bg-white dark:bg-[#0f1219] border border-gray-200 dark:border-white/5 rounded-2xl p-6 shadow-sm">
+                        <div className="bg-white dark:bg-[#1c212c] border border-gray-200 dark:border-white/5 rounded-2xl p-6 shadow-sm">
                             <h3 className="font-black text-industrial-black dark:text-slate-200 mb-5 text-sm uppercase tracking-widest">Thông số cơ bản</h3>
                             <dl className="space-y-4 text-[13px] md:text-sm">
                                 <div className="flex justify-between items-center">

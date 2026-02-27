@@ -44,18 +44,28 @@ export async function updateSession(request: NextRequest) {
 
   // IMPORTANT: If you remove getClaims() and you use server-side rendering
   // with the Supabase client, your users may be randomly logged out.
-  const { data } = await supabase.auth.getClaims();
-  const user = data?.claims;
+  let user = null;
+  try {
+    const { data, error } = await supabase.auth.getClaims();
+    if (error) {
+      console.error("Auth error in middleware:", error.message);
+    }
+    user = data?.claims;
+  } catch (e) {
+    console.error("Unexpected auth error in middleware:", e);
+  }
 
-  if (
-    request.nextUrl.pathname !== "/" &&
-    !user &&
-    !request.nextUrl.pathname.startsWith("/login") &&
-    !request.nextUrl.pathname.startsWith("/auth")
-  ) {
-    // no user, potentially respond by redirecting the user to the login page
+  const isProtectedPath =
+    request.nextUrl.pathname.startsWith("/admin") ||
+    request.nextUrl.pathname.startsWith("/account");
+
+  // Allow all other paths to be public
+  if (isProtectedPath && !user) {
+    // no user, redirect to homepage and trigger login modal
     const url = request.nextUrl.clone();
-    url.pathname = "/auth/login";
+    url.pathname = "/";
+    url.searchParams.set("login", "true");
+    url.searchParams.set("redirect", request.nextUrl.pathname);
     return NextResponse.redirect(url);
   }
 

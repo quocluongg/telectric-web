@@ -103,17 +103,32 @@ export default function CheckoutPage() {
             // ── Step C: Fetch real prices for non-graced suspects ──
             const { data: variantData } = await supabase
                 .from("product_variants")
-                .select("id, price")
+                .select("id, price, vat_percent, products(discount_percent)")
                 .in("id", variantIds);
 
             const variantPriceMap: Record<string, number> = {};
-            (variantData || []).forEach((v: any) => { variantPriceMap[v.id] = v.price; });
+            (variantData || []).forEach((v: any) => {
+                const basePrice = v.price;
+                const vat = v.vat_percent || 0;
+                // Since `products` could be an array if the DB relation is weird, handle it safely or assume single
+                const discount = Array.isArray(v.products) ? v.products[0]?.discount_percent : v.products?.discount_percent;
+                const discountVal = discount || 0;
+
+                // formula: (price - discount%) + VAT%
+                const discountedPrice = basePrice * (1 - discountVal / 100);
+                const finalAllowedPrice = discountedPrice * (1 + vat / 100);
+
+                variantPriceMap[v.id] = finalAllowedPrice;
+            });
 
             const suspectVariantIds = workingCart
                 .filter(item => {
                     if (item.saleGraceExpiresAt) return false; // already in grace
-                    const realPrice = variantPriceMap[item.variantId ?? ""];
-                    return realPrice !== undefined && item.price < realPrice;
+                    const realAllowedPrice = variantPriceMap[item.variantId ?? ""];
+                    // If the item in cart is magically cheaper than the discounted+VAT price, 
+                    // then it must have been a flash sale price (or tampered).
+                    // Use a tiny buffer (.01) to prevent floating-point mismatches
+                    return realAllowedPrice !== undefined && item.price < (realAllowedPrice - 0.01);
                 })
                 .map(item => item.variantId!);
 
@@ -220,6 +235,8 @@ export default function CheckoutPage() {
         else if (!/^(0|\+84)\d{9,10}$/.test(form.phone.replace(/\s/g, "")))
             e.phone = "Số điện thoại không hợp lệ";
         if (!form.address.trim()) e.address = "Vui lòng nhập địa chỉ";
+        if (!form.email.trim()) e.email = "Vui lòng nhập email";
+        else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = "Email không hợp lệ";
         if (!selectedProvince) e.province = "Bạn chưa chọn tỉnh thành";
         if (!selectedDistrict) e.district = "Bạn chưa chọn quận huyện";
         if (!selectedWard) e.ward = "Bạn chưa chọn phường xã";
@@ -369,12 +386,14 @@ export default function CheckoutPage() {
     // --- Empty cart ---
     if (cartItems.length === 0) {
         return (
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-                <div className="text-center">
-                    <Package className="h-16 w-16 text-slate-300 mx-auto mb-4" />
-                    <h2 className="text-xl font-bold text-slate-700 mb-2">Giỏ hàng trống</h2>
-                    <p className="text-slate-500 mb-6">Bạn chưa có sản phẩm nào trong giỏ hàng</p>
-                    <Button asChild className="bg-orange-600 hover:bg-orange-700">
+            <div className="min-h-screen bg-gray-50 dark:bg-[#12141c] flex items-center justify-center p-4">
+                <div className="text-center bg-white dark:bg-[#1c212c] p-10 rounded-2xl border border-gray-100 dark:border-white/10 shadow-sm max-w-sm w-full mx-auto">
+                    <div className="w-20 h-20 bg-orange-50 dark:bg-orange-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <Package className="h-10 w-10 text-orange-500" />
+                    </div>
+                    <h2 className="text-2xl font-black text-slate-900 dark:text-white mb-2 tracking-tight">Giỏ hàng trống</h2>
+                    <p className="text-slate-500 dark:text-slate-400 mb-8">Bạn chưa có sản phẩm nào trong giỏ hàng</p>
+                    <Button asChild className="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold h-12 rounded-xl shadow-[0_8px_20px_rgba(249,115,22,0.25)] hover:-translate-y-0.5 transition-all">
                         <Link href="/products">Khám phá sản phẩm</Link>
                     </Button>
                 </div>
@@ -383,231 +402,257 @@ export default function CheckoutPage() {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-gray-50 dark:bg-[#12141c] text-slate-900 dark:text-slate-200">
             {/* Header */}
-            <header className="bg-white border-b sticky top-0 z-50">
-                <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+            <header className="bg-white dark:bg-[#1c212c] border-b border-gray-200 dark:border-white/10 sticky top-0 z-50">
+                <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
                     <Link href="/" className="flex items-center gap-2">
                         <div className="h-8 w-8 bg-orange-600 rounded-lg flex items-center justify-center">
                             <span className="text-white font-black text-sm">T</span>
                         </div>
-                        <span className="font-black text-lg text-slate-900">TLECTRIC</span>
+                        <span className="font-black text-xl tracking-tight text-slate-900 dark:text-white">TLECTRIC</span>
                     </Link>
-                    <div className="flex items-center gap-4 text-sm text-slate-500">
-                        <ShieldCheck className="h-4 w-4 text-green-600" />
-                        <span>Thanh toán an toàn & bảo mật</span>
+                    <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400 font-medium">
+                        <ShieldCheck className="h-4 w-4 text-green-500" />
+                        <span className="hidden sm:inline">Thanh toán an toàn & bảo mật</span>
+                        <span className="sm:hidden">Bảo mật</span>
                     </div>
                 </div>
             </header>
 
-            <div className="max-w-7xl mx-auto px-4 py-6 lg:py-8">
+            <div className="max-w-7xl mx-auto px-4 py-8 lg:py-12">
                 {/* Back */}
                 <Link
                     href="/products"
-                    className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-orange-600 transition-colors mb-6"
+                    className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 dark:text-slate-400 hover:text-orange-600 dark:hover:text-orange-500 transition-colors mb-8"
                 >
                     <ChevronLeft className="h-4 w-4" /> Quay lại mua sắm
                 </Link>
 
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
                     {/* ========= LEFT: FORM ========= */}
-                    <div className="lg:col-span-7 space-y-6">
+                    <div className="lg:col-span-7 space-y-8">
 
                         {/* --- Customer Info --- */}
-                        <div className="bg-white rounded-xl border p-6">
-                            <h2 className="text-lg font-bold text-slate-900 mb-5 flex items-center gap-2">
+                        <div className="bg-white dark:bg-[#1c212c] rounded-2xl border border-gray-200 dark:border-white/10 p-6 md:p-8 shadow-sm">
+                            <h2 className="text-xl font-black text-slate-900 dark:text-white mb-6 flex items-center gap-3">
+                                <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-orange-100 dark:bg-orange-500/20 text-orange-600 dark:text-orange-500 text-sm">1</span>
                                 Thông tin nhận hàng
                             </h2>
 
-                            <div className="space-y-4">
-                                {/* Email */}
-                                <div>
-                                    <Label className="text-sm font-medium text-slate-700">Email (tùy chọn)</Label>
-                                    <Input
-                                        placeholder="email@example.com"
-                                        value={form.email}
-                                        onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
-                                        className="mt-1.5"
-                                    />
-                                </div>
-
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                                 {/* Name */}
-                                <div>
-                                    <Label className="text-sm font-medium text-slate-700">
+                                <div className="md:col-span-2">
+                                    <Label className="text-sm font-bold text-slate-700 dark:text-slate-300">
                                         Họ và tên <span className="text-red-500">*</span>
                                     </Label>
                                     <Input
                                         placeholder="Nguyễn Văn A"
                                         value={form.name}
                                         onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-                                        className={cn("mt-1.5", errors.name && "border-red-400")}
+                                        className={cn("mt-2 h-12 bg-gray-50 dark:bg-[#1c212c] border-gray-200 dark:border-white/10 focus:border-orange-500 dark:focus:border-orange-500 rounded-xl", errors.name && "border-red-400 dark:border-red-500/50")}
                                     />
-                                    {errors.name && <p className="text-xs text-red-500 mt-1">{errors.name}</p>}
+                                    {errors.name && <p className="text-xs font-medium text-red-500 mt-1.5">{errors.name}</p>}
                                 </div>
 
                                 {/* Phone */}
                                 <div>
-                                    <Label className="text-sm font-medium text-slate-700">
+                                    <Label className="text-sm font-bold text-slate-700 dark:text-slate-300">
                                         Số điện thoại <span className="text-red-500">*</span>
                                     </Label>
-                                    <div className="flex mt-1.5">
-                                        <div className="flex items-center gap-1.5 px-3 bg-gray-50 border border-r-0 rounded-l-md text-sm text-slate-500">
-                                            🇻🇳
+                                    <div className="flex mt-2">
+                                        <div className="flex items-center gap-1.5 px-4 bg-gray-100 dark:bg-[#12141c] border border-gray-200 dark:border-white/10 border-r-0 rounded-l-xl text-sm text-slate-500 dark:text-slate-400 font-medium">
+                                            +84
                                         </div>
                                         <Input
                                             placeholder="0912 345 678"
                                             value={form.phone}
                                             onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
-                                            className={cn("rounded-l-none", errors.phone && "border-red-400")}
+                                            className={cn("h-12 rounded-l-none bg-gray-50 dark:bg-[#1c212c] border-gray-200 dark:border-white/10 focus:border-orange-500 dark:focus:border-orange-500 rounded-r-xl", errors.phone && "border-red-400 dark:border-red-500/50")}
                                         />
                                     </div>
-                                    {errors.phone && <p className="text-xs text-red-500 mt-1">{errors.phone}</p>}
+                                    {errors.phone && <p className="text-xs font-medium text-red-500 mt-1.5">{errors.phone}</p>}
                                 </div>
 
-                                {/* Address */}
+                                {/* Email */}
                                 <div>
-                                    <Label className="text-sm font-medium text-slate-700">
-                                        Địa chỉ <span className="text-red-500">*</span>
+                                    <Label className="text-sm font-bold text-slate-700 dark:text-slate-300">
+                                        Email <span className="text-red-500">*</span>
                                     </Label>
                                     <Input
-                                        placeholder="Số nhà, tên đường..."
+                                        placeholder="email@example.com"
+                                        value={form.email}
+                                        onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
+                                        className={cn("mt-2 h-12 bg-gray-50 dark:bg-[#1c212c] border-gray-200 dark:border-white/10 focus:border-orange-500 dark:focus:border-orange-500 rounded-xl", errors.email && "border-red-400 dark:border-red-500/50")}
+                                    />
+                                    {errors.email && <p className="text-xs font-medium text-red-500 mt-1.5">{errors.email}</p>}
+                                </div>
+
+                                <div className="md:col-span-2 border-t border-gray-100 dark:border-white/5 my-2"></div>
+
+                                {/* Address */}
+                                <div className="md:col-span-2">
+                                    <Label className="text-sm font-bold text-slate-700 dark:text-slate-300">
+                                        Địa chỉ chi tiết <span className="text-red-500">*</span>
+                                    </Label>
+                                    <Input
+                                        placeholder="Số nhà, tên đường, tòa nhà..."
                                         value={form.address}
                                         onChange={e => setForm(f => ({ ...f, address: e.target.value }))}
-                                        className={cn("mt-1.5", errors.address && "border-red-400")}
+                                        className={cn("mt-2 h-12 bg-gray-50 dark:bg-[#1c212c] border-gray-200 dark:border-white/10 focus:border-orange-500 dark:focus:border-orange-500 rounded-xl", errors.address && "border-red-400 dark:border-red-500/50")}
                                     />
-                                    {errors.address && <p className="text-xs text-red-500 mt-1">{errors.address}</p>}
+                                    {errors.address && <p className="text-xs font-medium text-red-500 mt-1.5">{errors.address}</p>}
                                 </div>
 
                                 {/* Province / District / Ward */}
-                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-3 gap-4">
                                     <div>
-                                        <Label className="text-sm font-medium text-slate-700">Tỉnh thành</Label>
+                                        <Label className="text-sm font-bold text-slate-700 dark:text-slate-300">Tỉnh thành</Label>
                                         <select
                                             value={selectedProvince}
                                             onChange={e => setSelectedProvince(e.target.value)}
                                             className={cn(
-                                                "w-full mt-1.5 h-10 px-3 rounded-md border bg-white text-sm outline-none focus:ring-2 focus:ring-orange-200 focus:border-orange-400 transition-all",
-                                                errors.province && "border-red-400"
+                                                "w-full mt-2 h-12 px-4 rounded-xl border bg-gray-50 dark:bg-[#1c212c] text-slate-900 dark:text-slate-200 border-gray-200 dark:border-white/10 text-sm outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all",
+                                                errors.province && "border-red-400 dark:border-red-500/50"
                                             )}
                                         >
-                                            <option value="">Tỉnh thành</option>
+                                            <option value="">Tỉnh / Thành phố</option>
                                             {provinces.map(p => (
                                                 <option key={p.code} value={p.code}>{p.name}</option>
                                             ))}
                                         </select>
-                                        {errors.province && <p className="text-xs text-red-500 mt-1">{errors.province}</p>}
+                                        {errors.province && <p className="text-xs font-medium text-red-500 mt-1.5">{errors.province}</p>}
                                     </div>
                                     <div>
-                                        <Label className="text-sm font-medium text-slate-700">Quận huyện</Label>
+                                        <Label className="text-sm font-bold text-slate-700 dark:text-slate-300">Quận / Huyện</Label>
                                         <select
                                             value={selectedDistrict}
                                             onChange={e => setSelectedDistrict(e.target.value)}
                                             disabled={!selectedProvince}
                                             className={cn(
-                                                "w-full mt-1.5 h-10 px-3 rounded-md border bg-white text-sm outline-none focus:ring-2 focus:ring-orange-200 focus:border-orange-400 transition-all disabled:opacity-50 disabled:cursor-not-allowed",
-                                                errors.district && "border-red-400"
+                                                "w-full mt-2 h-12 px-4 rounded-xl border bg-gray-50 dark:bg-[#1c212c] text-slate-900 dark:text-slate-200 border-gray-200 dark:border-white/10 text-sm outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed",
+                                                errors.district && "border-red-400 dark:border-red-500/50"
                                             )}
                                         >
-                                            <option value="">Quận huyện</option>
+                                            <option value="">Quận / Huyện</option>
                                             {districts.map(d => (
                                                 <option key={d.code} value={d.code}>{d.name}</option>
                                             ))}
                                         </select>
-                                        {errors.district && <p className="text-xs text-red-500 mt-1">{errors.district}</p>}
+                                        {errors.district && <p className="text-xs font-medium text-red-500 mt-1.5">{errors.district}</p>}
                                     </div>
                                     <div>
-                                        <Label className="text-sm font-medium text-slate-700">Phường xã</Label>
+                                        <Label className="text-sm font-bold text-slate-700 dark:text-slate-300">Phường xã</Label>
                                         <select
                                             value={selectedWard}
                                             onChange={e => handleWardChange(e.target.value)}
                                             disabled={!selectedDistrict}
                                             className={cn(
-                                                "w-full mt-1.5 h-10 px-3 rounded-md border bg-white text-sm outline-none focus:ring-2 focus:ring-orange-200 focus:border-orange-400 transition-all disabled:opacity-50 disabled:cursor-not-allowed",
-                                                errors.ward && "border-red-400"
+                                                "w-full mt-2 h-12 px-4 rounded-xl border bg-gray-50 dark:bg-[#1c212c] text-slate-900 dark:text-slate-200 border-gray-200 dark:border-white/10 text-sm outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed",
+                                                errors.ward && "border-red-400 dark:border-red-500/50"
                                             )}
                                         >
-                                            <option value="">Phường xã</option>
+                                            <option value="">Phường / Xã</option>
                                             {wards.map(w => (
                                                 <option key={w.code} value={w.code}>{w.name}</option>
                                             ))}
                                         </select>
-                                        {errors.ward && <p className="text-xs text-red-500 mt-1">{errors.ward}</p>}
+                                        {errors.ward && <p className="text-xs font-medium text-red-500 mt-1.5">{errors.ward}</p>}
                                     </div>
                                 </div>
 
                                 {/* Notes */}
-                                <div>
-                                    <Label className="text-sm font-medium text-slate-700">Ghi chú</Label>
+                                <div className="md:col-span-2">
+                                    <Label className="text-sm font-bold text-slate-700 dark:text-slate-300">Ghi chú thêm</Label>
                                     <textarea
-                                        placeholder="Ghi chú thêm cho đơn hàng..."
+                                        placeholder="Ví dụ: Giao hàng giờ hành chính..."
                                         value={form.notes}
                                         onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
-                                        rows={2}
-                                        className="w-full mt-1.5 px-3 py-2 rounded-md border text-sm outline-none focus:ring-2 focus:ring-orange-200 focus:border-orange-400 transition-all resize-none"
+                                        rows={3}
+                                        className="w-full mt-2 px-4 py-3 rounded-xl border bg-gray-50 dark:bg-[#1c212c] text-slate-900 dark:text-slate-200 border-gray-200 dark:border-white/10 text-sm outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all resize-none"
                                     />
                                 </div>
                             </div>
                         </div>
 
                         {/* --- Payment Method --- */}
-                        <div className="bg-white rounded-xl border p-6">
-                            <h2 className="text-lg font-bold text-slate-900 mb-5">Thanh toán</h2>
+                        <div className="bg-white dark:bg-[#1c212c] rounded-2xl border border-gray-200 dark:border-white/10 p-6 md:p-8 shadow-sm">
+                            <h2 className="text-xl font-black text-slate-900 dark:text-white mb-6 flex items-center gap-3">
+                                <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-orange-100 dark:bg-orange-500/20 text-orange-600 dark:text-orange-500 text-sm">2</span>
+                                Phương thức thanh toán
+                            </h2>
 
-                            <div className="space-y-3">
+                            <div className="space-y-4">
                                 {/* COD */}
                                 <label
                                     className={cn(
-                                        "flex items-center gap-4 p-4 rounded-lg border-2 cursor-pointer transition-all",
+                                        "flex items-center gap-4 p-5 rounded-xl border-2 cursor-pointer transition-all duration-200 relative",
                                         paymentMethod === "cod"
-                                            ? "border-orange-400 bg-orange-50"
-                                            : "border-gray-200 hover:border-gray-300"
+                                            ? "border-orange-500 bg-orange-50/50 dark:bg-orange-500/10 shadow-sm"
+                                            : "border-gray-200 dark:border-white/10 hover:border-orange-300 dark:hover:border-orange-500/50 bg-white dark:bg-[#1c212c]"
                                     )}
                                 >
+                                    <div className={cn(
+                                        "flex items-center justify-center w-6 h-6 rounded-full border-2 transition-colors",
+                                        paymentMethod === "cod" ? "border-orange-500 bg-orange-500" : "border-gray-300 dark:border-slate-600"
+                                    )}>
+                                        {paymentMethod === "cod" && <div className="w-2 h-2 bg-white rounded-full" />}
+                                    </div>
                                     <input
                                         type="radio"
                                         name="payment"
                                         value="cod"
                                         checked={paymentMethod === "cod"}
                                         onChange={() => setPaymentMethod("cod")}
-                                        className="accent-orange-600 w-4 h-4"
+                                        className="hidden"
                                     />
-                                    <Banknote className="h-5 w-5 text-green-600" />
+                                    <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-green-100 dark:bg-green-500/20 text-green-600 dark:text-green-500 flex-shrink-0">
+                                        <Banknote className="h-5 w-5" />
+                                    </div>
                                     <div className="flex-1">
-                                        <p className="font-semibold text-sm text-slate-900">Thanh Toán Khi Giao Hàng (Ship COD)</p>
-                                        <p className="text-xs text-slate-500 mt-0.5">Thanh toán bằng tiền mặt khi nhận hàng</p>
+                                        <p className="font-bold text-[15px] text-slate-900 dark:text-slate-200">Thanh toán khi nhận hàng (COD)</p>
+                                        <p className="text-[13px] text-slate-500 dark:text-slate-400 mt-0.5">Kiểm tra hàng trước khi thanh toán</p>
                                     </div>
                                 </label>
 
                                 {/* Bank Transfer */}
                                 <label
                                     className={cn(
-                                        "flex items-center gap-4 p-4 rounded-lg border-2 cursor-pointer transition-all",
+                                        "flex items-center gap-4 p-5 rounded-xl border-2 cursor-pointer transition-all duration-200 relative",
                                         paymentMethod === "bank_transfer"
-                                            ? "border-orange-400 bg-orange-50"
-                                            : "border-gray-200 hover:border-gray-300"
+                                            ? "border-orange-500 bg-orange-50/50 dark:bg-orange-500/10 shadow-sm"
+                                            : "border-gray-200 dark:border-white/10 hover:border-orange-300 dark:hover:border-orange-500/50 bg-white dark:bg-[#1c212c]"
                                     )}
                                 >
+                                    <div className={cn(
+                                        "flex items-center justify-center w-6 h-6 rounded-full border-2 transition-colors",
+                                        paymentMethod === "bank_transfer" ? "border-orange-500 bg-orange-500" : "border-gray-300 dark:border-slate-600"
+                                    )}>
+                                        {paymentMethod === "bank_transfer" && <div className="w-2 h-2 bg-white rounded-full" />}
+                                    </div>
                                     <input
                                         type="radio"
                                         name="payment"
                                         value="bank_transfer"
                                         checked={paymentMethod === "bank_transfer"}
                                         onChange={() => setPaymentMethod("bank_transfer")}
-                                        className="accent-orange-600 w-4 h-4"
+                                        className="hidden"
                                     />
-                                    <CreditCard className="h-5 w-5 text-blue-600" />
+                                    <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-500 flex-shrink-0">
+                                        <CreditCard className="h-5 w-5" />
+                                    </div>
                                     <div className="flex-1">
-                                        <p className="font-semibold text-sm text-slate-900">Chuyển Khoản Qua Ngân Hàng</p>
-                                        <p className="text-xs text-slate-500 mt-0.5">Chuyển khoản trước khi giao hàng</p>
+                                        <p className="font-bold text-[15px] text-slate-900 dark:text-slate-200">Chuyển khoản / Quét mã QR</p>
+                                        <p className="text-[13px] text-slate-500 dark:text-slate-400 mt-0.5">Xác nhận đơn hàng tự động ngay lập tức</p>
                                     </div>
                                 </label>
                             </div>
 
                             {/* Trust note */}
-                            <div className="mt-5 p-4 bg-blue-50 border border-blue-100 rounded-lg flex items-start gap-3">
-                                <ShieldCheck className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
-                                <p className="text-sm text-blue-800">
-                                    Bạn chỉ phải thanh toán khi nhận được hàng hóa chuẩn chính hãng và chất lượng đúng như cam kết!
+                            <div className="mt-6 p-4 bg-orange-50 dark:bg-orange-500/10 border border-orange-200/50 dark:border-orange-500/20 rounded-xl flex items-start gap-3">
+                                <ShieldCheck className="h-5 w-5 text-orange-600 dark:text-orange-500 flex-shrink-0 mt-0.5" />
+                                <p className="text-sm font-medium text-orange-800 dark:text-orange-300/90 leading-relaxed">
+                                    Mọi thông tin thanh toán của bạn luôn được bảo mật tuyệt đối. TLECTRIC cam kết hoàn tiền 100% nếu sản phẩm không đúng mô tả.
                                 </p>
                             </div>
                         </div>
@@ -615,130 +660,127 @@ export default function CheckoutPage() {
 
                     {/* ========= RIGHT: ORDER SUMMARY ========= */}
                     <div className="lg:col-span-5">
-                        <div className="bg-orange-600 rounded-xl p-6 text-white sticky top-20">
-                            <h2 className="text-lg font-bold mb-5 flex items-center gap-2">
-                                <Package className="h-5 w-5" />
-                                Đơn hàng ({cartItems.length} sản phẩm)
-                            </h2>
+                        <div className="bg-white dark:bg-[#1c212c] rounded-2xl border border-gray-200 dark:border-white/10 shadow-lg sticky top-24 overflow-hidden">
+                            {/* Summary Header */}
+                            <div className="px-6 py-5 bg-slate-50 dark:bg-[#1c212c] border-b border-gray-200 dark:border-white/10">
+                                <h2 className="text-lg font-black text-slate-900 dark:text-white flex items-center gap-2">
+                                    <Package className="h-5 w-5 text-orange-500" />
+                                    Tóm tắt đơn hàng ({cartItems.length})
+                                </h2>
+                            </div>
 
-                            {/* Items */}
-                            <div className="space-y-4 mb-6 max-h-[300px] overflow-y-auto pr-1">
-                                {cartItems.map((item) => (
-                                    <div key={item.variantId} className="flex items-start gap-3">
-                                        <div className="relative flex-shrink-0">
-                                            {item.thumbnail ? (
-                                                // eslint-disable-next-line @next/next/no-img-element
-                                                <img
-                                                    src={item.thumbnail}
-                                                    alt={item.productName}
-                                                    className="w-14 h-14 rounded-lg object-cover border-2 border-orange-400"
-                                                />
-                                            ) : (
-                                                <div className="w-14 h-14 rounded-lg bg-orange-500 flex items-center justify-center">
-                                                    <Package className="h-6 w-6 text-orange-200" />
+                            <div className="p-6">
+                                {/* Items */}
+                                <div className="space-y-5 mb-6 max-h-[350px] overflow-y-auto pr-2 custom-scrollbar">
+                                    {cartItems.map((item) => (
+                                        <div key={item.variantId} className="flex items-start gap-4 pb-5 border-b border-gray-100 dark:border-white/5 last:border-0 last:pb-0">
+                                            <div className="flex-shrink-0">
+                                                <div className="w-16 h-16 rounded-xl border border-gray-100 dark:border-white/10 bg-white dark:bg-[#12141c] overflow-hidden flex items-center justify-center p-1">
+                                                    {item.thumbnail ? (
+                                                        // eslint-disable-next-line @next/next/no-img-element
+                                                        <img
+                                                            src={item.thumbnail}
+                                                            alt={item.productName}
+                                                            className="w-full h-full object-cover rounded-lg"
+                                                        />
+                                                    ) : (
+                                                        <Package className="h-6 w-6 text-slate-300" />
+                                                    )}
                                                 </div>
-                                            )}
-                                            <span className="absolute -top-2 -right-2 w-5 h-5 bg-white text-orange-600 rounded-full text-[10px] font-black flex items-center justify-center shadow">
-                                                {item.quantity}
-                                            </span>
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                            <p className="font-semibold text-sm leading-tight truncate">{item.productName}</p>
-                                            <div className="flex gap-1 mt-1 flex-wrap">
-                                                {Object.entries(item.attributes).map(([k, v]) => (
-                                                    <span key={k} className="text-[10px] bg-orange-500/50 px-1.5 py-0.5 rounded">
-                                                        {k}: {v}
-                                                    </span>
-                                                ))}
                                             </div>
-                                        </div>
-                                        <div className="flex flex-col items-end gap-1">
-                                            <span className="font-bold text-sm whitespace-nowrap">{formatVND(item.price * item.quantity)}</span>
-                                            <div className="flex items-center gap-1">
-                                                <button
-                                                    onClick={() => handleQuantity(item.variantId, -1)}
-                                                    className="w-5 h-5 rounded bg-orange-500 hover:bg-orange-400 flex items-center justify-center transition"
-                                                >
-                                                    <Minus className="h-3 w-3" />
-                                                </button>
-                                                <span className="text-xs font-bold w-5 text-center">{item.quantity}</span>
-                                                <button
-                                                    onClick={() => handleQuantity(item.variantId, 1)}
-                                                    className="w-5 h-5 rounded bg-orange-500 hover:bg-orange-400 flex items-center justify-center transition"
-                                                >
-                                                    <Plus className="h-3 w-3" />
-                                                </button>
-                                                <button
-                                                    onClick={() => handleRemove(item.variantId)}
-                                                    className="ml-1 w-5 h-5 rounded bg-red-500 hover:bg-red-400 flex items-center justify-center transition"
-                                                >
-                                                    <Trash2 className="h-3 w-3" />
-                                                </button>
+                                            <div className="flex-1 min-w-0">
+                                                <p className="font-bold text-sm text-slate-900 dark:text-slate-200 line-clamp-2 leading-snug mb-1.5">{item.productName}</p>
+                                                <div className="flex gap-1.5 flex-wrap mb-2">
+                                                    {Object.entries(item.attributes).map(([k, v]) => (
+                                                        <span key={k} className="text-[11px] font-medium bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-400 px-2 py-0.5 rounded-md">
+                                                            {k}: {v}
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                                <div className="flex items-center justify-between">
+                                                    <span className="font-black text-[15px] text-red-600 dark:text-red-500">{formatVND(item.price)}</span>
+
+                                                    {/* Qt controls */}
+                                                    <div className="flex items-center gap-1 bg-gray-50 dark:bg-[#12141c] border border-gray-200 dark:border-white/10 rounded-lg p-0.5">
+                                                        <button
+                                                            onClick={() => handleQuantity(item.variantId, -1)}
+                                                            className="w-6 h-6 rounded-md hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 flex items-center justify-center transition"
+                                                        >
+                                                            <Minus className="h-3 w-3" />
+                                                        </button>
+                                                        <span className="text-xs font-bold w-6 text-center text-slate-900 dark:text-white">{item.quantity}</span>
+                                                        <button
+                                                            onClick={() => handleQuantity(item.variantId, 1)}
+                                                            className="w-6 h-6 rounded-md hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 flex items-center justify-center transition"
+                                                        >
+                                                            <Plus className="h-3 w-3" />
+                                                        </button>
+                                                    </div>
+                                                </div>
                                             </div>
+                                            <button
+                                                onClick={() => handleRemove(item.variantId)}
+                                                className="mt-1 text-slate-400 hover:text-red-500 transition-colors"
+                                                title="Xóa sản phẩm"
+                                            >
+                                                <Trash2 className="h-4 w-4" />
+                                            </button>
                                         </div>
+                                    ))}
+                                </div>
+
+                                {/* Coupon */}
+                                <div className="flex gap-2 mb-6">
+                                    <div className="flex-1 relative">
+                                        <Tag className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                                        <input
+                                            placeholder="Mã khuyến mãi"
+                                            value={couponCode}
+                                            onChange={e => setCouponCode(e.target.value)}
+                                            className="w-full h-12 pl-10 pr-4 rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-[#12141c] text-slate-900 dark:text-slate-200 placeholder-slate-400 text-sm outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition"
+                                        />
                                     </div>
-                                ))}
-                            </div>
-
-                            {/* Divider */}
-                            <div className="border-t border-orange-400/50 my-4" />
-
-                            {/* Coupon */}
-                            <div className="flex gap-2 mb-4">
-                                <div className="flex-1 relative">
-                                    <Tag className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-orange-300" />
-                                    <input
-                                        placeholder="Nhập mã giảm giá"
-                                        value={couponCode}
-                                        onChange={e => setCouponCode(e.target.value)}
-                                        className="w-full h-10 pl-9 pr-3 rounded-lg bg-orange-500/40 border border-orange-400/50 text-white placeholder-orange-200 text-sm outline-none focus:border-white transition"
-                                    />
+                                    <button className="px-5 h-12 bg-slate-900 dark:bg-slate-800 text-white dark:text-slate-200 rounded-xl text-sm font-bold hover:bg-slate-800 dark:hover:bg-slate-700 transition">
+                                        Áp dụng
+                                    </button>
                                 </div>
-                                <button className="px-4 h-10 bg-white text-orange-600 rounded-lg text-sm font-bold hover:bg-orange-50 transition">
-                                    Áp dụng
-                                </button>
-                            </div>
 
-                            {/* Subtotal */}
-                            <div className="space-y-2 mb-4">
-                                <div className="flex justify-between text-sm text-orange-100">
-                                    <span>Tạm tính</span>
-                                    <span>{formatVND(subtotal)}</span>
+                                {/* Cost Breakdown */}
+                                <div className="space-y-3 mb-6 p-4 bg-gray-50 dark:bg-[#1c212c] rounded-xl border border-gray-100 dark:border-white/5">
+                                    <div className="flex justify-between text-[15px] font-medium text-slate-600 dark:text-slate-400">
+                                        <span>Tạm tính</span>
+                                        <span className="text-slate-900 dark:text-slate-200">{formatVND(subtotal)}</span>
+                                    </div>
+                                    <div className="flex justify-between text-[15px] font-medium text-slate-600 dark:text-slate-400">
+                                        <span>Phí vận chuyển</span>
+                                        <span className="text-slate-900 dark:text-slate-200 font-bold">Liên hệ xác nhận</span>
+                                    </div>
                                 </div>
-                                <div className="flex justify-between text-sm text-orange-100">
-                                    <span>Phí vận chuyển</span>
-                                    <span className="text-green-300 font-medium">Miễn phí</span>
-                                </div>
-                            </div>
 
-                            {/* Total */}
-                            <div className="border-t border-orange-400/50 pt-4 mb-6">
-                                <div className="flex justify-between items-baseline">
-                                    <span className="font-bold">Tổng cộng</span>
-                                    <span className="text-2xl font-black">{formatVND(total)}</span>
+                                {/* Total */}
+                                <div className="flex justify-between items-end mb-8 px-2">
+                                    <div>
+                                        <span className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">Tổng cộng</span>
+                                        <span className="text-[11px] text-slate-400">(Đã bao gồm VAT nếu có)</span>
+                                    </div>
+                                    <span className="text-3xl font-black text-red-600 dark:text-red-500">{formatVND(total)}</span>
                                 </div>
-                            </div>
 
-                            {/* Actions */}
-                            <div className="flex items-center gap-3">
-                                <Link
-                                    href="/products"
-                                    className="text-sm text-orange-200 hover:text-white transition flex items-center gap-1"
-                                >
-                                    <ChevronLeft className="h-3.5 w-3.5" />
-                                    Quay về giỏ hàng
-                                </Link>
+                                {/* Submit Actions */}
                                 <Button
                                     onClick={handleSubmit}
                                     disabled={isSubmitting}
-                                    className="ml-auto bg-white text-orange-600 hover:bg-orange-50 font-bold text-base px-8 h-12 rounded-lg shadow-lg transition-all hover:shadow-xl"
+                                    className="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold text-lg h-14 rounded-xl shadow-[0_8px_20px_rgba(249,115,22,0.25)] hover:shadow-[0_8px_25px_rgba(249,115,22,0.35)] hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] transition-all duration-200"
                                 >
                                     {isSubmitting ? (
-                                        <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Đang xử lý...</>
+                                        <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Đang xử lý...</>
                                     ) : (
-                                        "ĐẶT HÀNG"
+                                        "ĐẶT HÀNG NGAY"
                                     )}
                                 </Button>
+                                <p className="text-center text-xs text-slate-500 dark:text-slate-400 mt-4 flex items-center justify-center gap-1.5">
+                                    <ShieldCheck className="h-3.5 w-3.5" /> Thông tin của bạn được mã hóa an toàn
+                                </p>
                             </div>
                         </div>
                     </div>

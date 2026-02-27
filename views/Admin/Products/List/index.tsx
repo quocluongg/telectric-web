@@ -13,7 +13,7 @@ export default async function AdminProductsPage({
     const {
         data: { user },
     } = await supabase.auth.getUser();
-    if (!user) redirect("/auth/login");
+    if (!user) redirect("/?login=true&redirect=/admin/products");
 
     const { data: profile } = await supabase
         .from("profiles")

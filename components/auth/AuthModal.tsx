@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
 import {
     Dialog,
     DialogContent,
@@ -23,19 +24,41 @@ export function AuthModal({ children, defaultView = "login", open: controlledOpe
     const [view, setView] = useState<AuthView>(defaultView)
     const [internalOpen, setInternalOpen] = useState(false)
 
+    const searchParams = useSearchParams()
+    const router = useRouter()
+
     const isOpen = controlledOpen !== undefined ? controlledOpen : internalOpen
     const setIsOpen = setControlledOpen || setInternalOpen
 
+    // Handle auto-opening via URL params (e.g. after middleware redirect)
+    useEffect(() => {
+        const loginParam = searchParams?.get("login")
+        if (loginParam === "true") {
+            setIsOpen(true)
+            setView("login")
+        }
+    }, [searchParams, setIsOpen])
+
     // Sync view with defaultView when modal opens or defaultView changes
     useEffect(() => {
-        if (isOpen) {
+        if (isOpen && !searchParams?.get("login")) {
             setView(defaultView)
         }
-    }, [defaultView, isOpen])
+    }, [defaultView, isOpen, searchParams])
 
     const handleOpenChange = (newOpen: boolean) => {
         setIsOpen(newOpen)
         if (!newOpen) {
+            // Clean up the URL if it was opened via search params
+            const currentLoginParam = searchParams?.get("login")
+            if (currentLoginParam === "true" && searchParams) {
+                const newSearchParams = new URLSearchParams(searchParams.toString())
+                newSearchParams.delete("login")
+                newSearchParams.delete("redirect")
+                const searchStr = newSearchParams.toString()
+                const newUrl = window.location.pathname + (searchStr ? `?${searchStr}` : "")
+                router.replace(newUrl, { scroll: false })
+            }
             // Reset to default view when closed
             setTimeout(() => setView(defaultView), 200)
         }

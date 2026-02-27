@@ -67,13 +67,19 @@ export function LoginForm({
             }
 
             toast({
-                variant: "success",
+                // variant: "success", 
                 title: "Thành công",
                 description: "Đăng nhập thành công",
             })
 
-            router.refresh()
-            router.refresh()
+            const searchParams = new URLSearchParams(window.location.search)
+            const redirectTo = searchParams.get("redirect")
+
+            if (redirectTo) {
+                router.push(redirectTo)
+            } else {
+                router.refresh()
+            }
             onClose?.()
         } catch (error) {
             toast({

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Mail, Phone, HelpCircle, User } from "lucide-react";
+import { LoginModal } from "@/components/auth/LoginModal";
 
 export const TopBar = () => {
     return (
@@ -23,10 +24,12 @@ export const TopBar = () => {
                         <HelpCircle size={14} />
                         <span>Hỗ trợ khách hàng</span>
                     </Link>
-                    <Link href="/auth/login" className="flex items-center gap-2 hover:text-white transition-colors">
-                        <User size={14} />
-                        <span>Tài khoản</span>
-                    </Link>
+                    <LoginModal>
+                        <button className="flex items-center gap-2 hover:text-white transition-colors">
+                            <User size={14} />
+                            <span>Tài khoản</span>
+                        </button>
+                    </LoginModal>
                 </div>
             </div>
         </div>
