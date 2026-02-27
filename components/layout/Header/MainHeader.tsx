@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Search, Zap, User, LogOut, Settings, UserCircle, ChevronDown, ShoppingCart, Loader2, Shield } from "lucide-react";
+import { Search, Zap, User, LogOut, UserCircle, ChevronDown, ShoppingCart, Loader2, Shield } from "lucide-react";
 import Image from "next/image";
 import { Input } from "@/components/ui/input";
 import { AuthModal } from "@/components/auth/AuthModal";
@@ -281,10 +281,6 @@ export const MainHeader = () => {
                                         <UserCircle className="mr-2 h-4 w-4" />
                                         <span>Hồ sơ</span>
                                     </Link>
-                                </DropdownMenuItem>
-                                <DropdownMenuItem className="focus:bg-slate-100 dark:focus:bg-[#2a3040] focus:text-slate-900 dark:focus:text-white cursor-pointer">
-                                    <Settings className="mr-2 h-4 w-4" />
-                                    <span>Cài đặt</span>
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator className="bg-slate-200 dark:bg-slate-700" />
                                 <DropdownMenuItem onClick={handleLogout} className="focus:bg-slate-100 dark:focus:bg-[#2a3040] focus:text-red-500 dark:focus:text-red-400 text-red-500 dark:text-red-400 cursor-pointer">
