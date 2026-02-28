@@ -30,7 +30,7 @@ export default function HomePage() {
                 .from("home_featured_categories")
                 .select(`
                     *,
-                    categories!id (
+                    categories!category_id (
                         name,
                         slug
                     )

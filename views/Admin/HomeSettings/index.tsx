@@ -295,6 +295,22 @@ export default function HomeSettingsPage() {
                                 />
                             </div>
 
+                            {/* 1.5 Danh mục liên kết */}
+                            <div className="space-y-2">
+                                <Label className="flex items-center gap-1.5"><LayoutGrid className="h-3.5 w-3.5 text-blue-500" /> Danh mục liên kết</Label>
+                                <select
+                                    value={featured[i]?.category_id || ""}
+                                    onChange={(e) => handleUpdateFeatured(i, { category_id: e.target.value })}
+                                    className="w-full h-10 px-3 py-2 text-sm border rounded-md bg-transparent focus:outline-none focus:ring-2 focus:ring-orange-500"
+                                >
+                                    <option value="">— Chọn danh mục —</option>
+                                    {categories.map(cat => (
+                                        <option key={cat.id} value={cat.id}>{cat.name}</option>
+                                    ))}
+                                </select>
+                                <p className="text-[10px] text-slate-400 italic">Sản phẩm trong danh mục này sẽ hiển thị ở tab "Tất cả".</p>
+                            </div>
+
                             {/* 2. Màu */}
                             <div className="space-y-2">
                                 <Label>Màu sắc chủ đạo</Label>

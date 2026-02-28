@@ -135,9 +135,21 @@ export function CategorySection({
 
     // 1 – Load parent category
     useEffect(() => {
-        if (!categorySlug) return;
-        supabase.from("categories").select("id").eq("slug", categorySlug).maybeSingle()
-            .then(({ data }) => { if (data) setParentCatId(data.id); });
+        if (!categorySlug) {
+            setLoadingProds(false);
+            return;
+        }
+        const resolveCategory = async () => {
+            try {
+                const { data } = await supabase.from("categories").select("id").eq("slug", categorySlug).maybeSingle();
+                if (data) setParentCatId(data.id);
+                else setLoadingProds(false);
+            } catch (err) {
+                console.error("Error resolving category:", err);
+                setLoadingProds(false);
+            }
+        };
+        resolveCategory();
     }, [categorySlug, supabase]);
 
     // 2 – Load brand logos (pinned only)
@@ -162,60 +174,81 @@ export function CategorySection({
         if (!parentCatId) return;
         setLoadingProds(true);
         const fetchAll = async () => {
-            let catIds: string[] = [parentCatId];
-            if (activeSubSlug) {
-                const { data } = await supabase.from("categories").select("id").eq("slug", activeSubSlug).maybeSingle();
-                if (data) catIds = [data.id];
-            } else if (subCategories.length > 0) {
-                catIds = [parentCatId, ...subCategories.map(s => s.id)];
-            }
-
-            let pinnedList: any[] = [];
-            if (!activeSubSlug && pinnedProductIds && pinnedProductIds.length > 0) {
-                const { data: pp } = await supabase.from("products")
-                    .select("id, name, thumbnail, brand, category_id, discount_percent")
-                    .in("id", pinnedProductIds);
-                pinnedList = pp || [];
-            }
-
-            const limit = 8 - pinnedList.length;
-            const excludeIds = pinnedList.length > 0 && pinnedProductIds?.length > 0 ? pinnedProductIds : [];
-            let latestList: any[] = [];
-            if (limit > 0) {
-                let query = supabase.from("products")
-                    .select("id, name, thumbnail, brand, category_id, discount_percent")
-                    .order("created_at", { ascending: false }).limit(limit);
-                if (!activeSubSlug && pinnedBrandNames && pinnedBrandNames.length > 0) {
-                    query = query.in("category_id", catIds).in("brand", pinnedBrandNames);
+            try {
+                let catIds: string[] = [parentCatId];
+                if (activeSubSlug) {
+                    const { data } = await supabase.from("categories").select("id").eq("slug", activeSubSlug).maybeSingle();
+                    if (data) catIds = [data.id];
                 } else {
-                    query = query.in("category_id", catIds);
+                    // Fetch immediate sub-categories and their children (2 levels deep for now as a safe bet)
+                    const { data: subs } = await supabase.from("categories").select("id").eq("parent_id", parentCatId);
+                    const subIds = (subs || []).map(s => s.id);
+
+                    if (subIds.length > 0) {
+                        const { data: grandSubs } = await supabase.from("categories").select("id").in("parent_id", subIds);
+                        catIds = [parentCatId, ...subIds, ...(grandSubs || []).map(gs => gs.id)];
+                    } else {
+                        catIds = [parentCatId];
+                    }
                 }
-                if (excludeIds.length > 0) query = query.not("id", "in", `(${excludeIds.join(",")})`);
-                const { data } = await query;
-                latestList = data || [];
+
+                let pinnedList: any[] = [];
+                if (!activeSubSlug && pinnedProductIds && pinnedProductIds.length > 0) {
+                    const { data: pp } = await supabase.from("products")
+                        .select("id, name, thumbnail, brand, category_id, discount_percent")
+                        .in("id", pinnedProductIds);
+                    pinnedList = pp || [];
+                }
+
+                const limit = 8 - pinnedList.length;
+                const excludeIds = pinnedList.length > 0 && pinnedProductIds?.length > 0 ? pinnedProductIds : [];
+                let latestList: any[] = [];
+                if (limit > 0) {
+                    let query = supabase.from("products")
+                        .select("id, name, thumbnail, brand, category_id, discount_percent")
+                        .order("created_at", { ascending: false }).limit(limit);
+                    if (activeSubSlug) {
+                        query = query.in("category_id", catIds);
+                    } else if (pinnedBrandNames && pinnedBrandNames.length > 0) {
+                        // When in "All" tab, we STILL allow brand filtering BUT it's usually better to show all
+                        // The user said "sản phẩm đã thêm... vẫn chưa xuất hiện", likely because they are not in pinnedBrandNames.
+                        // Let's REMOVE this constraint for the main view to ensure visibility, 
+                        // or only apply it if there's a specific reason. 
+                        // Based on the request, products are missing because of this filter.
+                        query = query.in("category_id", catIds);
+                    } else {
+                        query = query.in("category_id", catIds);
+                    }
+                    if (excludeIds.length > 0) query = query.not("id", "in", `(${excludeIds.join(",")})`);
+                    const { data } = await query;
+                    latestList = data || [];
+                }
+
+                const combined = [...pinnedList, ...latestList].slice(0, 8);
+                if (combined.length === 0) { setProducts([]); return; }
+
+                const ids = combined.map((p: any) => p.id);
+                const { data: variants } = await supabase.from("product_variants")
+                    .select("product_id, price").in("product_id", ids);
+
+                const priceMap: Record<string, number> = {};
+                (variants || []).forEach((v: any) => {
+                    if (priceMap[v.product_id] === undefined || v.price < priceMap[v.product_id])
+                        priceMap[v.product_id] = v.price;
+                });
+
+                setProducts(combined.map((p: any) => {
+                    const min = priceMap[p.id] ?? null;
+                    const dp = p.discount_percent || 0;
+                    let price = min, orig = null;
+                    if (dp > 0 && min) { orig = min; price = min * (1 - dp / 100); }
+                    return { id: p.id, name: p.name, thumbnail: p.thumbnail, brand: p.brand, price, original_price: orig, discount_percent: dp };
+                }));
+            } catch (err) {
+                console.error("Error in fetchAll:", err);
+            } finally {
+                setLoadingProds(false);
             }
-
-            const combined = [...pinnedList, ...latestList].slice(0, 8);
-            if (combined.length === 0) { setProducts([]); setLoadingProds(false); return; }
-
-            const ids = combined.map((p: any) => p.id);
-            const { data: variants } = await supabase.from("product_variants")
-                .select("product_id, price").in("product_id", ids);
-
-            const priceMap: Record<string, number> = {};
-            (variants || []).forEach((v: any) => {
-                if (priceMap[v.product_id] === undefined || v.price < priceMap[v.product_id])
-                    priceMap[v.product_id] = v.price;
-            });
-
-            setProducts(combined.map((p: any) => {
-                const min = priceMap[p.id] ?? null;
-                const dp = p.discount_percent || 0;
-                let price = min, orig = null;
-                if (dp > 0 && min) { orig = min; price = min * (1 - dp / 100); }
-                return { id: p.id, name: p.name, thumbnail: p.thumbnail, brand: p.brand, price, original_price: orig, discount_percent: dp };
-            }));
-            setLoadingProds(false);
         };
         fetchAll();
     }, [activeSubSlug, parentCatId, subCategories, supabase, pinnedProductIds, pinnedBrandNames]);
