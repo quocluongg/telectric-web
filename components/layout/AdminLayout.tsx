@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import {
     LayoutDashboard,
+    Home,
     Package,
     ShoppingCart,
     Layers,
@@ -18,7 +19,8 @@ import {
     Zap,
     Menu,
     Sun,
-    Moon
+    Moon,
+    Image as ImageIcon
 } from 'lucide-react'
 import {
     Sheet,
@@ -50,6 +52,8 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
         { path: '/admin/products', icon: <Package size={20} />, label: 'Sản phẩm' },
         { path: '/admin/campaigns', icon: <Zap size={20} />, label: 'Siêu sale' },
         { path: '/admin/orders', icon: <ShoppingCart size={20} />, label: 'Đơn hàng' },
+        { path: '/admin/home-settings', icon: <Home size={20} />, label: 'Cài đặt trang chủ' },
+        { path: '/admin/brands', icon: <ImageIcon size={20} />, label: 'Thương hiệu' },
         { path: '/admin/categories', icon: <Layers size={20} />, label: 'Danh mục' },
         // --- MỤC MỚI THÊM ---
         { path: '/admin/warranty', icon: <ShieldCheck size={20} />, label: 'Quản lý bảo hành' },
