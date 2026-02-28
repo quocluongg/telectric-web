@@ -95,6 +95,32 @@ export default function HomeSettingsPage() {
     // Banner upload
     const [uploadingBanner, setUploadingBanner] = useState<number | null>(null);
     const bannerInputRefs = useRef<Record<number, HTMLInputElement | null>>({});
+    const [bannerUrlError, setBannerUrlError] = useState<Record<number, string | null>>({});
+
+    const checkImagePortrait = (src: string): Promise<boolean | null> =>
+        new Promise((resolve) => {
+            const img = new window.Image();
+            img.crossOrigin = "anonymous";
+            img.onload = () => resolve(img.naturalHeight > img.naturalWidth);
+            img.onerror = () => resolve(null);
+            img.src = src;
+        });
+
+    const validateBannerUrl = async (url: string, index: number) => {
+        if (!url.trim()) { setBannerUrlError(prev => ({ ...prev, [index]: null })); return; }
+        const result = await checkImagePortrait(url);
+        if (result === null) {
+            // CORS / broken URL — warn but don't block
+            setBannerUrlError(prev => ({ ...prev, [index]: "Không thể kiểm tra ảnh (CORS hoặc URL lỗi). Đảm bảo ảnh là dọc trước khi lưu." }));
+        } else if (!result) {
+            handleUpdateFeatured(index, { banner_url: null });
+            setBannerUrlError(prev => ({ ...prev, [index]: "❌ Ảnh ngang không hợp lệ. Vui lòng chọn ảnh dọc (chiều cao > chiều rộng)." }));
+            toast({ title: "❌ Ảnh không hợp lệ", description: "Banner phải là ảnh dọc (chiều cao > chiều rộng).", variant: "destructive" });
+        } else {
+            setBannerUrlError(prev => ({ ...prev, [index]: null }));
+        }
+    };
+
 
     const handleBannerUpload = async (file: File, index: number) => {
         // Validate portrait orientation
@@ -374,8 +400,14 @@ export default function HomeSettingsPage() {
                                     <Input
                                         placeholder="https://example.com/banner.jpg"
                                         value={featured[i]?.banner_url || ""}
-                                        onChange={(e) => handleUpdateFeatured(i, { banner_url: e.target.value || null })}
-                                        className="flex-1"
+                                        onChange={(e) => {
+                                            handleUpdateFeatured(i, { banner_url: e.target.value || null });
+                                            if (!e.target.value) setBannerUrlError(prev => ({ ...prev, [i]: null }));
+                                        }}
+                                        onBlur={(e) => {
+                                            if (e.target.value) validateBannerUrl(e.target.value, i);
+                                        }}
+                                        className={`flex-1 ${bannerUrlError[i] ? "border-red-400 focus-visible:ring-red-300" : ""}`}
                                     />
                                     {/* Hidden file input */}
                                     <input
@@ -404,6 +436,11 @@ export default function HomeSettingsPage() {
                                         }
                                     </Button>
                                 </div>
+                                {bannerUrlError[i] && (
+                                    <p className="text-[11px] text-red-500 mt-1 flex items-center gap-1">
+                                        {bannerUrlError[i]}
+                                    </p>
+                                )}
                                 {featured[i]?.banner_url && (
                                     <div className="mt-2 rounded-md overflow-hidden border border-slate-200 dark:border-white/5 flex justify-center bg-slate-50 dark:bg-slate-900">
                                         <img
