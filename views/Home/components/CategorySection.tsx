@@ -231,7 +231,7 @@ export function CategorySection({
             <div className="flex items-stretch mb-4">
                 {/* Title pill */}
                 <div
-                    className="flex items-center gap-2.5 px-5 py-3 text-white font-black text-[15px] uppercase tracking-wide rounded-l-lg shadow-md"
+                    className="flex lg:w-[260px] items-center justify-center gap-2.5 px-5 py-3 text-white font-black text-[15px] uppercase tracking-wide rounded-l-lg shadow-md shrink-0"
                     style={{ background: `linear-gradient(135deg, ${accentHex}, ${accentHex}cc)` }}
                 >
                     {icon ?? <Zap className="w-4 h-4 shrink-0" />}
@@ -242,7 +242,7 @@ export function CategorySection({
                 <div className="flex-1 flex items-center overflow-x-auto scrollbar-hide bg-white dark:bg-[#1b2133] border border-l-0 border-slate-200 dark:border-white/5 rounded-r-lg px-4 gap-1">
                     <button
                         onClick={() => setActiveSubSlug(null)}
-                        className={`shrink-0 text-[13px] px-3 py-1.5 rounded-full font-medium transition-all ${!activeSubSlug
+                        className={`shrink-0 text-[13px] px-4 py-1.5 min-w-[110px] rounded-full font-medium transition-all ${!activeSubSlug
                             ? "text-white shadow-sm"
                             : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5"
                             }`}
@@ -254,7 +254,7 @@ export function CategorySection({
                         <button
                             key={sub.id}
                             onClick={() => setActiveSubSlug(sub.slug)}
-                            className={`shrink-0 text-[13px] px-3 py-1.5 rounded-full font-medium transition-all ${activeSubSlug === sub.slug
+                            className={`shrink-0 text-[13px] px-4 py-1.5 min-w-[110px] rounded-full font-medium transition-all ${activeSubSlug === sub.slug
                                 ? "text-white shadow-sm"
                                 : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5"
                                 }`}
@@ -279,7 +279,7 @@ export function CategorySection({
 
                 {/* ── SIDEBAR ── */}
                 {brands.length > 0 ? (
-                    <div className="w-full lg:w-[220px] shrink-0 flex flex-col gap-2">
+                    <div className="w-full lg:w-[260px] shrink-0 flex flex-col gap-2">
                         {/* Brand logos */}
                         <div className="bg-white dark:bg-[#1b2133] rounded-xl border border-slate-200 dark:border-white/5 overflow-hidden shadow-sm">
                             <div

@@ -75,6 +75,8 @@ const defaultFeatured = (i: number): HomeFeaturedCategory => ({
 export default function HomeSettingsPage() {
     const supabase = useMemo(() => createClient(), []);
     const { toast } = useToast();
+    const toastRef = useRef(toast);
+    useEffect(() => { toastRef.current = toast; }, [toast]);
 
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -191,11 +193,11 @@ export default function HomeSettingsPage() {
                 })));
             }
         } catch (err: any) {
-            toast({ title: "Lỗi tải dữ liệu", description: err.message, variant: "destructive" });
+            toastRef.current({ title: "Lỗi tải dữ liệu", description: err.message, variant: "destructive" });
         } finally {
             setLoading(false);
         }
-    }, [supabase, toast]);
+    }, [supabase]);
 
     useEffect(() => { fetchData(); }, [fetchData]);
 
