@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useEffect, useState, useMemo, useCallback } from "react";
+import React, { useEffect, useState, useMemo, useCallback, useRef } from "react";
+import imageCompression from "browser-image-compression";
 import { createClient } from "@/lib/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import {
     Home, Save, Loader2, Zap, Thermometer, Gauge, Wind,
-    Settings, Plus, Trash2, LayoutGrid, Search, Tag, ImageIcon
+    Settings, Plus, Trash2, LayoutGrid, Search, Tag, ImageIcon, Upload
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -90,6 +91,55 @@ export default function HomeSettingsPage() {
     // Brand picker dialog state
     const [isBrandDialogOpen, setIsBrandDialogOpen] = useState(false);
     const [activeBrandSlotIndex, setActiveBrandSlotIndex] = useState<number | null>(null);
+
+    // Banner upload
+    const [uploadingBanner, setUploadingBanner] = useState<number | null>(null);
+    const bannerInputRefs = useRef<Record<number, HTMLInputElement | null>>({});
+
+    const handleBannerUpload = async (file: File, index: number) => {
+        // Validate portrait orientation
+        const checkPortrait = (): Promise<boolean> =>
+            new Promise((resolve) => {
+                const img = new window.Image();
+                img.onload = () => resolve(img.naturalHeight > img.naturalWidth);
+                img.onerror = () => resolve(false);
+                img.src = URL.createObjectURL(file);
+            });
+
+        const isPortrait = await checkPortrait();
+        if (!isPortrait) {
+            toast({
+                title: "❌ Ảnh không hợp lệ",
+                description: "Banner phải là ảnh dọc (chiều cao > chiều rộng). Vui lòng chọn ảnh portrait.",
+                variant: "destructive",
+                duration: 5000,
+            });
+            return;
+        }
+
+        setUploadingBanner(index);
+        try {
+            const compressed = await imageCompression(file, {
+                maxSizeMB: 0.5,
+                maxWidthOrHeight: 800,
+                useWebWorker: true,
+                fileType: "image/webp",
+                initialQuality: 0.8,
+            });
+            const fileName = `banners/section-${index}-${Date.now()}.webp`;
+            const { error } = await supabase.storage
+                .from("products")
+                .upload(fileName, compressed, { contentType: "image/webp", upsert: true });
+            if (error) throw error;
+            const url = supabase.storage.from("products").getPublicUrl(fileName).data.publicUrl;
+            handleUpdateFeatured(index, { banner_url: url });
+            toast({ title: "✅ Tải ảnh thành công", className: "bg-green-600 text-white" });
+        } catch (err: any) {
+            toast({ title: "Lỗi upload", description: err.message, variant: "destructive" });
+        } finally {
+            setUploadingBanner(null);
+        }
+    };
 
     const fetchData = useCallback(async () => {
         setLoading(true);
@@ -319,16 +369,49 @@ export default function HomeSettingsPage() {
 
                             {/* 7. Banner URL */}
                             <div className="space-y-2">
-                                <Label>URL Ảnh Banner (tùy chọn)</Label>
-                                <Input
-                                    placeholder="https://example.com/banner.jpg"
-                                    value={featured[i]?.banner_url || ""}
-                                    onChange={(e) => handleUpdateFeatured(i, { banner_url: e.target.value || null })}
-                                />
+                                <Label>URL Ảnh Banner <span className="text-[10px] text-slate-400 font-normal">(chỉ ảnh dọc)</span></Label>
+                                <div className="flex gap-2">
+                                    <Input
+                                        placeholder="https://example.com/banner.jpg"
+                                        value={featured[i]?.banner_url || ""}
+                                        onChange={(e) => handleUpdateFeatured(i, { banner_url: e.target.value || null })}
+                                        className="flex-1"
+                                    />
+                                    {/* Hidden file input */}
+                                    <input
+                                        type="file"
+                                        accept="image/png,image/jpeg,image/webp"
+                                        className="hidden"
+                                        ref={(el) => { bannerInputRefs.current[i] = el; }}
+                                        onChange={async (e) => {
+                                            const file = e.target.files?.[0];
+                                            if (file) await handleBannerUpload(file, i);
+                                            e.target.value = "";
+                                        }}
+                                    />
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        className="shrink-0 px-3"
+                                        title="Tải ảnh từ máy (chỉ ảnh dọc)"
+                                        onClick={() => bannerInputRefs.current[i]?.click()}
+                                        disabled={uploadingBanner === i}
+                                    >
+                                        {uploadingBanner === i
+                                            ? <Loader2 className="h-4 w-4 animate-spin" />
+                                            : <Upload className="h-4 w-4" />
+                                        }
+                                    </Button>
+                                </div>
                                 {featured[i]?.banner_url && (
-                                    <div className="mt-2 rounded-md overflow-hidden border border-slate-200 dark:border-white/5 h-24">
-                                        <img src={featured[i].banner_url!} alt="Preview banner" className="w-full h-full object-cover"
-                                            onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+                                    <div className="mt-2 rounded-md overflow-hidden border border-slate-200 dark:border-white/5 flex justify-center bg-slate-50 dark:bg-slate-900">
+                                        <img
+                                            src={featured[i].banner_url!}
+                                            alt="Preview banner"
+                                            className="object-contain max-h-40"
+                                            onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                                        />
                                     </div>
                                 )}
                             </div>
