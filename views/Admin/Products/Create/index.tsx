@@ -616,7 +616,7 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
                                             <FormItem>
                                                 <FormLabel className="flex items-center justify-between">
                                                     Danh mục (Chọn nhiều)
-                                                    <span className="text-[10px] text-slate-400 font-normal">Đã chọn: {field.value.length}</span>
+                                                    <span className="text-[10px] text-slate-400 font-normal">Đã chọn: {field?.value?.length}</span>
                                                 </FormLabel>
                                                 <div className="border border-slate-200 dark:border-white/5 rounded-md p-3 max-h-60 overflow-y-auto bg-white dark:bg-[#0f1219] space-y-3">
                                                     {categories.filter(c => !c.parent_id).map(parent => (

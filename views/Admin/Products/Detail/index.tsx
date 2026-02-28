@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { addToCart } from "@/lib/cart";
+import { RelatedProducts } from "./RelatedProducts";
 
 // Types matching Supabase schema
 interface ProductVariant {
@@ -790,6 +791,12 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
                         </div>
                     </div>
                 </div>
+                {/* ======= RELATED PRODUCTS ======= */}
+                <RelatedProducts
+                    currentProductId={productId}
+                    brand={product.brand}
+                    origin={product.origin}
+                />
             </div>
 
         </DefaultLayout>
