@@ -23,7 +23,7 @@ const productSchema = z.object({
     origin: z.string().min(1, "Vui lòng nhập xuất xứ"),
     warranty_months: z.coerce.number().min(0, "Không được âm").default(12),
     discount_percent: z.coerce.number().min(0, "Không được âm").max(100, "Tối đa 100%").default(0),
-    category_id: z.string().optional().nullable(),
+    category_ids: z.array(z.string()).default([]),
     thumbnail: z.string().min(1, "Ảnh bìa là bắt buộc"),
     images: z.array(z.string()).default([]),
     attrGroups: z.array(z.object({
@@ -128,7 +128,7 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
                 origin: "Việt Nam",
                 warranty_months: 12,
                 discount_percent: 0,
-                category_id: null,
+                category_ids: [],
                 description: "",
                 thumbnail: "",
                 images: [],
@@ -153,6 +153,14 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
                 window.location.href = "/admin/products/list";
                 return;
             }
+
+            // Fetch selected categories from mapping table
+            const { data: catMapping } = await supabase
+                .from("product_categories_mapping")
+                .select("category_id")
+                .eq("product_id", editId);
+
+            const categoryIds = (catMapping || []).map((m: any) => m.category_id);
 
             // Fetch variants
             const { data: variants } = await supabase
@@ -191,7 +199,7 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
                 origin: product.origin || "Việt Nam",
                 warranty_months: product.warranty_months ?? 12,
                 discount_percent: product.discount_percent ?? 0,
-                category_id: product.category_id || null,
+                category_ids: categoryIds,
                 description: product.description || "",
                 thumbnail: product.thumbnail || "",
                 images: product.images || [],
@@ -268,6 +276,14 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
                     .eq("id", editId);
 
                 if (productError) throw productError;
+
+                // 1.1 Sync categories
+                await supabase.from("product_categories_mapping").delete().eq("product_id", editId);
+                if (values.category_ids.length > 0) {
+                    await supabase.from("product_categories_mapping").insert(
+                        values.category_ids.map((cid: string) => ({ product_id: editId, category_id: cid }))
+                    );
+                }
 
                 // 2. Fetch existing variants for this product
                 const { data: existingVariants } = await supabase
@@ -387,7 +403,7 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
                         origin: values.origin,
                         warranty_months: values.warranty_months ?? 12,
                         discount_percent: values.discount_percent ?? 0,
-                        category_id: values.category_id || null,
+                        category_id: values.category_ids[0] || null, // Fallback for legacy column
                         thumbnail: values.thumbnail,
                         images: values.images || [],
                     })
@@ -395,6 +411,13 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
                     .single();
 
                 if (productError) throw productError;
+
+                // 1.1 Sync categories
+                if (values.category_ids.length > 0) {
+                    await supabase.from("product_categories_mapping").insert(
+                        values.category_ids.map((cid: string) => ({ product_id: product.id, category_id: cid }))
+                    );
+                }
 
                 // 2. Insert variants
                 if (values.variants && values.variants.length > 0) {
@@ -585,30 +608,64 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
                                         />
                                     </div>
 
-                                    {/* Category Selector */}
+                                    {/* Multi-Category Selector */}
                                     <FormField
                                         control={form.control}
-                                        name="category_id"
+                                        name="category_ids"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel>Danh mục</FormLabel>
-                                                <FormControl>
-                                                    <select
-                                                        value={field.value || ""}
-                                                        onChange={e => field.onChange(e.target.value || null)}
-                                                        className="w-full h-10 px-3 rounded-md border bg-white dark:bg-[#0f1219] border-slate-200 dark:border-white/5 text-sm outline-none focus:ring-2 focus:ring-orange-200 focus:border-orange-400 transition-all"
-                                                    >
-                                                        <option value="">— Chưa phân loại</option>
-                                                        {categories.filter(c => !c.parent_id).map(parent => (
-                                                            <React.Fragment key={parent.id}>
-                                                                <option value={parent.id}>{parent.name}</option>
+                                                <FormLabel className="flex items-center justify-between">
+                                                    Danh mục (Chọn nhiều)
+                                                    <span className="text-[10px] text-slate-400 font-normal">Đã chọn: {field.value.length}</span>
+                                                </FormLabel>
+                                                <div className="border border-slate-200 dark:border-white/5 rounded-md p-3 max-h-60 overflow-y-auto bg-white dark:bg-[#0f1219] space-y-3">
+                                                    {categories.filter(c => !c.parent_id).map(parent => (
+                                                        <div key={parent.id} className="space-y-2">
+                                                            <div className="flex items-center gap-2">
+                                                                <input
+                                                                    type="checkbox"
+                                                                    id={`cat-${parent.id}`}
+                                                                    checked={field.value.includes(parent.id)}
+                                                                    onChange={(e) => {
+                                                                        const current = [...field.value];
+                                                                        if (e.target.checked) {
+                                                                            field.onChange([...current, parent.id]);
+                                                                        } else {
+                                                                            field.onChange(current.filter(id => id !== parent.id));
+                                                                        }
+                                                                    }}
+                                                                    className="h-4 w-4 rounded border-slate-300 text-orange-600 focus:ring-orange-500"
+                                                                />
+                                                                <label htmlFor={`cat-${parent.id}`} className="text-sm font-bold text-slate-700 dark:text-slate-200 cursor-pointer">
+                                                                    {parent.name}
+                                                                </label>
+                                                            </div>
+                                                            <div className="ml-6 flex flex-col gap-2">
                                                                 {categories.filter(c => c.parent_id === parent.id).map(child => (
-                                                                    <option key={child.id} value={child.id}>&nbsp;&nbsp;↳ {child.name}</option>
+                                                                    <div key={child.id} className="flex items-center gap-2">
+                                                                        <input
+                                                                            type="checkbox"
+                                                                            id={`cat-${child.id}`}
+                                                                            checked={field.value.includes(child.id)}
+                                                                            onChange={(e) => {
+                                                                                const current = [...field.value];
+                                                                                if (e.target.checked) {
+                                                                                    field.onChange([...current, child.id]);
+                                                                                } else {
+                                                                                    field.onChange(current.filter(id => id !== child.id));
+                                                                                }
+                                                                            }}
+                                                                            className="h-3.5 w-3.5 rounded border-slate-300 text-orange-600 focus:ring-orange-500"
+                                                                        />
+                                                                        <label htmlFor={`cat-${child.id}`} className="text-xs text-slate-600 dark:text-slate-400 cursor-pointer">
+                                                                            {child.name}
+                                                                        </label>
+                                                                    </div>
                                                                 ))}
-                                                            </React.Fragment>
-                                                        ))}
-                                                    </select>
-                                                </FormControl>
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
                                                 <FormMessage />
                                             </FormItem>
                                         )}

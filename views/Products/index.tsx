@@ -100,12 +100,18 @@ function ProductsPageInner() {
         }
 
         // Build query
-        let query = supabase.from("products")
-            .select("id, name, brand, origin, thumbnail, category_id, created_at, discount_percent", { count: "exact" });
+        let selectStr = "id, name, brand, origin, thumbnail, category_id, created_at, discount_percent";
+        if (categoryId) {
+            selectStr += ", product_categories_mapping!inner(category_id)";
+        }
+
+        let query = supabase.from("products").select(selectStr, { count: "exact" });
 
         if (filters.search.trim()) query = query.ilike("name", `%${filters.search.trim()}%`);
-        if (categoryId) query = query.in("category_id", [categoryId, ...categoryChildIds]);
-        if (filters.brands.length > 0) query = query.in("brand", filters.brands);
+        if (categoryId) {
+            query = query.in("product_categories_mapping.category_id", [categoryId, ...categoryChildIds]);
+        }
+        if (filters.brands.length > 0) query = query.in("brand", filters.brands.map(b => b.replace(/'/g, "''")));
         if (filters.origins.length > 0) query = query.in("origin", filters.origins);
 
         switch (filters.sort) {
@@ -124,16 +130,18 @@ function ProductsPageInner() {
         if (rows && rows.length > 0) {
             const ids = rows.map((p: any) => p.id);
 
-            // Variants + categories in parallel
-            const [{ data: variants }, catMap] = await Promise.all([
+            // Variants + ALL categories for these products in parallel
+            const [{ data: variants }, { data: allMappings }] = await Promise.all([
                 supabase.from("product_variants").select("product_id, price, stock").in("product_id", ids),
-                (async () => {
-                    const catIds = [...new Set(rows.map((p: any) => p.category_id).filter(Boolean))];
-                    if (catIds.length === 0) return {} as Record<string, string>;
-                    const { data } = await supabase.from("categories").select("id, name").in("id", catIds);
-                    return Object.fromEntries((data || []).map((c: any) => [c.id, c.name]));
-                })(),
+                supabase.from("product_categories_mapping").select("product_id, category_id, categories(name)").in("product_id", ids),
             ]);
+
+            // Map product_id -> list of category names
+            const prodCatMap: Record<string, string[]> = {};
+            (allMappings || []).forEach((m: any) => {
+                if (!prodCatMap[m.product_id]) prodCatMap[m.product_id] = [];
+                if (m.categories?.name) prodCatMap[m.product_id].push(m.categories.name);
+            });
 
             // Aggregate variant data
             const vMap: Record<string, { prices: number[]; stocks: number[]; count: number }> = {};
@@ -146,13 +154,14 @@ function ProductsPageInner() {
 
             let enriched: ProductCardData[] = rows.map((p: any) => {
                 const v = vMap[p.id];
+                const catNames = prodCatMap[p.id] || [];
                 return {
                     id: p.id,
                     name: p.name,
                     brand: p.brand,
                     origin: p.origin,
                     thumbnail: p.thumbnail,
-                    category_name: p.category_id ? (catMap as any)[p.category_id] || null : null,
+                    category_name: catNames.length > 0 ? catNames[0] : null,
                     min_price: v ? Math.min(...v.prices) : 0,
                     max_price: v ? Math.max(...v.prices) : 0,
                     total_stock: v ? v.stocks.reduce((a, b: number) => a + b, 0) : 0,

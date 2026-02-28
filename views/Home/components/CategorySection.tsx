@@ -204,24 +204,24 @@ export function CategorySection({
                 const excludeIds = pinnedList.length > 0 && pinnedProductIds?.length > 0 ? pinnedProductIds : [];
                 let latestList: any[] = [];
                 if (limit > 0) {
-                    let query = supabase.from("products")
-                        .select("id, name, thumbnail, brand, category_id, discount_percent")
-                        .order("created_at", { ascending: false }).limit(limit);
-                    if (activeSubSlug) {
-                        query = query.in("category_id", catIds);
-                    } else if (pinnedBrandNames && pinnedBrandNames.length > 0) {
-                        // When in "All" tab, we STILL allow brand filtering BUT it's usually better to show all
-                        // The user said "sản phẩm đã thêm... vẫn chưa xuất hiện", likely because they are not in pinnedBrandNames.
-                        // Let's REMOVE this constraint for the main view to ensure visibility, 
-                        // or only apply it if there's a specific reason. 
-                        // Based on the request, products are missing because of this filter.
-                        query = query.in("category_id", catIds);
-                    } else {
-                        query = query.in("category_id", catIds);
+                    // Fetch product IDs from mapping table if we have multiple categories
+                    const { data: mappingData } = await supabase
+                        .from("product_categories_mapping")
+                        .select("product_id")
+                        .in("category_id", catIds);
+
+                    const matchedIds = [...new Set((mappingData || []).map(m => m.product_id))];
+
+                    if (matchedIds.length > 0) {
+                        let query = supabase.from("products")
+                            .select("id, name, thumbnail, brand, category_id, discount_percent")
+                            .in("id", matchedIds)
+                            .order("created_at", { ascending: false }).limit(limit);
+
+                        if (excludeIds.length > 0) query = query.not("id", "in", `(${excludeIds.join(",")})`);
+                        const { data } = await query;
+                        latestList = data || [];
                     }
-                    if (excludeIds.length > 0) query = query.not("id", "in", `(${excludeIds.join(",")})`);
-                    const { data } = await query;
-                    latestList = data || [];
                 }
 
                 const combined = [...pinnedList, ...latestList].slice(0, 8);
