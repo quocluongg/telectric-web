@@ -6,7 +6,8 @@ import { createClient } from "@/lib/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import {
     Home, Save, Loader2, Zap, Thermometer, Gauge, Wind,
-    Settings, Plus, Trash2, LayoutGrid, Search, Tag, ImageIcon, Upload
+    Settings, Plus, Trash2, LayoutGrid, Search, Tag, ImageIcon, Upload,
+    Link2, GripVertical, X, ExternalLink, Image as ImgIcon, ChevronUp, ChevronDown
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,6 +18,380 @@ import {
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+
+// =============================================================================
+// BANNER MANAGER
+// =============================================================================
+interface HomeBanner {
+    id?: string;
+    image_url: string;
+    link_url: string;
+    alt_text: string;
+    order_index: number;
+    is_active: boolean;
+}
+
+function BannerManager({ supabase, toast }: { supabase: any; toast: any }) {
+    const [banners, setBanners] = useState<HomeBanner[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [saving, setSaving] = useState<string | null>(null); // id or 'new'
+    const [uploadingIdx, setUploadingIdx] = useState<number | null>(null);
+    const fileInputRefs = useRef<Record<number, HTMLInputElement | null>>({});
+
+    // Edit dialog
+    const [editBanner, setEditBanner] = useState<(HomeBanner & { _idx: number }) | null>(null);
+    const [editForm, setEditForm] = useState({ image_url: "", link_url: "", alt_text: "" });
+    const [uploadingEdit, setUploadingEdit] = useState(false);
+    const editFileRef = useRef<HTMLInputElement | null>(null);
+
+    const fetchBanners = useCallback(async () => {
+        setLoading(true);
+        const { data, error } = await supabase
+            .from("home_banners")
+            .select("*")
+            .order("order_index");
+        if (!error && data) setBanners(data);
+        setLoading(false);
+    }, [supabase]);
+
+    useEffect(() => { fetchBanners(); }, [fetchBanners]);
+
+    const handleUploadImage = async (file: File, onSuccess: (url: string) => void, setUploading: (v: boolean) => void) => {
+        setUploading(true);
+        try {
+            const compressed = await imageCompression(file, {
+                maxSizeMB: 1.5,
+                maxWidthOrHeight: 1920,
+                useWebWorker: true,
+                fileType: "image/webp",
+                initialQuality: 0.85,
+            });
+            const fileName = `hero-banners/banner-${Date.now()}.webp`;
+            const { error } = await supabase.storage
+                .from("products")
+                .upload(fileName, compressed, { contentType: "image/webp", upsert: true });
+            if (error) throw error;
+            const url = supabase.storage.from("products").getPublicUrl(fileName).data.publicUrl;
+            onSuccess(url);
+            toast({ title: "✅ Tải ảnh thành công", className: "bg-green-600 text-white" });
+        } catch (err: any) {
+            toast({ title: "Lỗi upload", description: err.message, variant: "destructive" });
+        } finally {
+            setUploading(false);
+        }
+    };
+
+    const openEdit = (banner: HomeBanner, idx: number) => {
+        setEditBanner({ ...banner, _idx: idx });
+        setEditForm({ image_url: banner.image_url, link_url: banner.link_url, alt_text: banner.alt_text });
+    };
+
+    const openAdd = () => {
+        setEditBanner({ id: undefined, image_url: "", link_url: "", alt_text: "", order_index: banners.length, is_active: true, _idx: -1 });
+        setEditForm({ image_url: "", link_url: "", alt_text: "" });
+    };
+
+    const handleSaveBanner = async () => {
+        if (!editForm.image_url.trim()) {
+            toast({ title: "Vui lòng chọn ảnh banner", variant: "destructive" }); return;
+        }
+        setSaving(editBanner?.id || "new");
+        try {
+            if (editBanner?.id) {
+                // Update
+                const { error } = await supabase.from("home_banners").update({
+                    image_url: editForm.image_url,
+                    link_url: editForm.link_url,
+                    alt_text: editForm.alt_text,
+                    updated_at: new Date().toISOString(),
+                }).eq("id", editBanner.id);
+                if (error) throw error;
+            } else {
+                // Insert
+                const { error } = await supabase.from("home_banners").insert({
+                    image_url: editForm.image_url,
+                    link_url: editForm.link_url,
+                    alt_text: editForm.alt_text,
+                    order_index: banners.length,
+                    is_active: true,
+                });
+                if (error) throw error;
+            }
+            toast({ title: "Đã lưu banner!", className: "bg-green-600 text-white" });
+            setEditBanner(null);
+            await fetchBanners();
+        } catch (err: any) {
+            toast({ title: "Lỗi lưu banner", description: err.message, variant: "destructive" });
+        } finally {
+            setSaving(null);
+        }
+    };
+
+    const handleDelete = async (id: string) => {
+        if (!confirm("Xóa banner này?")) return;
+        const { error } = await supabase.from("home_banners").delete().eq("id", id);
+        if (error) toast({ title: "Lỗi xóa", description: error.message, variant: "destructive" });
+        else toast({ title: "Đã xóa banner", className: "bg-green-600 text-white" });
+        await fetchBanners();
+    };
+
+    const handleToggleActive = async (banner: HomeBanner) => {
+        await supabase.from("home_banners").update({ is_active: !banner.is_active }).eq("id", banner.id);
+        await fetchBanners();
+    };
+
+    const handleReorder = async (idx: number, dir: "up" | "down") => {
+        const next = [...banners];
+        const swap = dir === "up" ? idx - 1 : idx + 1;
+        if (swap < 0 || swap >= next.length) return;
+        [next[idx], next[swap]] = [next[swap], next[idx]];
+        const updated = next.map((b, i) => ({ ...b, order_index: i }));
+        setBanners(updated);
+        // Save new orders
+        await Promise.all(updated.map(b =>
+            supabase.from("home_banners").update({ order_index: b.order_index }).eq("id", b.id)
+        ));
+    };
+
+    return (
+        <div className="space-y-4">
+            {/* Section Header */}
+            <div className="flex items-center justify-between">
+                <div>
+                    <h2 className="text-xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                        <ImgIcon className="h-5 w-5 text-orange-500" />
+                        Banner Trang Chủ
+                    </h2>
+                    <p className="text-xs text-slate-400 mt-0.5">Ảnh banner hiển thị trong hero carousel — mỗi banner có thể gắn link click vào</p>
+                </div>
+                <Button
+                    onClick={openAdd}
+                    className="bg-orange-600 hover:bg-orange-700 text-white gap-2 shadow-md shadow-orange-200 dark:shadow-none"
+                    size="sm"
+                >
+                    <Plus className="h-4 w-4" /> Thêm banner
+                </Button>
+            </div>
+
+            {/* Banner List */}
+            {loading ? (
+                <div className="flex justify-center py-10"><Loader2 className="animate-spin h-6 w-6 text-orange-500" /></div>
+            ) : banners.length === 0 ? (
+                <div
+                    onClick={openAdd}
+                    className="border-2 border-dashed border-slate-200 dark:border-white/10 rounded-2xl py-14 flex flex-col items-center gap-3 text-slate-400 cursor-pointer hover:border-orange-300 dark:hover:border-orange-500/50 hover:text-orange-500 transition-all"
+                >
+                    <ImgIcon className="h-10 w-10 opacity-40" />
+                    <p className="font-medium text-sm">Chưa có banner nào — nhấn để thêm</p>
+                </div>
+            ) : (
+                <div className="grid grid-cols-1 gap-3">
+                    {banners.map((banner, idx) => (
+                        <div
+                            key={banner.id}
+                            className={cn(
+                                "flex items-center gap-4 p-3 rounded-2xl border transition-all",
+                                banner.is_active
+                                    ? "bg-white dark:bg-[#1e2330] border-slate-200 dark:border-white/5 shadow-sm"
+                                    : "bg-slate-50 dark:bg-[#14161f] border-slate-100 dark:border-white/5 opacity-60"
+                            )}
+                        >
+                            {/* Order Controls */}
+                            <div className="flex flex-col gap-0.5 flex-shrink-0">
+                                <button
+                                    onClick={() => handleReorder(idx, "up")}
+                                    disabled={idx === 0}
+                                    className="p-1 rounded text-slate-300 hover:text-slate-600 dark:hover:text-slate-300 disabled:opacity-20 transition-colors"
+                                ><ChevronUp className="h-3.5 w-3.5" /></button>
+                                <span className="text-[10px] text-slate-400 text-center font-bold">{idx + 1}</span>
+                                <button
+                                    onClick={() => handleReorder(idx, "down")}
+                                    disabled={idx === banners.length - 1}
+                                    className="p-1 rounded text-slate-300 hover:text-slate-600 dark:hover:text-slate-300 disabled:opacity-20 transition-colors"
+                                ><ChevronDown className="h-3.5 w-3.5" /></button>
+                            </div>
+
+                            {/* Thumbnail */}
+                            <div className="w-32 h-20 rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-800 flex-shrink-0 border border-slate-200 dark:border-white/5">
+                                {banner.image_url ? (
+                                    <img src={banner.image_url} alt={banner.alt_text || "Banner"} className="w-full h-full object-cover" />
+                                ) : (
+                                    <div className="w-full h-full flex items-center justify-center text-slate-300">
+                                        <ImgIcon className="h-6 w-6" />
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Info */}
+                            <div className="flex-1 min-w-0">
+                                <p className="text-sm font-semibold text-slate-700 dark:text-slate-200 truncate">
+                                    {banner.alt_text || `Banner ${idx + 1}`}
+                                </p>
+                                {banner.link_url ? (
+                                    <a
+                                        href={banner.link_url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="inline-flex items-center gap-1 text-xs text-orange-500 hover:underline truncate max-w-xs"
+                                    >
+                                        <Link2 className="h-3 w-3" />
+                                        {banner.link_url}
+                                        <ExternalLink className="h-2.5 w-2.5" />
+                                    </a>
+                                ) : (
+                                    <span className="text-xs text-slate-400 italic">Không có link</span>
+                                )}
+                            </div>
+
+                            {/* Actions */}
+                            <div className="flex items-center gap-2 flex-shrink-0">
+                                {/* Active toggle */}
+                                <button
+                                    onClick={() => handleToggleActive(banner)}
+                                    className={cn(
+                                        "text-xs font-medium px-3 py-1.5 rounded-full border transition-all",
+                                        banner.is_active
+                                            ? "bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/20"
+                                            : "bg-slate-100 dark:bg-slate-800 text-slate-500 border-slate-200 dark:border-slate-700"
+                                    )}
+                                >
+                                    {banner.is_active ? "Hiện" : "Ẩn"}
+                                </button>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="h-8 px-3 text-xs"
+                                    onClick={() => openEdit(banner, idx)}
+                                >
+                                    Sửa
+                                </Button>
+                                <button
+                                    onClick={() => banner.id && handleDelete(banner.id)}
+                                    className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-colors"
+                                >
+                                    <Trash2 className="h-4 w-4" />
+                                </button>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
+
+            {/* Edit/Add Dialog */}
+            <Dialog open={!!editBanner} onOpenChange={(open) => { if (!open) setEditBanner(null); }}>
+                <DialogContent className="sm:max-w-lg">
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2">
+                            <ImgIcon className="h-5 w-5 text-orange-500" />
+                            {editBanner?.id ? "Chỉnh sửa banner" : "Thêm banner mới"}
+                        </DialogTitle>
+                        <DialogDescription>
+                            Banner là ảnh hiển thị full-width trong hero carousel trang chủ, có thể gắn link click vào.
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <div className="space-y-5 py-2">
+                        {/* Image Upload / URL */}
+                        <div className="space-y-2">
+                            <Label className="flex items-center gap-1.5 font-semibold">
+                                <ImgIcon className="h-3.5 w-3.5 text-orange-500" /> Ảnh Banner
+                                <span className="text-[10px] text-slate-400 font-normal">(khuyến nghị 1920×600px, landscape)</span>
+                            </Label>
+
+                            {/* Preview */}
+                            {editForm.image_url && (
+                                <div className="relative rounded-xl overflow-hidden border border-slate-200 dark:border-white/5 bg-slate-100 dark:bg-slate-800 h-40">
+                                    <img src={editForm.image_url} alt="Preview" className="w-full h-full object-cover" />
+                                    <button
+                                        onClick={() => setEditForm(f => ({ ...f, image_url: "" }))}
+                                        className="absolute top-2 right-2 p-1.5 bg-black/50 hover:bg-black/70 text-white rounded-full transition-colors"
+                                    >
+                                        <X className="h-3.5 w-3.5" />
+                                    </button>
+                                </div>
+                            )}
+
+                            <div className="flex gap-2">
+                                <Input
+                                    placeholder="https://example.com/banner.jpg"
+                                    value={editForm.image_url}
+                                    onChange={e => setEditForm(f => ({ ...f, image_url: e.target.value }))}
+                                    className="flex-1"
+                                />
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    className="hidden"
+                                    ref={editFileRef}
+                                    onChange={async (e) => {
+                                        const file = e.target.files?.[0];
+                                        if (file) {
+                                            await handleUploadImage(
+                                                file,
+                                                (url) => setEditForm(f => ({ ...f, image_url: url })),
+                                                setUploadingEdit
+                                            );
+                                        }
+                                        e.target.value = "";
+                                    }}
+                                />
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    className="shrink-0 gap-1.5"
+                                    onClick={() => editFileRef.current?.click()}
+                                    disabled={uploadingEdit}
+                                >
+                                    {uploadingEdit ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+                                    Upload
+                                </Button>
+                            </div>
+                        </div>
+
+                        {/* Link URL */}
+                        <div className="space-y-2">
+                            <Label className="flex items-center gap-1.5 font-semibold">
+                                <Link2 className="h-3.5 w-3.5 text-blue-500" /> Link khi click
+                                <span className="text-[10px] text-slate-400 font-normal">(tuỳ chọn)</span>
+                            </Label>
+                            <Input
+                                placeholder="/products?category=... hoặc https://..."
+                                value={editForm.link_url}
+                                onChange={e => setEditForm(f => ({ ...f, link_url: e.target.value }))}
+                            />
+                            <p className="text-[11px] text-slate-400">Để trống nếu banner chỉ là hình ảnh, không điều hướng.</p>
+                        </div>
+
+                        {/* Alt text */}
+                        <div className="space-y-2">
+                            <Label className="flex items-center gap-1.5 font-semibold">
+                                <Tag className="h-3.5 w-3.5 text-purple-500" /> Tên / Mô tả banner
+                            </Label>
+                            <Input
+                                placeholder="Ưu đãi tháng 3, Flash sale..."
+                                value={editForm.alt_text}
+                                onChange={e => setEditForm(f => ({ ...f, alt_text: e.target.value }))}
+                            />
+                        </div>
+                    </div>
+
+                    <div className="flex justify-end gap-3 pt-2 border-t border-slate-100 dark:border-white/5">
+                        <Button variant="outline" onClick={() => setEditBanner(null)}>Huỷ</Button>
+                        <Button
+                            onClick={handleSaveBanner}
+                            disabled={!!saving || !editForm.image_url}
+                            className="bg-orange-600 hover:bg-orange-700 text-white gap-2"
+                        >
+                            {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                            Lưu banner
+                        </Button>
+                    </div>
+                </DialogContent>
+            </Dialog>
+        </div>
+    );
+}
 
 interface Category {
     id: string;
@@ -260,18 +635,31 @@ export default function HomeSettingsPage() {
     }
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-10">
+            {/* Page Header */}
             <div className="flex items-center justify-between">
                 <div>
                     <h1 className="text-2xl font-black text-slate-900 dark:text-white flex items-center gap-2">
                         <Home className="h-6 w-6 text-orange-500" /> Cài đặt Trang chủ
                     </h1>
-                    <p className="text-sm text-slate-500 mt-1">Tùy chỉnh 3 mục danh mục nổi bật trên trang chủ</p>
+                    <p className="text-sm text-slate-500 mt-1">Quản lý banner hero và các mục danh mục nổi bật</p>
                 </div>
                 <Button onClick={handleSave} disabled={saving} className="bg-orange-600 hover:bg-orange-700 text-white shadow-lg shadow-orange-200 dark:shadow-none">
                     {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}
-                    Lưu cấu hình
+                    Lưu cấu hình danh mục
                 </Button>
+            </div>
+
+            {/* ── BANNER MANAGER ── */}
+            <div className="rounded-2xl border border-slate-200 dark:border-white/5 bg-white dark:bg-[#1e2330] p-6 shadow-sm space-y-4">
+                <BannerManager supabase={supabase} toast={toast} />
+            </div>
+
+            {/* ── Divider ── */}
+            <div className="flex items-center gap-3">
+                <div className="flex-1 h-px bg-slate-200 dark:bg-white/5" />
+                <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Danh mục nổi bật trang chủ</span>
+                <div className="flex-1 h-px bg-slate-200 dark:bg-white/5" />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
