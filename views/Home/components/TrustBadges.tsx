@@ -21,7 +21,7 @@ export function TrustBadges() {
         },
         {
             icon: <RotateCcw className="w-8 h-8 text-electric-orange" />,
-            title: "1 Đổi 1 Trong 30 Ngày",
+            title: "1 Đổi 1 Trong 7 Ngày",
             desc: "Đối với lỗi từ nhà sản xuất",
         },
     ];

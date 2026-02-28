@@ -7,28 +7,27 @@ const Footer = () => {
             <div className="container mx-auto max-w-7xl px-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
 
-                    {/* Cột 1: Giới thiệu */}
+                    {/* Cột 1: Điều hướng */}
                     <div>
-                        <h4 className="font-bold mb-6 text-slate-900 dark:text-white uppercase tracking-wider">Giới thiệu</h4>
+                        <h4 className="font-bold mb-6 text-slate-900 dark:text-white uppercase tracking-wider">Khám phá</h4>
                         <ul className="space-y-3 text-sm text-slate-600 dark:text-slate-gray">
-                            <li><a href="#" className="hover:text-electric-orange transition-colors">Trang chủ</a></li>
-                            <li><a href="#" className="hover:text-electric-orange transition-colors">Giới thiệu</a></li>
-                            <li><a href="#" className="hover:text-electric-orange transition-colors">Sản phẩm</a></li>
-                            <li><a href="#" className="hover:text-electric-orange transition-colors">Liên hệ</a></li>
-                            <li><a href="#" className="hover:text-electric-orange transition-colors">Kiến thức đồng hồ đo</a></li>
+                            <li><Link href="/" className="hover:text-electric-orange transition-colors">Trang chủ</Link></li>
+                            <li><Link href="/products" className="hover:text-electric-orange transition-colors">Sản phẩm</Link></li>
+                            <li><Link href="/news" className="hover:text-electric-orange transition-colors">Tin tức &amp; Kiến thức</Link></li>
+                            <li><Link href="/brands" className="hover:text-electric-orange transition-colors">Thương hiệu</Link></li>
+                            <li><Link href="/warranty-check" className="hover:text-electric-orange transition-colors">Tra cứu bảo hành</Link></li>
+                            <li><Link href="/contact" className="hover:text-electric-orange transition-colors">Liên hệ</Link></li>
                         </ul>
-
-
                     </div>
 
                     {/* Cột 2: Chính sách */}
                     <div>
-                        <h4 className="font-bold mb-6 text-slate-900 dark:text-white uppercase tracking-wider">Chính sách công ty</h4>
+                        <h4 className="font-bold mb-6 text-slate-900 dark:text-white uppercase tracking-wider">Chính sách</h4>
                         <ul className="space-y-3 text-sm text-slate-600 dark:text-slate-gray">
-                            <li><a href="#" className="hover:text-electric-orange transition-colors">Hướng dẫn mua hàng</a></li>
-                            <li><a href="#" className="hover:text-electric-orange transition-colors">Chính sách bảo hành & đổi trả</a></li>
-                            <li><a href="#" className="hover:text-electric-orange transition-colors">Chính sách vận chuyển & thanh toán</a></li>
-                            <li><a href="#" className="hover:text-electric-orange transition-colors">Chính sách bảo mật thông tin</a></li>
+                            <li><Link href="/chinh-sach/mua-hang" className="hover:text-electric-orange transition-colors">Hướng dẫn mua hàng</Link></li>
+                            <li><Link href="/chinh-sach/bao-hanh-doi-tra" className="hover:text-electric-orange transition-colors">Chính sách bảo hành &amp; đổi trả</Link></li>
+                            <li><Link href="/chinh-sach/van-chuyen-thanh-toan" className="hover:text-electric-orange transition-colors">Vận chuyển &amp; thanh toán</Link></li>
+                            <li><Link href="/chinh-sach/bao-mat" className="hover:text-electric-orange transition-colors">Chính sách bảo mật</Link></li>
                         </ul>
                     </div>
 
@@ -42,43 +41,65 @@ const Footer = () => {
                                 </svg>
                             </div>
                             <div>
-                                <p className="text-xl font-bold text-electric-orange">093.400.14.35</p>
-                                <p className="text-xs text-slate-500">(7:30 - 20:00)</p>
+                                <a href="tel:0934001435" className="text-xl font-bold text-electric-orange hover:underline">
+                                    093.400.14.35
+                                </a>
+                                <p className="text-xs text-slate-500">(7:30 - 20:00, Thứ 2 – Chủ nhật)</p>
                             </div>
                         </div>
 
                         <h4 className="font-bold mb-4 text-slate-900 dark:text-white uppercase tracking-wider text-sm">Kết nối với chúng tôi:</h4>
                         <div className="flex gap-3">
-                            {/* Thay bằng các icon thực tế của bạn */}
-                            <Link href="https://www.facebook.com/telectric1992/" target="_blank">
+                            <Link href="https://www.facebook.com/telectric1992/" target="_blank" rel="noopener noreferrer">
                                 <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/Facebook_Logo_%282019%29.png/500px-Facebook_Logo_%282019%29.png" alt="Facebook" className="h-6" />
                             </Link>
-                            <Link href="https://shopee.vn/telectric" target="_blank">
-                                <img src="https://play-lh.googleusercontent.com/vrrgAukb27gHzlI-lwHQoabie4ByvZKMN9QVN7jgd5KCFgEKCbQClsujkfqhExpfrUdS=w600-h300-pc0xffffff-pd" alt="Youtube" className="h-6" />
+                            <Link href="https://shopee.vn/telectric" target="_blank" rel="noopener noreferrer">
+                                <img src="https://play-lh.googleusercontent.com/vrrgAukb27gHzlI-lwHQoabie4ByvZKMN9QVN7jgd5KCFgEKCbQClsujkfqhExpfrUdS=w600-h300-pc0xffffff-pd" alt="Shopee" className="h-6" />
                             </Link>
                         </div>
                     </div>
 
-                    {/* Cột 4: Thông tin trụ sở (đã gom lại) */}
+                    {/* Cột 4: Thông tin doanh nghiệp */}
                     <div>
                         <h4 className="font-bold mb-6 text-slate-900 dark:text-white uppercase tracking-wider">Thông tin liên hệ</h4>
                         <div className="text-sm text-slate-600 dark:text-slate-gray space-y-3">
-                            <p><strong>Trụ sở chính:</strong> 72 Đông Hưng Thuận 03 - Tân Hưng Thuận - Quận 12 - TP.HCM</p>
-                            <p><strong>Email:</strong> telectric1992@gmail.com</p>
-                            <p className="pt-2 italic text-xs">Mã số thuế: 0316617014, cấp ngày 02/12/2020</p>
+                            <p>
+                                <strong className="text-slate-800 dark:text-slate-200">Tên hộ kinh doanh:</strong><br />
+                                TELECTRIC
+                            </p>
+                            <p>
+                                <strong className="text-slate-800 dark:text-slate-200">Địa chỉ:</strong><br />
+                                61/9/6 Khu phố 63,<br />
+                                Phường Đông Hưng Thuận, TP.HCM
+                            </p>
+                            <p>
+                                <strong className="text-slate-800 dark:text-slate-200">Email:</strong>{' '}
+                                <a href="mailto:telectric1992@gmail.com" className="hover:text-electric-orange transition-colors">
+                                    telectric1992@gmail.com
+                                </a>
+                            </p>
                         </div>
 
-                        <div className="mt-6">
-                            <h4 className="font-bold mb-3 text-slate-900 dark:text-white uppercase tracking-wider text-sm">Giấy chứng nhận:</h4>
-
+                        <div className="mt-5 pt-4 border-t border-slate-200 dark:border-white/5">
+                            <p className="italic text-xs text-slate-500 leading-relaxed">
+                                Số GCNĐKKD: <span className="font-semibold text-slate-600 dark:text-slate-400">41L8037603</span><br />
+                                Đăng ký lần đầu: 17/5/2023<br />
+                                Cơ quan cấp: UBND Quận 12
+                            </p>
                         </div>
                     </div>
 
                 </div>
 
-                <div className="border-t border-gray-200 dark:border-gray-800 pt-8 text-center">
-                    <p className="text-slate-500 dark:text-slate-gray text-xs">
-                        &copy; 2026 <strong>TLECTRIC</strong>. All rights reserved.
+                {/* Bottom bar */}
+                <div className="border-t border-gray-200 dark:border-gray-800 pt-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500 dark:text-slate-gray">
+                    <p>
+                        &copy; 2023–2026 <strong className="text-slate-700 dark:text-slate-300">TELECTRIC</strong>. All rights reserved.
+                    </p>
+                    <p className="text-center sm:text-right">
+                        Đại diện: <strong className="text-slate-700 dark:text-slate-300">Nguyễn Đắc Tài</strong>
+                        {' · '}
+                        <a href="tel:0934001435" className="hover:text-electric-orange transition-colors">0934 001 435</a>
                     </p>
                 </div>
             </div>

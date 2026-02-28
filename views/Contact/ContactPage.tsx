@@ -35,7 +35,7 @@ export default function ContactPage() {
                     <div className="w-full mb-16 rounded-2xl overflow-hidden shadow-2xl border border-slate-200 dark:border-slate-800/60 h-[450px] relative group bg-white dark:bg-[#1e2330]">
                         <div className="absolute inset-0 bg-electric-orange/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none z-10" />
                         <iframe
-                            src="https://maps.google.com/maps?q=72%20%C4%90%C3%B4ng%20H%C6%B0ng%20Thu%C3%A2%CC%a3n%2003,%20T%C3%A2n%20H%C6%B0ng%20Thu%E1%BA%ADn,%20Qu%E1%BA%ADn%2012,%20TP.HCM&t=m&z=15&output=embed&iwloc=near"
+                            src="https://maps.google.com/maps?q=61%2F9%2F6+%C4%90HT03%2C+t%E1%BB%95+12%2C+khu+ph%E1%BB%91+5%2C+ph%C6%B0%E1%BB%9Dng+T%C3%A2n+H%C6%B0ng+Thu%E1%BA%ADn%2C+Qu%E1%BA%ADn+12%2C+TP.HCM&t=m&z=16&output=embed&iwloc=near"
                             width="100%"
                             height="100%"
                             style={{ border: 0 }}
@@ -65,8 +65,8 @@ export default function ContactPage() {
                                             Hotline Hỗ Trợ
                                         </h3>
                                         <div className="pl-4 border-l-2 border-electric-orange">
-                                            <p className="text-3xl font-extrabold text-electric-orange mb-1 tracking-tight">093.400.14.35</p>
-                                            <p className="text-sm text-slate-500 font-medium">(7:30 - 20:00)</p>
+                                            <a href="tel:0934001435" className="text-3xl font-extrabold text-electric-orange mb-1 tracking-tight hover:underline block">093.400.14.35</a>
+                                            <p className="text-sm text-slate-500 font-medium">(7:30 – 20:00, Thứ 2 – Chủ nhật)</p>
                                         </div>
                                     </div>
 
@@ -82,21 +82,23 @@ export default function ContactPage() {
                                             <div className="flex gap-4">
                                                 <div className="mt-1"><MapPin className="h-5 w-5 text-slate-400 dark:text-slate-500 shrink-0" /></div>
                                                 <div>
-                                                    <p className="font-bold text-slate-900 dark:text-white mb-1">Trụ sở chính:</p>
-                                                    <p className="leading-relaxed">72 Đông Hưng Thuận 03 - Tân Hưng Thuận<br />Quận 12 - TP.HCM</p>
+                                                    <p className="font-bold text-slate-900 dark:text-white mb-1">Địa điểm kinh doanh:</p>
+                                                    <p className="leading-relaxed">61/9/6 ĐHT03, tổ 12, khu phố 5,<br />Phường Tân Hưng Thuận, Quận 12, TP.HCM</p>
                                                 </div>
                                             </div>
 
                                             <div className="flex gap-4 items-center">
                                                 <div><Mail className="h-5 w-5 text-slate-400 dark:text-slate-500 shrink-0" /></div>
-                                                <a href="mailto:telectric1992@gmail.com" className="hover:text-electric-orange font-medium transition-colors">
-                                                    telectric1992@gmail.com
+                                                <a href="mailto:dtnguyen67@gmail.com" className="hover:text-electric-orange font-medium transition-colors">
+                                                    dtnguyen67@gmail.com
                                                 </a>
                                             </div>
 
                                             <div className="pt-6 border-t border-slate-200 dark:border-white/5">
                                                 <p className="italic text-xs text-slate-500 leading-relaxed">
-                                                    Mã số thuế: <span className="font-semibold text-slate-600 dark:text-slate-400">0316617014</span><br />Cấp ngày 02/12/2020
+                                                    Số GCNĐKKD: <span className="font-semibold text-slate-600 dark:text-slate-400">41L8037603</span><br />
+                                                    Đăng ký lần đầu: 17/5/2023<br />
+                                                    Đại diện: <span className="font-semibold text-slate-600 dark:text-slate-400">Nguyễn Đắc Tài</span>
                                                 </p>
                                             </div>
                                         </div>
