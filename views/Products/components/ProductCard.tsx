@@ -93,14 +93,7 @@ export function ProductCard({ product }: { product: ProductCardData }) {
                     </div>
                 )}
 
-                {/* Origin - Bottom left on Image */}
-                {product.origin && (
-                    <div className="absolute bottom-1 left-3 sm:bottom-1 sm:left-4 z-20 pointer-events-none">
-                        <span className="bg-slate-600/95 dark:bg-slate-700/95 text-white text-[10px] font-semibold px-3 py-1 rounded-full shadow-sm block leading-none">
-                            {product.origin}
-                        </span>
-                    </div>
-                )}
+
             </div>
 
             {/* Content Area */}
