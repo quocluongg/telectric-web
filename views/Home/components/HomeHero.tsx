@@ -17,6 +17,7 @@ export function HomeHero() {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isMobileCategoryOpen, setIsMobileCategoryOpen] = useState(false);
     const [selectedIndex, setSelectedIndex] = useState(0);
+    const [expandedCatId, setExpandedCatId] = useState<string | null>(null);
 
     const scrollTo = useCallback((index: number) => emblaApi && emblaApi.scrollTo(index), [emblaApi]);
 
@@ -122,37 +123,81 @@ export function HomeHero() {
                             </div>
                         ) : (
                             <>
-                                {categories.slice(0, 8).map((cat) => (
-                                    <li key={cat.id} className="border-b border-slate-100 dark:border-slate-800/60 last:border-0 relative group/nav shrink-0">
-                                        <Link
-                                            href={`/products?category=${cat.slug}`}
-                                            className="flex items-center justify-between px-5 py-3.5 text-[15px] font-medium text-slate-700 dark:text-slate-300 hover:text-electric-orange dark:hover:text-electric-orange transition-colors"
-                                        >
-                                            <span className="truncate pr-2">{cat.name}</span>
-                                            <ChevronRight className="h-4 w-4 text-slate-300 group-hover/nav:text-electric-orange transition-transform" />
-                                        </Link>
-                                        {/* Active border indicator on hover */}
-                                        <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-electric-orange scale-y-0 group-hover/nav:scale-y-100 transition-transform origin-center"></div>
+                                {categories.slice(0, 8).map((cat) => {
+                                    const hasChildren = cat.children && cat.children.length > 0;
+                                    const isExpanded = expandedCatId === cat.id;
 
-                                        {/* Flyout Menu (Desktop Only) */}
-                                        {cat.children && cat.children.length > 0 && (
-                                            <div className="hidden lg:block absolute left-full top-0 w-[260px] bg-white dark:bg-[#1e2330] border border-slate-200 dark:border-slate-800 shadow-2xl opacity-0 translate-x-2 pointer-events-none group-hover/nav:opacity-100 group-hover/nav:translate-x-0 group-hover/nav:pointer-events-auto transition-all duration-300 z-[100] rounded-r-lg overflow-hidden">
-                                                <ul className="py-2">
+                                    return (
+                                        <li key={cat.id} className="border-b border-slate-100 dark:border-slate-800/60 last:border-0 relative group/nav shrink-0">
+                                            <div className="flex items-center justify-between">
+                                                <Link
+                                                    href={`/products?category=${cat.slug}`}
+                                                    className="flex-1 flex items-center px-5 py-3.5 text-[15px] font-medium text-slate-700 dark:text-slate-300 hover:text-electric-orange dark:hover:text-electric-orange transition-colors truncate"
+                                                >
+                                                    <span className="truncate pr-2">{cat.name}</span>
+                                                </Link>
+
+                                                {hasChildren && (
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.preventDefault();
+                                                            e.stopPropagation();
+                                                            if (window.innerWidth < 1024) {
+                                                                setExpandedCatId(isExpanded ? null : cat.id);
+                                                            }
+                                                        }}
+                                                        className="lg:hidden p-3.5 text-slate-300 hover:text-electric-orange transition-all"
+                                                        aria-label={isExpanded ? "Thu gọn" : "Mở rộng"}
+                                                    >
+                                                        <ChevronRight className={cn(
+                                                            "h-4 w-4 transition-transform",
+                                                            isExpanded ? "rotate-90" : ""
+                                                        )} />
+                                                    </button>
+                                                )}
+
+                                                <ChevronRight className="hidden lg:block h-4 w-4 text-slate-300 mr-5 group-hover/nav:text-electric-orange transition-transform" />
+                                            </div>
+
+                                            {/* Sub-categories on Mobile */}
+                                            {hasChildren && isExpanded && (
+                                                <ul className="lg:hidden bg-slate-100 dark:bg-slate-800/40 py-1 border-t border-slate-200 dark:border-slate-800">
                                                     {cat.children.map((sub: any) => (
                                                         <li key={sub.id}>
                                                             <Link
                                                                 href={`/products?category=${sub.slug}`}
-                                                                className="block px-5 py-2.5 text-sm text-slate-600 dark:text-slate-400 hover:text-electric-orange dark:hover:text-electric-orange hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                                                                className="block pl-10 pr-5 py-2.5 text-sm text-slate-600 dark:text-slate-400 hover:text-electric-orange transition-colors"
                                                             >
                                                                 {sub.name}
                                                             </Link>
                                                         </li>
                                                     ))}
                                                 </ul>
-                                            </div>
-                                        )}
-                                    </li>
-                                ))}
+                                            )}
+
+                                            {/* Active border indicator on hover */}
+                                            <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-electric-orange scale-y-0 lg:group-hover/nav:scale-y-100 transition-transform origin-center"></div>
+
+                                            {/* Flyout Menu (Desktop Only) */}
+                                            {hasChildren && (
+                                                <div className="hidden lg:block absolute left-full top-0 w-[260px] bg-white dark:bg-[#1e2330] border border-slate-200 dark:border-slate-800 shadow-2xl opacity-0 translate-x-2 pointer-events-none group-hover/nav:opacity-100 group-hover/nav:translate-x-0 group-hover/nav:pointer-events-auto transition-all duration-300 z-[100] rounded-r-lg overflow-hidden">
+                                                    <ul className="py-2">
+                                                        {cat.children.map((sub: any) => (
+                                                            <li key={sub.id}>
+                                                                <Link
+                                                                    href={`/products?category=${sub.slug}`}
+                                                                    className="block px-5 py-2.5 text-sm text-slate-600 dark:text-slate-400 hover:text-electric-orange dark:hover:text-electric-orange hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                                                                >
+                                                                    {sub.name}
+                                                                </Link>
+                                                            </li>
+                                                        ))}
+                                                    </ul>
+                                                </div>
+                                            )}
+                                        </li>
+                                    );
+                                })}
                                 {categories.length > 8 && (
                                     <li className="border-t border-slate-200 dark:border-slate-800 shrink-0">
                                         <Link
