@@ -10,7 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { ImageIcon, Save, RefreshCw, Plus, Upload, Loader2 } from "lucide-react";
+import { ImageIcon, Save, RefreshCw, Plus, Upload, Loader2, Pencil, Trash2 } from "lucide-react";
 
 interface BrandLogo {
     id?: string;
@@ -24,11 +24,18 @@ export default function BrandsManagementView() {
     const [brands, setBrands] = useState<BrandLogo[]>([]);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState<string | null>(null);
-    const [uploading, setUploading] = useState<string | null>(null); // brand_name đang upload
+    const [uploading, setUploading] = useState<string | null>(null);
     const [newBrandName, setNewBrandName] = useState("");
     const [isAdding, setIsAdding] = useState(false);
 
-    // Refs for hidden file inputs per brand row, keyed by brand_name
+    // Inline rename state
+    const [editingName, setEditingName] = useState<string | null>(null);
+    const [editNameValue, setEditNameValue] = useState("");
+
+    // Delete confirm state
+    const [confirmDelete, setConfirmDelete] = useState<BrandLogo | null>(null);
+    const [deleting, setDeleting] = useState(false);
+
     const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
 
     const fetchBrands = async () => {
@@ -67,22 +74,18 @@ export default function BrandsManagementView() {
     const compressAndUpload = async (file: File, brandName: string): Promise<string | null> => {
         try {
             const compressed = await imageCompression(file, {
-                maxSizeMB: 0.15,          // 150KB — giữ chất lượng logo SVG/PNG
-                maxWidthOrHeight: 400,    // Logo không cần lớn
+                maxSizeMB: 0.15,
+                maxWidthOrHeight: 400,
                 useWebWorker: true,
                 fileType: "image/webp",
                 initialQuality: 0.85,
             });
-
             const safeName = brandName.toLowerCase().replace(/[^a-z0-9]/g, "-");
             const fileName = `brand-logos/${safeName}-${Date.now()}.webp`;
-
             const { error } = await supabase.storage
                 .from("products")
                 .upload(fileName, compressed, { contentType: "image/webp", upsert: true });
-
             if (error) throw error;
-
             return supabase.storage.from("products").getPublicUrl(fileName).data.publicUrl;
         } catch (err: any) {
             toast({ title: "Upload lỗi", description: err.message, variant: "destructive" });
@@ -94,11 +97,9 @@ export default function BrandsManagementView() {
         setUploading(brand.brand_name);
         const url = await compressAndUpload(file, brand.brand_name);
         if (url) {
-            // Cập nhật state local
             setBrands((prev) => prev.map((b) =>
                 b.brand_name === brand.brand_name ? { ...b, logo_url: url } : b
             ));
-            // Auto-save
             await handleSave({ ...brand, logo_url: url });
         }
         setUploading(null);
@@ -143,8 +144,82 @@ export default function BrandsManagementView() {
         }
     };
 
+    // ── Rename ──
+    const startEditName = (brand: BrandLogo) => {
+        setEditingName(brand.brand_name);
+        setEditNameValue(brand.brand_name);
+    };
+
+    const handleRenameSave = async (oldName: string) => {
+        const newName = editNameValue.trim();
+        if (!newName || newName === oldName) { setEditingName(null); return; }
+        if (brands.find((b) => b.brand_name.toLowerCase() === newName.toLowerCase() && b.brand_name !== oldName)) {
+            toast({ title: "Lỗi", description: "Tên thương hiệu này đã tồn tại." });
+            return;
+        }
+        const brand = brands.find((b) => b.brand_name === oldName);
+        if (!brand) return;
+        try {
+            if (brand.id) {
+                const { error } = await supabase.from("brand_logos")
+                    .update({ brand_name: newName }).eq("id", brand.id);
+                if (error) throw error;
+            }
+            setBrands((prev) =>
+                prev.map((b) => b.brand_name === oldName ? { ...b, brand_name: newName } : b)
+                    .sort((a, b) => a.brand_name.localeCompare(b.brand_name))
+            );
+            toast({ title: "Thành công", description: `Đã đổi tên thành "${newName}"`, className: "bg-green-600 text-white" });
+        } catch {
+            toast({ title: "Lỗi", description: "Không thể đổi tên thương hiệu.", variant: "destructive" });
+        }
+        setEditingName(null);
+    };
+
+    // ── Delete ──
+    const handleDelete = async () => {
+        if (!confirmDelete) return;
+        setDeleting(true);
+        try {
+            if (confirmDelete.id) {
+                const { error } = await supabase.from("brand_logos").delete().eq("id", confirmDelete.id);
+                if (error) throw error;
+            }
+            setBrands((prev) => prev.filter((b) => b.brand_name !== confirmDelete.brand_name));
+            toast({ title: "Đã xóa", description: `Đã xóa thương hiệu "${confirmDelete.brand_name}"`, className: "bg-green-600 text-white" });
+        } catch {
+            toast({ title: "Lỗi", description: "Không thể xóa thương hiệu.", variant: "destructive" });
+        } finally {
+            setDeleting(false);
+            setConfirmDelete(null);
+        }
+    };
+
     return (
         <div className="p-6 space-y-6">
+            {/* Confirm Delete Dialog */}
+            {confirmDelete && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+                    <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-2xl p-6 w-full max-w-sm space-y-4">
+                        <h3 className="text-lg font-semibold">Xác nhận xóa</h3>
+                        <p className="text-sm text-muted-foreground">
+                            Bạn có chắc muốn xóa thương hiệu{" "}
+                            <span className="font-bold text-foreground">{confirmDelete.brand_name}</span>?{" "}
+                            Hành động này không thể hoàn tác.
+                        </p>
+                        <div className="flex justify-end gap-2">
+                            <Button variant="ghost" size="sm" onClick={() => setConfirmDelete(null)} disabled={deleting}>
+                                Hủy
+                            </Button>
+                            <Button variant="destructive" size="sm" onClick={handleDelete} disabled={deleting}>
+                                {deleting && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
+                                Xóa
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             <Card>
                 <CardHeader className="flex flex-row items-center justify-between">
                     <div>
@@ -181,10 +256,10 @@ export default function BrandsManagementView() {
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead className="w-[180px]">Tên hãng</TableHead>
+                                <TableHead className="w-[220px]">Tên hãng</TableHead>
                                 <TableHead className="w-[90px]">Xem trước</TableHead>
                                 <TableHead>URL Logo (dán link hoặc tải ảnh lên)</TableHead>
-                                <TableHead className="text-right w-[200px]">Hành động</TableHead>
+                                <TableHead className="text-right w-[260px]">Hành động</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -201,9 +276,54 @@ export default function BrandsManagementView() {
                             ) : (
                                 brands.map((brand) => (
                                     <TableRow key={brand.brand_name}>
+                                        {/* Tên hãng — inline edit */}
                                         <TableCell className="font-bold uppercase tracking-tight">
-                                            {brand.brand_name}
+                                            {editingName === brand.brand_name ? (
+                                                <div className="flex gap-1 items-center">
+                                                    <Input
+                                                        className="h-8 text-sm font-bold uppercase w-32"
+                                                        value={editNameValue}
+                                                        onChange={(e) => setEditNameValue(e.target.value)}
+                                                        onKeyDown={(e) => {
+                                                            if (e.key === "Enter") handleRenameSave(brand.brand_name);
+                                                            if (e.key === "Escape") setEditingName(null);
+                                                        }}
+                                                        autoFocus
+                                                    />
+                                                    <Button
+                                                        size="icon"
+                                                        variant="ghost"
+                                                        className="h-8 w-8 text-green-600 hover:text-green-700 hover:bg-green-50"
+                                                        onClick={() => handleRenameSave(brand.brand_name)}
+                                                        title="Lưu tên"
+                                                    >
+                                                        <Save className="w-4 h-4" />
+                                                    </Button>
+                                                    <Button
+                                                        size="icon"
+                                                        variant="ghost"
+                                                        className="h-8 w-8"
+                                                        onClick={() => setEditingName(null)}
+                                                        title="Hủy"
+                                                    >
+                                                        ✕
+                                                    </Button>
+                                                </div>
+                                            ) : (
+                                                <div className="flex items-center gap-2 group">
+                                                    <span>{brand.brand_name}</span>
+                                                    <button
+                                                        className="opacity-0 group-hover:opacity-60 hover:!opacity-100 transition-opacity text-muted-foreground"
+                                                        onClick={() => startEditName(brand)}
+                                                        title="Chỉnh sửa tên thương hiệu"
+                                                    >
+                                                        <Pencil className="w-3.5 h-3.5" />
+                                                    </button>
+                                                </div>
+                                            )}
                                         </TableCell>
+
+                                        {/* Logo preview */}
                                         <TableCell>
                                             <div className="w-14 h-10 rounded border bg-white flex items-center justify-center overflow-hidden p-1">
                                                 {brand.logo_url ? (
@@ -213,6 +333,8 @@ export default function BrandsManagementView() {
                                                 )}
                                             </div>
                                         </TableCell>
+
+                                        {/* URL input */}
                                         <TableCell>
                                             <Input
                                                 placeholder="https://example.com/logo.png"
@@ -220,6 +342,8 @@ export default function BrandsManagementView() {
                                                 onChange={(e) => updateLogoUrl(brand.brand_name, e.target.value)}
                                             />
                                         </TableCell>
+
+                                        {/* Actions */}
                                         <TableCell className="text-right">
                                             <div className="flex items-center justify-end gap-2">
                                                 {/* Hidden file input */}
@@ -234,7 +358,7 @@ export default function BrandsManagementView() {
                                                         e.target.value = "";
                                                     }}
                                                 />
-                                                {/* Upload button */}
+                                                {/* Upload */}
                                                 <Button
                                                     size="sm"
                                                     variant="outline"
@@ -247,7 +371,7 @@ export default function BrandsManagementView() {
                                                         : <Upload className="w-4 h-4" />
                                                     }
                                                 </Button>
-                                                {/* Save button */}
+                                                {/* Save logo */}
                                                 <Button
                                                     size="sm"
                                                     onClick={() => handleSave(brand)}
@@ -258,6 +382,16 @@ export default function BrandsManagementView() {
                                                         : <Save className="w-4 h-4 mr-2" />
                                                     }
                                                     Lưu
+                                                </Button>
+                                                {/* Delete */}
+                                                <Button
+                                                    size="sm"
+                                                    variant="outline"
+                                                    className="text-destructive hover:bg-destructive hover:text-white border-destructive/30"
+                                                    onClick={() => setConfirmDelete(brand)}
+                                                    title="Xóa thương hiệu"
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
                                                 </Button>
                                             </div>
                                         </TableCell>

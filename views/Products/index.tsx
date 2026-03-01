@@ -33,10 +33,19 @@ function ProductsPageInner() {
     const [availableBrands, setAvailableBrands] = useState<string[]>([]);
     const [availableOrigins, setAvailableOrigins] = useState<string[]>([]);
 
+    // Parse brand param: supports ?brand=FLUKE or ?brand=FLUKE&brand=APECH
+    const initialBrands = useMemo(() => {
+        const single = searchParams?.get("brand");
+        const multi = searchParams?.getAll("brand");
+        if (multi && multi.length > 1) return multi;
+        if (single) return [single];
+        return [];
+    }, []);
+
     const [filters, setFilters] = useState<FilterState>({
         search: searchParams?.get("search") || searchParams?.get("q") || "",
         categorySlug: searchParams?.get("category") || null,
-        brands: [],
+        brands: initialBrands,
         origins: [],
         sort: "newest",
         inStockOnly: false,
@@ -45,10 +54,17 @@ function ProductsPageInner() {
     // Keep filters in sync with URL search params changes (e.g., when using header search bar on the same page)
     useEffect(() => {
         const querySearch = searchParams?.get("search") || searchParams?.get("q") || "";
+        const queryBrands = searchParams?.getAll("brand") || (searchParams?.get("brand") ? [searchParams.get("brand") as string] : []);
         setFilters(prev => {
-            if (prev.search !== querySearch) {
+            const searchChanged = prev.search !== querySearch;
+            const brandsChanged = queryBrands.length > 0 && queryBrands.join(",") !== prev.brands.join(",");
+            if (searchChanged || brandsChanged) {
                 setPage(1);
-                return { ...prev, search: querySearch };
+                return {
+                    ...prev,
+                    search: querySearch,
+                    ...(brandsChanged ? { brands: queryBrands } : {}),
+                };
             }
             return prev;
         });

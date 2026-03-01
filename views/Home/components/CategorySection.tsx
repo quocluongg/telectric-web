@@ -313,35 +313,37 @@ export function CategorySection({
                 {/* ── SIDEBAR ── */}
                 {brands.length > 0 ? (
                     <div className="w-full lg:w-[260px] shrink-0 flex flex-col gap-2">
-                        {/* Brand logos */}
+                        {/* Brand logos — 1 cột, tối đa 4 hàng, cuộn nếu nhiều hơn */}
                         <div className="bg-white dark:bg-[#1b2133] rounded-xl border border-slate-200 dark:border-white/5 overflow-hidden shadow-sm">
                             <div
-                                className="text-white text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 text-center"
+                                className="text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 text-center"
                                 style={{ background: `${accentHex}22`, color: accentHex }}
                             >
                                 Thương hiệu
                             </div>
-                            {brands.map((b) => (
-                                <Link
-                                    key={b.name}
-                                    href={`/products?brand=${encodeURIComponent(b.name)}`}
-                                    title={`Xem sản phẩm ${b.name}`}
-                                    className="flex items-center justify-center h-[80px] w-full px-5 border-t border-slate-100 dark:border-white/5 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors group"
-                                >
-                                    {b.logoUrl ? (
-                                        <img
-                                            src={b.logoUrl}
-                                            alt={b.name}
-                                            className="w-full object-contain group-hover:scale-105 transition-transform duration-300"
-                                            style={{ maxHeight: "48px" }}
-                                        />
-                                    ) : (
-                                        <span className="text-[11px] font-black uppercase tracking-wider text-slate-500 group-hover:text-slate-800 dark:group-hover:text-white transition-colors text-center">
-                                            {b.name}
-                                        </span>
-                                    )}
-                                </Link>
-                            ))}
+                            <div style={{ maxHeight: `${70 * 4}px`, overflowY: brands.length > 4 ? "auto" : "hidden" }}>
+                                {brands.map((b) => (
+                                    <Link
+                                        key={b.name}
+                                        href={`/products?brand=${encodeURIComponent(b.name)}&category=${categorySlug}`}
+                                        title={`Xem sản phẩm ${b.name}`}
+                                        className="flex items-center justify-center h-[70px] w-full px-5 border-t border-slate-100 dark:border-white/5 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors group"
+                                    >
+                                        {b.logoUrl ? (
+                                            <img
+                                                src={b.logoUrl}
+                                                alt={b.name}
+                                                className="w-full object-contain group-hover:scale-105 transition-transform duration-300"
+                                                style={{ maxHeight: "44px" }}
+                                            />
+                                        ) : (
+                                            <span className="text-[11px] font-black uppercase tracking-wider text-slate-500 group-hover:text-slate-800 dark:group-hover:text-white transition-colors text-center">
+                                                {b.name}
+                                            </span>
+                                        )}
+                                    </Link>
+                                ))}
+                            </div>
                         </div>
 
                         {/* Banner */}
