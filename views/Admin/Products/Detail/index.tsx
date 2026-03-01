@@ -9,7 +9,8 @@ import Link from "next/link";
 import {
     Package, ShoppingCart, ArrowLeft, Tag, MapPin, Star, Truck,
     Shield, ChevronLeft, ChevronRight, Minus, Plus, Check, Layers,
-    Home, ChevronRight as ChevronSep, Phone, Heart, Share2, Zap, Clock
+    Home, ChevronRight as ChevronSep, Phone, Heart, Share2, Zap, Clock,
+    ChevronDown as ArrowDown, ChevronUp as ArrowUp
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -75,6 +76,9 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
     const [selectedAttributes, setSelectedAttributes] = useState<Record<string, string>>({});
     const [quantity, setQuantity] = useState(1);
     const [isWishlisted, setIsWishlisted] = useState(false);
+    const [isDescExpanded, setIsDescExpanded] = useState(false);
+    const [showReadMore, setShowReadMore] = useState(false);
+    const descRef = React.useRef<HTMLDivElement>(null);
 
     // Fetch data
     useEffect(() => {
@@ -102,6 +106,17 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
 
         if (productId) fetchProduct();
     }, [productId]);
+
+    // Check if description needs "Read More" button
+    useEffect(() => {
+        if (descRef.current) {
+            if (descRef.current.scrollHeight > 500) {
+                setShowReadMore(true);
+            } else {
+                setShowReadMore(false);
+            }
+        }
+    }, [product?.description]);
 
     // Computed values
     const allImages = useMemo(() => {
@@ -659,11 +674,38 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
                             <div className="bg-slate-50 dark:bg-[#1c212c]/80 text-industrial-black dark:text-slate-200 px-6 py-4 font-black uppercase tracking-widest text-sm border-b border-gray-200 dark:border-white/5">
                                 Mô tả sản phẩm
                             </div>
-                            <div className="p-6 md:p-8">
+                            <div className="p-6 md:p-8 relative">
                                 {product.description ? (
-                                    <div className="prose prose-slate dark:prose-invert max-w-none whitespace-pre-line text-[15px] leading-loose text-slate-700 dark:text-slate-300">
-                                        {product.description}
-                                    </div>
+                                    <>
+                                        <div
+                                            ref={descRef}
+                                            className={cn(
+                                                "prose prose-slate dark:prose-invert max-w-none whitespace-pre-line text-[15px] leading-loose text-slate-700 dark:text-slate-300 transition-all duration-500 overflow-hidden relative",
+                                                !isDescExpanded && showReadMore ? "max-h-[500px]" : "max-h-none"
+                                            )}
+                                        >
+                                            {product.description}
+                                        </div>
+
+                                        {showReadMore && (
+                                            <div className={cn(
+                                                "flex justify-center mt-4 pt-10 relative",
+                                                !isDescExpanded && "absolute bottom-0 left-0 right-0 bg-gradient-to-t from-white via-white/80 to-transparent dark:from-[#1c212c] dark:via-[#1c212c]/80 dark:to-transparent z-10"
+                                            )}>
+                                                <Button
+                                                    variant="outline"
+                                                    onClick={() => setIsDescExpanded(!isDescExpanded)}
+                                                    className="border-electric-orange text-electric-orange hover:bg-orange-50 dark:hover:bg-orange-500/10 font-bold px-8 shadow-sm"
+                                                >
+                                                    {isDescExpanded ? (
+                                                        <>Thu gọn <ArrowUp className="ml-2 h-4 w-4" /></>
+                                                    ) : (
+                                                        <>Xem thêm <ArrowDown className="ml-2 h-4 w-4" /></>
+                                                    )}
+                                                </Button>
+                                            </div>
+                                        )}
+                                    </>
                                 ) : (
                                     <p className="text-sm text-slate-500 dark:text-slate-400 italic">Chưa có mô tả chi tiết cho sản phẩm này.</p>
                                 )}

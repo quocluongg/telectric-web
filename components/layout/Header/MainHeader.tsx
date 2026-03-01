@@ -257,12 +257,12 @@ export const MainHeader = () => {
                     {user ? (
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <button className="flex items-center gap-1.5 md:gap-2 bg-slate-100 dark:bg-[#1e2330] hover:bg-slate-200 dark:hover:bg-[#2a3040] text-slate-700 dark:text-slate-200 px-2 md:px-4 py-1.5 md:py-2 rounded-lg border border-slate-200 dark:border-slate-700 transition-colors text-xs md:text-sm font-medium outline-none">
-                                    <div className="bg-electric-orange rounded-full p-0.5 md:p-1">
-                                        <User size={12} className="md:size-[14px] text-white" />
+                                <button className="flex items-center gap-2 bg-slate-100 dark:bg-[#1e2330] hover:bg-slate-200 dark:hover:bg-[#2a3040] text-slate-700 dark:text-slate-200 p-1.5 md:px-4 md:py-2 rounded-lg border border-slate-200 dark:border-slate-700 transition-colors text-xs md:text-sm font-medium outline-none">
+                                    <div className="bg-electric-orange rounded-full p-1 md:p-1.5">
+                                        <User size={14} className="md:size-[16px] text-white" />
                                     </div>
-                                    <span className="max-w-[80px] md:max-w-[150px] truncate">{user.user_metadata?.full_name || user.email?.split('@')[0]}</span>
-                                    <ChevronDown size={12} className="md:size-[14px] text-slate-500 dark:text-slate-400" />
+                                    <span className="hidden md:inline max-w-[150px] truncate">{user.user_metadata?.full_name || user.email?.split('@')[0]}</span>
+                                    <ChevronDown size={14} className="hidden md:block text-slate-500 dark:text-slate-400" />
                                 </button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent className="w-56 bg-white dark:bg-[#1e2330] border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200" align="end">
@@ -292,12 +292,12 @@ export const MainHeader = () => {
                     ) : (
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <button className="flex items-center gap-1.5 md:gap-2 bg-slate-100 dark:bg-[#1e2330] hover:bg-slate-200 dark:hover:bg-[#2a3040] text-slate-700 dark:text-slate-200 px-3 md:px-4 py-1.5 md:py-2 rounded-lg border border-slate-200 dark:border-slate-700 transition-colors text-[11px] md:text-sm font-medium outline-none">
-                                    <div className="bg-slate-200 dark:bg-slate-700 rounded-full p-0.5 md:p-1">
-                                        <User size={12} className="md:size-[14px] text-slate-500 dark:text-slate-300" />
+                                <button className="flex items-center gap-2 bg-slate-100 dark:bg-[#1e2330] hover:bg-slate-200 dark:hover:bg-[#2a3040] text-slate-700 dark:text-slate-200 p-1.5 md:px-4 md:py-2 rounded-lg border border-slate-200 dark:border-slate-700 transition-colors text-[11px] md:text-sm font-medium outline-none">
+                                    <div className="bg-slate-200 dark:bg-slate-700 rounded-full p-1 md:p-1.5">
+                                        <User size={14} className="md:size-[16px] text-slate-500 dark:text-slate-300" />
                                     </div>
-                                    <span>Đăng nhập</span>
-                                    <ChevronDown size={12} className="md:size-[14px] text-slate-500 dark:text-slate-400" />
+                                    <span className="hidden md:inline">Đăng nhập</span>
+                                    <ChevronDown size={14} className="hidden md:block text-slate-500 dark:text-slate-400" />
                                 </button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent className="w-56 bg-white dark:bg-[#1e2330] border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200" align="end">
