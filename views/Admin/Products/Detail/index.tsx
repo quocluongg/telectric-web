@@ -760,7 +760,7 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
                                 </div>
                                 <div>
                                     <p className="text-xl tracking-tight">093.400.14.35</p>
-                                    <p className="text-xs font-medium opacity-90 mt-0.5">7:30 - 20:00 hàng ngày</p>
+                                    <p className="text-xs font-medium opacity-90 mt-0.5">9:00 - 17:30, Thứ 2 - Thứ 7</p>
                                 </div>
                             </a>
                         </div>

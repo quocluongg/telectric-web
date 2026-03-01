@@ -66,7 +66,7 @@ export default function ContactPage() {
                                         </h3>
                                         <div className="pl-4 border-l-2 border-electric-orange">
                                             <a href="tel:0934001435" className="text-3xl font-extrabold text-electric-orange mb-1 tracking-tight hover:underline block">093.400.14.35</a>
-                                            <p className="text-sm text-slate-500 font-medium">(7:30 – 20:00, Thứ 2 – Chủ nhật)</p>
+                                            <p className="text-sm text-slate-500 font-medium">(9:00 - 17:30, Thứ 2 - Thứ 7)</p>
                                         </div>
                                     </div>
 

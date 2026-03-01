@@ -44,7 +44,7 @@ const Footer = () => {
                                 <a href="tel:0934001435" className="text-xl font-bold text-electric-orange hover:underline">
                                     093.400.14.35
                                 </a>
-                                <p className="text-xs text-slate-500">(7:30 - 20:00, Thứ 2 – Chủ nhật)</p>
+                                <p className="text-xs text-slate-500">(9:00 - 17:30, Thứ 2 – Thứ 7)</p>
                             </div>
                         </div>
 

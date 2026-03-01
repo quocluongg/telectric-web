@@ -10,11 +10,11 @@ export const TopBar = () => {
                 <div className="flex items-center gap-6">
                     <div className="flex items-center gap-2 hover:text-white transition-colors cursor-pointer">
                         <Phone size={14} className="text-electric-orange" />
-                        <span>Hotline: <strong className="text-white">1900 8888</strong></span>
+                        <span>Hotline: <strong className="text-white">093.400.14.35</strong></span>
                     </div>
                     <div className="flex items-center gap-2 hover:text-white transition-colors cursor-pointer hidden sm:flex">
                         <Mail size={14} className="text-electric-orange" />
-                        <span>Email: contact@telectric.com</span>
+                        <span>Email: [EMAIL_ADDRESS]</span>
                     </div>
                 </div>
 
