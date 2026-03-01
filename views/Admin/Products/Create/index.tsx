@@ -60,6 +60,12 @@ interface CategoryOption {
     parent_id: string | null;
 }
 
+interface BrandLogo {
+    id: string;
+    brand_name: string;
+    logo_url: string | null;
+}
+
 export default function ProductForm({ initialData }: { initialData?: any }) {
     const supabase = createClient();
     const { toast } = useToast();
@@ -73,6 +79,11 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
 
     // Categories
     const [categories, setCategories] = useState<CategoryOption[]>([]);
+
+    // Brand logos
+    const [brandLogos, setBrandLogos] = useState<BrandLogo[]>([]);
+    const [brandDropdownOpen, setBrandDropdownOpen] = useState(false);
+    const brandDropdownRef = useRef<HTMLDivElement>(null);
 
     // Upload states
     const [isUploadingThumb, setIsUploadingThumb] = useState(false);
@@ -116,6 +127,29 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
         };
         fetchCategories();
     }, [supabase]);
+
+    // Fetch brand logos
+    useEffect(() => {
+        const fetchBrandLogos = async () => {
+            const { data } = await supabase
+                .from("brand_logos")
+                .select("id, brand_name, logo_url")
+                .order("brand_name");
+            setBrandLogos(data || []);
+        };
+        fetchBrandLogos();
+    }, [supabase]);
+
+    // Close brand dropdown on outside click
+    useEffect(() => {
+        const handleClickOutside = (e: MouseEvent) => {
+            if (brandDropdownRef.current && !brandDropdownRef.current.contains(e.target as Node)) {
+                setBrandDropdownOpen(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
 
     // Load product data when in edit mode
     useEffect(() => {
@@ -557,7 +591,71 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
                                     <InputField control={form.control} name="name" label="Tên sản phẩm" placeholder="Ví dụ: Áo thun nam co giãn..." />
 
                                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                                        <InputField control={form.control} name="brand" label="Thương hiệu" />
+                                        {/* Brand Logo Selector */}
+                                        <FormField
+                                            control={form.control}
+                                            name="brand"
+                                            render={({ field }) => {
+                                                const selectedLogo = brandLogos.find(b => b.brand_name === field.value);
+                                                return (
+                                                    <FormItem>
+                                                        <FormLabel>Thương hiệu</FormLabel>
+                                                        <div className="relative" ref={brandDropdownRef}>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => setBrandDropdownOpen(prev => !prev)}
+                                                                className="w-full h-10 px-3 flex items-center gap-2 rounded-md border border-slate-200 dark:border-white/5 bg-white dark:bg-[#0f1219] hover:border-orange-400 transition-colors text-left text-sm"
+                                                            >
+                                                                {selectedLogo?.logo_url ? (
+                                                                    <img src={selectedLogo.logo_url} alt={selectedLogo.brand_name} className="h-5 w-auto max-w-[28px] object-contain" />
+                                                                ) : null}
+                                                                <span className="truncate flex-1 text-slate-700 dark:text-slate-200">{field.value || "Chọn thương hiệu"}</span>
+                                                                <svg className={`h-4 w-4 text-slate-400 transition-transform ${brandDropdownOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                                                            </button>
+
+                                                            {brandDropdownOpen && (
+                                                                <div className="absolute z-50 top-full left-0 mt-1 w-[340px] max-h-[320px] overflow-y-auto bg-white dark:bg-[#1e2330] border border-slate-200 dark:border-white/10 rounded-lg shadow-xl p-2">
+                                                                    {/* NoBrand option */}
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => { field.onChange("NoBrand"); setBrandDropdownOpen(false); }}
+                                                                        className={`w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm mb-1 transition-colors ${field.value === "NoBrand" ? "bg-orange-50 dark:bg-orange-900/20 border border-orange-300 dark:border-orange-600" : "hover:bg-slate-50 dark:hover:bg-white/5"
+                                                                            }`}
+                                                                    >
+                                                                        <div className="h-8 w-8 rounded bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-[10px] text-slate-400">N/A</div>
+                                                                        <span className="text-slate-600 dark:text-slate-300">NoBrand</span>
+                                                                    </button>
+
+                                                                    <div className="grid grid-cols-2 gap-1.5">
+                                                                        {brandLogos.map((brand) => (
+                                                                            <button
+                                                                                key={brand.id}
+                                                                                type="button"
+                                                                                onClick={() => { field.onChange(brand.brand_name); setBrandDropdownOpen(false); }}
+                                                                                className={`flex items-center gap-2 px-2.5 py-2 rounded-md text-sm transition-all ${field.value === brand.brand_name
+                                                                                        ? "bg-orange-50 dark:bg-orange-900/20 border border-orange-300 dark:border-orange-600 shadow-sm"
+                                                                                        : "border border-transparent hover:bg-slate-50 dark:hover:bg-white/5 hover:border-slate-200 dark:hover:border-white/10"
+                                                                                    }`}
+                                                                            >
+                                                                                {brand.logo_url ? (
+                                                                                    <img src={brand.logo_url} alt={brand.brand_name} className="h-7 w-7 object-contain rounded flex-shrink-0" />
+                                                                                ) : (
+                                                                                    <div className="h-7 w-7 rounded bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-[9px] font-bold text-slate-400 flex-shrink-0">
+                                                                                        {brand.brand_name.charAt(0)}
+                                                                                    </div>
+                                                                                )}
+                                                                                <span className="truncate text-xs text-slate-700 dark:text-slate-300">{brand.brand_name}</span>
+                                                                            </button>
+                                                                        ))}
+                                                                    </div>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                );
+                                            }}
+                                        />
                                         <InputField control={form.control} name="origin" label="Xuất xứ" />
                                         <FormField
                                             control={form.control}
