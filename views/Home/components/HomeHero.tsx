@@ -2,10 +2,11 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
-import { ChevronRight, ArrowRight, Zap, Loader2 } from "lucide-react";
+import { ChevronRight, ArrowRight, Zap, Loader2, ChevronDown, Menu, X } from "lucide-react";
 import useEmblaCarousel from "embla-carousel-react";
 import Autoplay from "embla-carousel-autoplay";
 import { createClient } from "@/lib/supabase/client";
+import { cn } from "@/lib/utils";
 
 export function HomeHero() {
     const supabase = createClient();
@@ -13,6 +14,8 @@ export function HomeHero() {
     const [loadingCats, setLoadingCats] = useState(true);
 
     const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true }, [Autoplay({ delay: 5000, stopOnInteraction: false })]);
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [isMobileCategoryOpen, setIsMobileCategoryOpen] = useState(false);
     const [selectedIndex, setSelectedIndex] = useState(0);
 
     const scrollTo = useCallback((index: number) => emblaApi && emblaApi.scrollTo(index), [emblaApi]);
@@ -31,8 +34,15 @@ export function HomeHero() {
 
     useEffect(() => {
         const fetchCategories = async () => {
-            const { data } = await supabase.from("categories").select("*").is("parent_id", null).order("name");
-            if (data) setCategories(data);
+            const { data: allData } = await supabase.from("categories").select("*").order("name");
+            if (allData) {
+                const roots = allData.filter((c: any) => !c.parent_id);
+                const tree = roots.map((root: any) => ({
+                    ...root,
+                    children: allData.filter((c: any) => c.parent_id === root.id)
+                }));
+                setCategories(tree);
+            }
             setLoadingCats(false);
         };
         fetchCategories();
@@ -83,14 +93,29 @@ export function HomeHero() {
         <section className="bg-white dark:bg-[#1e2330] border-b border-slate-200 dark:border-white/5">
             <div className="container mx-auto max-w-7xl px-4 flex flex-col lg:flex-row gap-0">
                 {/* Left: Category Sidebar */}
-                <div className="hidden lg:flex w-[260px] flex-col bg-slate-50 dark:bg-industrial-black/50 border-x border-slate-200 dark:border-slate-800 flex-shrink-0 z-10 relative">
-                    <div className="px-5 py-4 border-b border-slate-200 dark:border-slate-800">
+                <div className="flex w-full lg:w-[260px] flex-col bg-slate-50 dark:bg-industrial-black/50 border-x border-slate-200 dark:border-slate-800 flex-shrink-0 z-10 relative">
+                    <div
+                        className="px-5 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between cursor-pointer lg:cursor-default"
+                        onClick={() => {
+                            if (window.innerWidth < 1024) {
+                                setIsMobileCategoryOpen(!isMobileCategoryOpen);
+                            }
+                        }}
+                    >
                         <h3 className="font-extrabold uppercase tracking-wider text-sm flex items-center gap-2 text-slate-800 dark:text-white">
-                            <Zap className="h-4 w-4 text-electric-orange" />
+                            <Menu className="h-4 w-4 text-electric-orange lg:hidden" />
+                            <Zap className="h-4 w-4 text-electric-orange hidden lg:block" />
                             Danh mục sản phẩm
                         </h3>
+                        <ChevronDown className={cn(
+                            "h-4 w-4 text-slate-400 transition-transform lg:hidden",
+                            isMobileCategoryOpen ? "rotate-180" : ""
+                        )} />
                     </div>
-                    <ul className="flex-1 overflow-y-auto h-[400px] md:h-[480px]">
+                    <ul className={cn(
+                        "flex-1 flex flex-col lg:overflow-y-auto h-auto lg:h-[480px] transition-all duration-300",
+                        isMobileCategoryOpen ? "block" : "hidden lg:flex"
+                    )}>
                         {loadingCats ? (
                             <div className="flex justify-center py-10">
                                 <Loader2 className="animate-spin text-slate-300 w-6 h-6" />
@@ -98,7 +123,7 @@ export function HomeHero() {
                         ) : (
                             <>
                                 {categories.slice(0, 8).map((cat) => (
-                                    <li key={cat.id} className="border-b border-slate-100 dark:border-slate-800/60 last:border-0 relative group/nav">
+                                    <li key={cat.id} className="border-b border-slate-100 dark:border-slate-800/60 last:border-0 relative group/nav shrink-0">
                                         <Link
                                             href={`/products?category=${cat.slug}`}
                                             className="flex items-center justify-between px-5 py-3.5 text-[15px] font-medium text-slate-700 dark:text-slate-300 hover:text-electric-orange dark:hover:text-electric-orange transition-colors"
@@ -108,10 +133,31 @@ export function HomeHero() {
                                         </Link>
                                         {/* Active border indicator on hover */}
                                         <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-electric-orange scale-y-0 group-hover/nav:scale-y-100 transition-transform origin-center"></div>
+
+                                        {/* Flyout Menu (Desktop Only) */}
+                                        {cat.children && cat.children.length > 0 && (
+                                            <div className="hidden lg:block absolute left-full top-0 w-[260px] bg-white dark:bg-[#1e2330] border border-slate-200 dark:border-slate-800 shadow-2xl opacity-0 translate-x-2 pointer-events-none group-hover/nav:opacity-100 group-hover/nav:translate-x-0 group-hover/nav:pointer-events-auto transition-all duration-300 z-50 rounded-r-lg overflow-hidden">
+                                                <div className="px-5 py-3 bg-slate-50 dark:bg-industrial-black/50 border-b border-slate-100 dark:border-slate-800">
+                                                    <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Danh mục con</span>
+                                                </div>
+                                                <ul className="py-1">
+                                                    {cat.children.map((sub: any) => (
+                                                        <li key={sub.id}>
+                                                            <Link
+                                                                href={`/products?category=${sub.slug}`}
+                                                                className="block px-5 py-2.5 text-sm text-slate-600 dark:text-slate-400 hover:text-electric-orange dark:hover:text-electric-orange hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                                                            >
+                                                                {sub.name}
+                                                            </Link>
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            </div>
+                                        )}
                                     </li>
                                 ))}
                                 {categories.length > 8 && (
-                                    <li className="border-t border-slate-200 dark:border-slate-800">
+                                    <li className="border-t border-slate-200 dark:border-slate-800 shrink-0">
                                         <Link
                                             href="/products"
                                             className="flex items-center justify-center gap-1.5 px-5 py-3.5 text-sm font-semibold text-electric-orange hover:text-orange-600 transition-colors"

@@ -259,7 +259,7 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
 
                     {/* ======= LEFT: IMAGE GALLERY ======= */}
-                    <div className="lg:col-span-5 flex flex-col gap-4 sticky top-24 self-start">
+                    <div className="lg:col-span-5 flex flex-col gap-4 lg:sticky top-24 self-start">
                         {/* Main Image */}
                         <div className="relative aspect-square rounded-2xl overflow-hidden bg-white dark:bg-[#1c212c] border border-gray-200 dark:border-white/5 shadow-sm group">
                             {allImages[selectedImage] && (

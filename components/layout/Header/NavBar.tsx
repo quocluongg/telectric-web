@@ -35,7 +35,7 @@ export const NavBar = () => {
     }, []);
     return (
         <div ref={menuRef} className="w-full bg-white dark:bg-industrial-black border-b border-slate-200 dark:border-white/5 relative z-10 transition-colors duration-300">
-            <div className="container mx-auto max-w-7xl px-4 flex items-center justify-between h-12">
+            <div className="container mx-auto max-w-7xl px-3 sm:px-4 flex items-center justify-between h-10 md:h-12">
 
                 {/* Mobile Menu Toggle Button */}
                 <button

@@ -153,15 +153,15 @@ export const MainHeader = () => {
     };
 
     return (
-        <div className="w-full bg-white dark:bg-industrial-black py-4 border-b border-slate-200 dark:border-white/5 relative z-20 transition-colors duration-300">
-            <div className="container mx-auto max-w-7xl px-4 flex flex-wrap items-center justify-between gap-y-4 gap-x-4">
+        <div className="w-full bg-white dark:bg-industrial-black py-2.5 md:py-4 border-b border-slate-200 dark:border-white/5 relative z-20 transition-colors duration-300">
+            <div className="container mx-auto max-w-7xl px-3 sm:px-4 flex flex-wrap items-center justify-between gap-y-3 md:gap-y-4">
 
                 {/* Logo */}
                 <Link href="/" className="flex items-center group order-1">
                     <img
                         src="/img/logo-telectric.png"
                         alt="TLECTRIC Logo"
-                        className="h-16 w-auto md:h-28 object-contain transition-transform duration-300 group-hover:scale-105"
+                        className="h-10 sm:h-16 md:h-28 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
                     />
                 </Link>
 
@@ -179,7 +179,7 @@ export const MainHeader = () => {
                                     }
                                 }}
                                 placeholder="Tìm kiếm sản phẩm, danh mục..."
-                                className="w-full pl-5 pr-12 py-5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-[#1e2330] text-slate-900 dark:text-white focus-visible:ring-1 focus-visible:ring-electric-orange focus-visible:border-electric-orange transition-all placeholder:text-slate-500 dark:placeholder:text-slate-500"
+                                className="w-full pl-5 pr-12 py-4 md:py-5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-[#1e2330] text-slate-900 dark:text-white focus-visible:ring-1 focus-visible:ring-electric-orange focus-visible:border-electric-orange transition-all placeholder:text-slate-500 dark:placeholder:text-slate-500 text-sm"
                             />
                             <button type="submit" className="absolute right-4 text-slate-500 hover:text-electric-orange transition-colors flex items-center justify-center">
                                 {isSearching ? (
@@ -251,18 +251,18 @@ export const MainHeader = () => {
                 </div>
 
                 {/* Actions: Cart & Login */}
-                <div className="flex items-center gap-3 order-2 md:order-3">
+                <div className="flex items-center gap-2 md:gap-3 order-2 md:order-3">
                     <CartPopover />
 
                     {user ? (
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <button className="flex items-center gap-2 bg-slate-100 dark:bg-[#1e2330] hover:bg-slate-200 dark:hover:bg-[#2a3040] text-slate-700 dark:text-slate-200 px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 transition-colors text-sm font-medium outline-none">
-                                    <div className="bg-electric-orange rounded-full p-1">
-                                        <User size={14} className="text-white" />
+                                <button className="flex items-center gap-1.5 md:gap-2 bg-slate-100 dark:bg-[#1e2330] hover:bg-slate-200 dark:hover:bg-[#2a3040] text-slate-700 dark:text-slate-200 px-2 md:px-4 py-1.5 md:py-2 rounded-lg border border-slate-200 dark:border-slate-700 transition-colors text-xs md:text-sm font-medium outline-none">
+                                    <div className="bg-electric-orange rounded-full p-0.5 md:p-1">
+                                        <User size={12} className="md:size-[14px] text-white" />
                                     </div>
-                                    <span className="max-w-[150px] truncate">{user.user_metadata?.full_name || user.email?.split('@')[0]}</span>
-                                    <ChevronDown size={14} className="text-slate-500 dark:text-slate-400" />
+                                    <span className="max-w-[80px] md:max-w-[150px] truncate">{user.user_metadata?.full_name || user.email?.split('@')[0]}</span>
+                                    <ChevronDown size={12} className="md:size-[14px] text-slate-500 dark:text-slate-400" />
                                 </button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent className="w-56 bg-white dark:bg-[#1e2330] border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200" align="end">
@@ -292,12 +292,12 @@ export const MainHeader = () => {
                     ) : (
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <button className="flex items-center gap-2 bg-slate-100 dark:bg-[#1e2330] hover:bg-slate-200 dark:hover:bg-[#2a3040] text-slate-700 dark:text-slate-200 px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 transition-colors text-sm font-medium outline-none">
-                                    <div className="bg-slate-200 dark:bg-slate-700 rounded-full p-1">
-                                        <User size={14} className="text-slate-500 dark:text-slate-300" />
+                                <button className="flex items-center gap-1.5 md:gap-2 bg-slate-100 dark:bg-[#1e2330] hover:bg-slate-200 dark:hover:bg-[#2a3040] text-slate-700 dark:text-slate-200 px-3 md:px-4 py-1.5 md:py-2 rounded-lg border border-slate-200 dark:border-slate-700 transition-colors text-[11px] md:text-sm font-medium outline-none">
+                                    <div className="bg-slate-200 dark:bg-slate-700 rounded-full p-0.5 md:p-1">
+                                        <User size={12} className="md:size-[14px] text-slate-500 dark:text-slate-300" />
                                     </div>
                                     <span>Đăng nhập</span>
-                                    <ChevronDown size={14} className="text-slate-500 dark:text-slate-400" />
+                                    <ChevronDown size={12} className="md:size-[14px] text-slate-500 dark:text-slate-400" />
                                 </button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent className="w-56 bg-white dark:bg-[#1e2330] border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200" align="end">

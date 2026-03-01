@@ -261,7 +261,7 @@ export function CategorySection({
         <section className="container mx-auto max-w-7xl px-4 mt-10 mb-14">
 
             {/* ── HEADER ── */}
-            <div className="flex items-stretch mb-4">
+            <div className="flex flex-col lg:flex-row items-stretch mb-4">
                 {/* Title pill */}
                 <div
                     className="flex lg:w-[260px] items-center justify-center gap-2.5 px-5 py-3 text-white font-black text-[15px] uppercase tracking-wide rounded-l-lg shadow-md shrink-0"
