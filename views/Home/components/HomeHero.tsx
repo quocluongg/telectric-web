@@ -126,7 +126,7 @@ export function HomeHero() {
                 </div>
 
                 {/* Right: Hero Carousel */}
-                <div className="flex-1 min-w-0 relative group bg-industrial-black">
+                <div className="flex-1 min-w-0 relative group">
                     {loadingBanners ? (
                         /* Loading state */
                         <div className="flex items-center justify-center w-full h-[400px] md:h-[480px] bg-slate-900">
@@ -146,8 +146,7 @@ export function HomeHero() {
                                                     alt={banner.alt_text || `Banner ${idx + 1}`}
                                                     className="w-full h-full object-cover object-center"
                                                 />
-                                                {/* Gradient overlay for depth */}
-                                                <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent" />
+
                                                 {/* "Xem ngay" tooltip on hover, only if has link */}
                                                 {banner.link_url && (
                                                     <div className="absolute bottom-6 right-6 bg-electric-orange/90 backdrop-blur-sm text-white text-xs font-bold px-4 py-2 rounded-full flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-1 group-hover:translate-y-0">
