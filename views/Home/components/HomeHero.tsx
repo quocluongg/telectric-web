@@ -96,19 +96,31 @@ export function HomeHero() {
                                 <Loader2 className="animate-spin text-slate-300 w-6 h-6" />
                             </div>
                         ) : (
-                            categories.map((cat) => (
-                                <li key={cat.id} className="border-b border-slate-100 dark:border-slate-800/60 last:border-0 relative group/nav">
-                                    <Link
-                                        href={`/products?category=${cat.slug}`}
-                                        className="flex items-center justify-between px-5 py-3.5 text-[15px] font-medium text-slate-700 dark:text-slate-300 hover:text-electric-orange dark:hover:text-electric-orange transition-colors"
-                                    >
-                                        <span className="truncate pr-2">{cat.name}</span>
-                                        <ChevronRight className="h-4 w-4 text-slate-300 group-hover/nav:text-electric-orange transition-transform" />
-                                    </Link>
-                                    {/* Active border indicator on hover */}
-                                    <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-electric-orange scale-y-0 group-hover/nav:scale-y-100 transition-transform origin-center"></div>
-                                </li>
-                            ))
+                            <>
+                                {categories.slice(0, 8).map((cat) => (
+                                    <li key={cat.id} className="border-b border-slate-100 dark:border-slate-800/60 last:border-0 relative group/nav">
+                                        <Link
+                                            href={`/products?category=${cat.slug}`}
+                                            className="flex items-center justify-between px-5 py-3.5 text-[15px] font-medium text-slate-700 dark:text-slate-300 hover:text-electric-orange dark:hover:text-electric-orange transition-colors"
+                                        >
+                                            <span className="truncate pr-2">{cat.name}</span>
+                                            <ChevronRight className="h-4 w-4 text-slate-300 group-hover/nav:text-electric-orange transition-transform" />
+                                        </Link>
+                                        {/* Active border indicator on hover */}
+                                        <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-electric-orange scale-y-0 group-hover/nav:scale-y-100 transition-transform origin-center"></div>
+                                    </li>
+                                ))}
+                                {categories.length > 8 && (
+                                    <li className="border-t border-slate-200 dark:border-slate-800">
+                                        <Link
+                                            href="/products"
+                                            className="flex items-center justify-center gap-1.5 px-5 py-3.5 text-sm font-semibold text-electric-orange hover:text-orange-600 transition-colors"
+                                        >
+                                            Xem tất cả <ArrowRight className="h-3.5 w-3.5" />
+                                        </Link>
+                                    </li>
+                                )}
+                            </>
                         )}
                     </ul>
                 </div>
