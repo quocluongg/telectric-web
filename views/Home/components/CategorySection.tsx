@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
-import { Zap, ArrowRight } from "lucide-react";
+import { Zap, ArrowRight, ChevronDown } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
 /* ─── Types ─── */
@@ -271,38 +271,59 @@ export function CategorySection({
                     <span>{displayTitle}</span>
                 </div>
 
-                {/* Sub-category tabs */}
-                <div className="flex-1 flex items-center overflow-x-auto scrollbar-hide bg-white dark:bg-[#1b2133] border border-l-0 border-slate-200 dark:border-white/5 rounded-r-lg px-4 gap-1">
-                    <button
-                        onClick={() => setActiveSubSlug(null)}
-                        className={`shrink-0 text-[13px] px-4 py-1.5 min-w-[110px] rounded-full font-medium transition-all ${!activeSubSlug
-                            ? "text-white shadow-sm"
-                            : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5"
-                            }`}
-                        style={!activeSubSlug ? { background: accentHex } : {}}
-                    >
-                        Tất cả
-                    </button>
-                    {subCategories.map(sub => (
+                {/* Sub-category tabs & Mobile Dropdown */}
+                <div className="flex-1 flex items-center bg-white dark:bg-[#1b2133] border border-l-0 lg:border-l-0 border-slate-200 dark:border-white/5 rounded-r-lg px-2 lg:px-4 gap-1 relative">
+                    {/* Desktop Tabs */}
+                    <div className="hidden lg:flex flex-1 items-center gap-1 overflow-x-auto scrollbar-hide">
                         <button
-                            key={sub.id}
-                            onClick={() => setActiveSubSlug(sub.slug)}
-                            className={`shrink-0 text-[13px] px-4 py-1.5 min-w-[110px] rounded-full font-medium transition-all ${activeSubSlug === sub.slug
+                            onClick={() => setActiveSubSlug(null)}
+                            className={`shrink-0 text-[13px] px-4 py-1.5 min-w-[110px] rounded-full font-medium transition-all ${!activeSubSlug
                                 ? "text-white shadow-sm"
                                 : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5"
                                 }`}
-                            style={activeSubSlug === sub.slug ? { background: accentHex } : {}}
+                            style={!activeSubSlug ? { background: accentHex } : {}}
                         >
-                            {sub.name}
+                            Tất cả
                         </button>
-                    ))}
-                    <div className="flex-1" />
+                        {subCategories.map(sub => (
+                            <button
+                                key={sub.id}
+                                onClick={() => setActiveSubSlug(sub.slug)}
+                                className={`shrink-0 text-[13px] px-4 py-1.5 min-w-[110px] rounded-full font-medium transition-all ${activeSubSlug === sub.slug
+                                    ? "text-white shadow-sm"
+                                    : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5"
+                                    }`}
+                                style={activeSubSlug === sub.slug ? { background: accentHex } : {}}
+                            >
+                                {sub.name}
+                            </button>
+                        ))}
+                    </div>
+
+                    {/* Mobile Dropdown */}
+                    <div className="flex lg:hidden flex-1 relative items-center px-2">
+                        <select
+                            value={activeSubSlug || ""}
+                            onChange={(e) => setActiveSubSlug(e.target.value || null)}
+                            className="w-full bg-transparent text-[13px] font-bold text-slate-700 dark:text-slate-200 py-3 outline-none appearance-none pr-8 cursor-pointer"
+                        >
+                            <option value="" className="dark:bg-industrial-black">Tất cả danh mục</option>
+                            {subCategories.map(sub => (
+                                <option key={sub.id} value={sub.slug} className="dark:bg-industrial-black">
+                                    {sub.name}
+                                </option>
+                            ))}
+                        </select>
+                        <ChevronDown className="absolute right-2 h-4 w-4 text-slate-400 pointer-events-none" />
+                    </div>
+
+                    <div className="hidden lg:block flex-1" />
                     <Link
                         href={`/products?category=${categorySlug}`}
-                        className="shrink-0 flex items-center gap-1 text-[13px] font-semibold transition-colors ml-2"
+                        className="shrink-0 flex items-center gap-1 text-[13px] font-semibold transition-colors ml-2 pr-2 lg:pr-0"
                         style={{ color: accentHex }}
                     >
-                        Xem tất cả <ArrowRight className="w-3.5 h-3.5" />
+                        <span className="hidden sm:inline">Xem tất cả</span> <ArrowRight className="w-3.5 h-3.5" />
                     </Link>
                 </div>
             </div>
@@ -310,9 +331,9 @@ export function CategorySection({
             {/* ── BODY ── */}
             <div className="flex flex-col lg:flex-row gap-3">
 
-                {/* ── SIDEBAR ── */}
+                {/* ── SIDEBAR (Hidden on Mobile) ── */}
                 {brands.length > 0 ? (
-                    <div className="w-full lg:w-[260px] shrink-0 flex flex-col gap-2">
+                    <div className="hidden lg:flex w-full lg:w-[260px] shrink-0 flex-col gap-2">
                         {/* Brand logos — 1 cột, tối đa 4 hàng, cuộn nếu nhiều hơn */}
                         <div className="bg-white dark:bg-[#1b2133] rounded-xl border border-slate-200 dark:border-white/5 overflow-hidden shadow-sm">
                             <div
