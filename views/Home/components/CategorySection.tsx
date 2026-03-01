@@ -4,6 +4,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { Zap, ArrowRight, ChevronDown } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { cn } from "@/lib/utils";
 
 /* ─── Types ─── */
 interface SubCategory { id: string; name: string; slug: string; }
@@ -132,6 +133,7 @@ export function CategorySection({
     const [products, setProducts] = useState<Product[]>([]);
     const [activeSubSlug, setActiveSubSlug] = useState<string | null>(null);
     const [loadingProds, setLoadingProds] = useState(true);
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
     // 1 – Load parent category
     useEffect(() => {
@@ -300,21 +302,59 @@ export function CategorySection({
                         ))}
                     </div>
 
-                    {/* Mobile Dropdown */}
-                    <div className="flex lg:hidden flex-1 relative items-center px-2">
-                        <select
-                            value={activeSubSlug || ""}
-                            onChange={(e) => setActiveSubSlug(e.target.value || null)}
-                            className="w-full bg-transparent text-[13px] font-bold text-slate-700 dark:text-slate-200 py-3 outline-none appearance-none pr-8 cursor-pointer"
+                    {/* Mobile Custom Dropdown UI */}
+                    <div className="flex lg:hidden flex-1 relative px-2 items-center">
+                        <button
+                            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                            className="w-full h-10 flex items-center justify-between text-[13px] font-bold text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-white/5 px-4 rounded-lg border border-slate-200 dark:border-white/10 transition-all active:scale-[0.98]"
                         >
-                            <option value="" className="dark:bg-industrial-black">Tất cả danh mục</option>
-                            {subCategories.map(sub => (
-                                <option key={sub.id} value={sub.slug} className="dark:bg-industrial-black">
-                                    {sub.name}
-                                </option>
-                            ))}
-                        </select>
-                        <ChevronDown className="absolute right-2 h-4 w-4 text-slate-400 pointer-events-none" />
+                            <span className="truncate">
+                                {activeSubSlug
+                                    ? subCategories.find(s => s.slug === activeSubSlug)?.name || "Danh mục"
+                                    : "Tất cả danh mục"}
+                            </span>
+                            <ChevronDown className={cn("h-4 w-4 text-slate-400 transition-transform duration-300 ml-2", isDropdownOpen ? "rotate-180" : "")} />
+                        </button>
+
+                        {isDropdownOpen && (
+                            <>
+                                <div
+                                    className="fixed inset-0 z-[60]"
+                                    onClick={() => setIsDropdownOpen(false)}
+                                />
+                                <div className="absolute top-[80%] left-2 right-2 mt-2 bg-white dark:bg-[#1b2133] border border-slate-200 dark:border-white/10 rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.2)] z-[70] overflow-hidden animate-in fade-in zoom-in-95 duration-200 origin-top">
+                                    <div className="max-h-[320px] overflow-y-auto py-2 scrollbar-hide">
+                                        <button
+                                            onClick={() => { setActiveSubSlug(null); setIsDropdownOpen(false); }}
+                                            className={cn(
+                                                "w-full text-left px-5 py-3 text-[13px] font-bold transition-colors",
+                                                !activeSubSlug
+                                                    ? "text-white"
+                                                    : "text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5"
+                                            )}
+                                            style={!activeSubSlug ? { background: accentHex } : {}}
+                                        >
+                                            Tất cả danh mục
+                                        </button>
+                                        {subCategories.map(sub => (
+                                            <button
+                                                key={sub.id}
+                                                onClick={() => { setActiveSubSlug(sub.slug); setIsDropdownOpen(false); }}
+                                                className={cn(
+                                                    "w-full text-left px-5 py-3 text-[13px] font-bold transition-colors",
+                                                    activeSubSlug === sub.slug
+                                                        ? "text-white"
+                                                        : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/5"
+                                                )}
+                                                style={activeSubSlug === sub.slug ? { background: accentHex } : {}}
+                                            >
+                                                {sub.name}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            </>
+                        )}
                     </div>
 
                     <div className="hidden lg:block flex-1" />
@@ -346,7 +386,7 @@ export function CategorySection({
                                 {brands.map((b) => (
                                     <Link
                                         key={b.name}
-                                        href={`/products?search=${encodeURIComponent(b.name)}`}
+                                        href={`/products?brand=${encodeURIComponent(b.name)}`}
                                         title={`Xem sản phẩm ${b.name}`}
                                         className="flex items-center justify-center h-[70px] w-full px-5 border-t border-slate-100 dark:border-white/5 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors group"
                                     >

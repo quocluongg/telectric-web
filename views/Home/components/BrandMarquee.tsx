@@ -71,7 +71,7 @@ export function BrandMarquee() {
                                     <img
                                         src={brand.logo_url}
                                         alt={brand.brand_name}
-                                        className="max-w-full max-h-[52px] object-contain filter grayscale group-hover:grayscale-0 transition-all duration-500"
+                                        className="max-w-full max-h-[52px] object-contain transition-all duration-500"
                                     />
                                 ) : (
                                     <span className="text-[11px] font-black uppercase tracking-widest text-slate-400 group-hover:text-slate-700 dark:group-hover:text-white transition-colors text-center leading-tight">

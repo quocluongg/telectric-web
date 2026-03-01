@@ -40,7 +40,7 @@ function ProductsPageInner() {
         if (multi && multi.length > 1) return multi;
         if (single) return [single];
         return [];
-    }, []);
+    }, [searchParams]);
 
     const [filters, setFilters] = useState<FilterState>({
         search: searchParams?.get("search") || searchParams?.get("q") || "",
@@ -51,7 +51,7 @@ function ProductsPageInner() {
         inStockOnly: false,
     });
 
-    // Keep filters in sync with URL search params changes (e.g., when using header search bar on the same page)
+    // Keep filters in sync with URL search params changes
     useEffect(() => {
         const querySearch = searchParams?.get("search") || searchParams?.get("q") || "";
         const queryCategory = searchParams?.get("category") || null;
@@ -65,12 +65,15 @@ function ProductsPageInner() {
             const brandsChanged = prev.brands.join(",") !== finalBrands.join(",");
 
             if (searchChanged || categoryChanged || brandsChanged) {
+                setLoading(true);
                 setPage(1);
+                window.scrollTo({ top: 0, behavior: "smooth" });
                 return {
                     ...prev,
                     search: querySearch,
                     categorySlug: queryCategory,
                     brands: finalBrands,
+                    origins: [], // Reset origins when category/brand changes from URL
                 };
             }
             return prev;
@@ -101,114 +104,130 @@ function ProductsPageInner() {
     }, [supabase]);
 
     // Fetch products
-    const fetchProducts = useCallback(async () => {
-        setLoading(true);
+    useEffect(() => {
+        let isAborted = false;
 
-        // Resolve category
-        let categoryId: string | null = null;
-        let categoryChildIds: string[] = [];
-        if (filters.categorySlug) {
-            const { data: cat } = await supabase
-                .from("categories")
-                .select("id, parent_id")
-                .eq("slug", filters.categorySlug)
-                .single();
-            if (cat) {
-                categoryId = cat.id;
-                if (!cat.parent_id) {
-                    const { data: ch } = await supabase.from("categories").select("id").eq("parent_id", cat.id);
-                    categoryChildIds = (ch || []).map((c: any) => c.id);
+        const fetchData = async () => {
+            setLoading(true);
+
+            try {
+                // Resolve category
+                let categoryId: string | null = null;
+                let categoryChildIds: string[] = [];
+                if (filters.categorySlug) {
+                    const { data: cat } = await supabase
+                        .from("categories")
+                        .select("id, parent_id")
+                        .eq("slug", filters.categorySlug)
+                        .maybeSingle();
+                    if (cat) {
+                        categoryId = cat.id;
+                        if (!cat.parent_id) {
+                            const { data: ch } = await supabase.from("categories").select("id").eq("parent_id", cat.id);
+                            categoryChildIds = (ch || []).map((c: any) => c.id);
+                        }
+                    }
                 }
+
+                if (isAborted) return;
+
+                // Build query
+                let selectStr = "id, name, brand, origin, thumbnail, category_id, created_at, discount_percent";
+                if (categoryId) {
+                    selectStr += ", product_categories_mapping!inner(category_id)";
+                }
+
+                let query = supabase.from("products").select(selectStr, { count: "exact" });
+
+                if (filters.search.trim()) {
+                    const keyword = filters.search.trim().replace(/'/g, "''");
+                    query = query.or(`name.ilike.%${keyword}%,brand.ilike.%${keyword}%`);
+                }
+                if (categoryId) {
+                    query = query.in("product_categories_mapping.category_id", [categoryId, ...categoryChildIds]);
+                }
+                if (filters.brands.length > 0) query = query.in("brand", filters.brands.map(b => b.replace(/'/g, "''")));
+                if (filters.origins.length > 0) query = query.in("origin", filters.origins);
+
+                switch (filters.sort) {
+                    case "name_asc": query = query.order("name", { ascending: true }); break;
+                    case "price_asc":
+                    case "price_desc":
+                        // Sorting by price is handled after fetching variants for simplicity 
+                        // unless we want to do complex joins. We'll stick to client-side sort for small PAGE_SIZE
+                        query = query.order("created_at", { ascending: false });
+                        break;
+                    default: query = query.order("created_at", { ascending: false }); break;
+                }
+
+                const from = (page - 1) * PAGE_SIZE;
+                query = query.range(from, from + PAGE_SIZE - 1);
+
+                const { data: rows, count, error } = await query;
+                if (error) throw error;
+                if (isAborted) return;
+
+                setTotalCount(count || 0);
+
+                if (rows && rows.length > 0) {
+                    const ids = rows.map((p: any) => p.id);
+                    const [{ data: variants }, { data: allMappings }] = await Promise.all([
+                        supabase.from("product_variants").select("product_id, price, stock").in("product_id", ids),
+                        supabase.from("product_categories_mapping").select("product_id, category_id, categories(name)").in("product_id", ids),
+                    ]);
+
+                    if (isAborted) return;
+
+                    const prodCatMap: Record<string, string[]> = {};
+                    (allMappings || []).forEach((m: any) => {
+                        if (!prodCatMap[m.product_id]) prodCatMap[m.product_id] = [];
+                        if (m.categories?.name) prodCatMap[m.product_id].push(m.categories.name);
+                    });
+
+                    const vMap: Record<string, { prices: number[]; stocks: number[]; count: number }> = {};
+                    (variants || []).forEach((v: any) => {
+                        if (!vMap[v.product_id]) vMap[v.product_id] = { prices: [], stocks: [], count: 0 };
+                        vMap[v.product_id].prices.push(v.price);
+                        vMap[v.product_id].stocks.push(v.stock);
+                        vMap[v.product_id].count++;
+                    });
+
+                    let enriched: ProductCardData[] = rows.map((p: any) => {
+                        const v = vMap[p.id];
+                        const catNames = prodCatMap[p.id] || [];
+                        return {
+                            id: p.id,
+                            name: p.name,
+                            brand: p.brand,
+                            origin: p.origin,
+                            thumbnail: p.thumbnail,
+                            category_name: catNames.length > 0 ? catNames[0] : null,
+                            min_price: v ? Math.min(...v.prices) : 0,
+                            max_price: v ? Math.max(...v.prices) : 0,
+                            total_stock: v ? v.stocks.reduce((a, b: number) => a + b, 0) : 0,
+                            variant_count: v ? v.count : 0,
+                            discount_percent: p.discount_percent || 0,
+                        };
+                    });
+
+                    if (filters.inStockOnly) enriched = enriched.filter(p => p.total_stock > 0);
+                    if (filters.sort === "price_asc") enriched.sort((a, b) => a.min_price - b.min_price);
+                    else if (filters.sort === "price_desc") enriched.sort((a, b) => b.min_price - a.min_price);
+
+                    if (!isAborted) setProducts(enriched);
+                } else {
+                    if (!isAborted) setProducts([]);
+                }
+            } catch (err) {
+                console.error("Fetch products error:", err);
+            } finally {
+                if (!isAborted) setLoading(false);
             }
-        }
+        };
 
-        // Build query
-        let selectStr = "id, name, brand, origin, thumbnail, category_id, created_at, discount_percent";
-        if (categoryId) {
-            selectStr += ", product_categories_mapping!inner(category_id)";
-        }
-
-        let query = supabase.from("products").select(selectStr, { count: "exact" });
-
-        if (filters.search.trim()) {
-            const keyword = filters.search.trim().replace(/'/g, "''");
-            query = query.or(`name.ilike.%${keyword}%,brand.ilike.%${keyword}%`);
-        }
-        if (categoryId) {
-            query = query.in("product_categories_mapping.category_id", [categoryId, ...categoryChildIds]);
-        }
-        if (filters.brands.length > 0) query = query.in("brand", filters.brands.map(b => b.replace(/'/g, "''")));
-        if (filters.origins.length > 0) query = query.in("origin", filters.origins);
-
-        switch (filters.sort) {
-            case "name_asc": query = query.order("name", { ascending: true }); break;
-            default: query = query.order("created_at", { ascending: false }); break;
-        }
-
-        const from = (page - 1) * PAGE_SIZE;
-        query = query.range(from, from + PAGE_SIZE - 1);
-
-        const { data: rows, count, error } = await query;
-        if (error) { console.error(error); setLoading(false); return; }
-
-        setTotalCount(count || 0);
-
-        if (rows && rows.length > 0) {
-            const ids = rows.map((p: any) => p.id);
-
-            // Variants + ALL categories for these products in parallel
-            const [{ data: variants }, { data: allMappings }] = await Promise.all([
-                supabase.from("product_variants").select("product_id, price, stock").in("product_id", ids),
-                supabase.from("product_categories_mapping").select("product_id, category_id, categories(name)").in("product_id", ids),
-            ]);
-
-            // Map product_id -> list of category names
-            const prodCatMap: Record<string, string[]> = {};
-            (allMappings || []).forEach((m: any) => {
-                if (!prodCatMap[m.product_id]) prodCatMap[m.product_id] = [];
-                if (m.categories?.name) prodCatMap[m.product_id].push(m.categories.name);
-            });
-
-            // Aggregate variant data
-            const vMap: Record<string, { prices: number[]; stocks: number[]; count: number }> = {};
-            (variants || []).forEach((v: any) => {
-                if (!vMap[v.product_id]) vMap[v.product_id] = { prices: [], stocks: [], count: 0 };
-                vMap[v.product_id].prices.push(v.price);
-                vMap[v.product_id].stocks.push(v.stock);
-                vMap[v.product_id].count++;
-            });
-
-            let enriched: ProductCardData[] = rows.map((p: any) => {
-                const v = vMap[p.id];
-                const catNames = prodCatMap[p.id] || [];
-                return {
-                    id: p.id,
-                    name: p.name,
-                    brand: p.brand,
-                    origin: p.origin,
-                    thumbnail: p.thumbnail,
-                    category_name: catNames.length > 0 ? catNames[0] : null,
-                    min_price: v ? Math.min(...v.prices) : 0,
-                    max_price: v ? Math.max(...v.prices) : 0,
-                    total_stock: v ? v.stocks.reduce((a, b: number) => a + b, 0) : 0,
-                    variant_count: v ? v.count : 0,
-                    discount_percent: p.discount_percent || 0,
-                };
-            });
-
-            if (filters.inStockOnly) enriched = enriched.filter(p => p.total_stock > 0);
-            if (filters.sort === "price_asc") enriched.sort((a, b) => a.min_price - b.min_price);
-            else if (filters.sort === "price_desc") enriched.sort((a, b) => b.min_price - a.min_price);
-
-            setProducts(enriched);
-        } else {
-            setProducts([]);
-        }
-
-        setLoading(false);
+        fetchData();
+        return () => { isAborted = true; };
     }, [supabase, filters, page]);
-
-    useEffect(() => { fetchProducts(); }, [fetchProducts]);
 
     const handleFiltersChange = (f: FilterState) => { setFilters(f); setPage(1); };
 
