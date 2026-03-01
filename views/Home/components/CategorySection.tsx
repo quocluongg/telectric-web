@@ -325,7 +325,7 @@ export function CategorySection({
                                 {brands.map((b) => (
                                     <Link
                                         key={b.name}
-                                        href={`/products?brand=${encodeURIComponent(b.name)}&category=${categorySlug}`}
+                                        href={`/products?search=${encodeURIComponent(b.name)}`}
                                         title={`Xem sản phẩm ${b.name}`}
                                         className="flex items-center justify-center h-[70px] w-full px-5 border-t border-slate-100 dark:border-white/5 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors group"
                                     >

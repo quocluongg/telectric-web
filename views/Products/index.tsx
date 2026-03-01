@@ -54,16 +54,23 @@ function ProductsPageInner() {
     // Keep filters in sync with URL search params changes (e.g., when using header search bar on the same page)
     useEffect(() => {
         const querySearch = searchParams?.get("search") || searchParams?.get("q") || "";
-        const queryBrands = searchParams?.getAll("brand") || (searchParams?.get("brand") ? [searchParams.get("brand") as string] : []);
+        const queryCategory = searchParams?.get("category") || null;
+        const queryBrands = searchParams?.getAll("brand") || [];
+        const singleBrand = searchParams?.get("brand");
+        const finalBrands = queryBrands.length > 0 ? queryBrands : (singleBrand ? [singleBrand] : []);
+
         setFilters(prev => {
             const searchChanged = prev.search !== querySearch;
-            const brandsChanged = queryBrands.length > 0 && queryBrands.join(",") !== prev.brands.join(",");
-            if (searchChanged || brandsChanged) {
+            const categoryChanged = prev.categorySlug !== queryCategory;
+            const brandsChanged = prev.brands.join(",") !== finalBrands.join(",");
+
+            if (searchChanged || categoryChanged || brandsChanged) {
                 setPage(1);
                 return {
                     ...prev,
                     search: querySearch,
-                    ...(brandsChanged ? { brands: queryBrands } : {}),
+                    categorySlug: queryCategory,
+                    brands: finalBrands,
                 };
             }
             return prev;
@@ -123,7 +130,10 @@ function ProductsPageInner() {
 
         let query = supabase.from("products").select(selectStr, { count: "exact" });
 
-        if (filters.search.trim()) query = query.ilike("name", `%${filters.search.trim()}%`);
+        if (filters.search.trim()) {
+            const keyword = filters.search.trim().replace(/'/g, "''");
+            query = query.or(`name.ilike.%${keyword}%,brand.ilike.%${keyword}%`);
+        }
         if (categoryId) {
             query = query.in("product_categories_mapping.category_id", [categoryId, ...categoryChildIds]);
         }
