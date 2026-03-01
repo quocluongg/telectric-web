@@ -113,7 +113,7 @@ export function HomeHero() {
                         )} />
                     </div>
                     <ul className={cn(
-                        "flex-1 flex flex-col lg:overflow-y-auto h-auto lg:h-[480px] transition-all duration-300",
+                        "flex-1 flex flex-col h-auto lg:h-[480px] transition-all duration-300",
                         isMobileCategoryOpen ? "block" : "hidden lg:flex"
                     )}>
                         {loadingCats ? (
@@ -136,7 +136,7 @@ export function HomeHero() {
 
                                         {/* Flyout Menu (Desktop Only) */}
                                         {cat.children && cat.children.length > 0 && (
-                                            <div className="hidden lg:block absolute left-full top-0 w-[260px] bg-white dark:bg-[#1e2330] border border-slate-200 dark:border-slate-800 shadow-2xl opacity-0 translate-x-2 pointer-events-none group-hover/nav:opacity-100 group-hover/nav:translate-x-0 group-hover/nav:pointer-events-auto transition-all duration-300 z-50 rounded-r-lg overflow-hidden">
+                                            <div className="hidden lg:block absolute left-full top-0 w-[260px] bg-white dark:bg-[#1e2330] border border-slate-200 dark:border-slate-800 shadow-2xl opacity-0 translate-x-2 pointer-events-none group-hover/nav:opacity-100 group-hover/nav:translate-x-0 group-hover/nav:pointer-events-auto transition-all duration-300 z-[100] rounded-r-lg overflow-hidden">
                                                 <ul className="py-2">
                                                     {cat.children.map((sub: any) => (
                                                         <li key={sub.id}>
