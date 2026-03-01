@@ -781,6 +781,10 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
                                     <dt className="text-slate-500 dark:text-slate-400 font-medium">Bộ sưu tập</dt>
                                     <dd className="font-bold text-industrial-black dark:text-slate-200 text-right">{variants.length} phân loại</dd>
                                 </div>
+                                <div className="flex justify-between items-center border-t border-gray-100 dark:border-white/5 pt-4">
+                                    <dt className="text-slate-500 dark:text-slate-400 font-medium">Bảo hành</dt>
+                                    <dd className="font-bold text-industrial-black dark:text-slate-200 text-right">12 tháng</dd>
+                                </div>
                                 {selectedVariant?.sku && (
                                     <div className="flex justify-between items-center border-t border-gray-100 dark:border-white/5 pt-4">
                                         <dt className="text-slate-500 dark:text-slate-400 font-medium">Mã SKU</dt>
