@@ -104,7 +104,7 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
             category_id: null,
             thumbnail: "",
             images: [],
-            attrGroups: [{ name: "Màu sắc", values: [] }],
+            attrGroups: [],
             variants: []
         },
     });
@@ -166,7 +166,7 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
                 description: "",
                 thumbnail: "",
                 images: [],
-                attrGroups: [{ name: "Màu sắc", values: [] }],
+                attrGroups: [],
                 variants: []
             });
             return;
@@ -237,7 +237,7 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
                 description: product.description || "",
                 thumbnail: product.thumbnail || "",
                 images: product.images || [],
-                attrGroups: attrGroupsArray.length > 0 ? attrGroupsArray : [{ name: "Màu sắc", values: [] }],
+                attrGroups: attrGroupsArray.length > 0 ? attrGroupsArray : [],
                 variants: variantsArray
             });
 
@@ -472,7 +472,7 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
                 }
 
                 toast({ title: "Thành công!", description: "Sản phẩm đã được tạo", className: "bg-green-600 text-white" });
-                window.location.href = `/products/${product.id}`;
+                window.location.href = `/admin/products/create`;
             }
         } catch (error: any) {
             console.error(error);
@@ -633,8 +633,8 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
                                                                                 type="button"
                                                                                 onClick={() => { field.onChange(brand.brand_name); setBrandDropdownOpen(false); }}
                                                                                 className={`flex items-center gap-2 px-2.5 py-2 rounded-md text-sm transition-all ${field.value === brand.brand_name
-                                                                                        ? "bg-orange-50 dark:bg-orange-900/20 border border-orange-300 dark:border-orange-600 shadow-sm"
-                                                                                        : "border border-transparent hover:bg-slate-50 dark:hover:bg-white/5 hover:border-slate-200 dark:hover:border-white/10"
+                                                                                    ? "bg-orange-50 dark:bg-orange-900/20 border border-orange-300 dark:border-orange-600 shadow-sm"
+                                                                                    : "border border-transparent hover:bg-slate-50 dark:hover:bg-white/5 hover:border-slate-200 dark:hover:border-white/10"
                                                                                     }`}
                                                                             >
                                                                                 {brand.logo_url ? (
