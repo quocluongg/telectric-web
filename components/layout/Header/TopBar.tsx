@@ -14,7 +14,7 @@ export const TopBar = () => {
                     </div>
                     <div className="flex items-center gap-2 hover:text-white transition-colors cursor-pointer hidden sm:flex">
                         <Mail size={14} className="text-electric-orange" />
-                        <span>Email: [EMAIL_ADDRESS]</span>
+                        <span>Email: <strong className="text-white">telectric1992@gmail.com</strong></span>
                     </div>
                 </div>
 

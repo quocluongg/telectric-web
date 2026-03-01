@@ -35,7 +35,7 @@ export default function ContactPage() {
                     <div className="w-full mb-16 rounded-2xl overflow-hidden shadow-2xl border border-slate-200 dark:border-slate-800/60 h-[450px] relative group bg-white dark:bg-[#1e2330]">
                         <div className="absolute inset-0 bg-electric-orange/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none z-10" />
                         <iframe
-                            src="https://maps.google.com/maps?q=61%2F9%2F6+%C4%90HT03%2C+t%E1%BB%95+12%2C+khu+ph%E1%BB%91+5%2C+ph%C6%B0%E1%BB%9Dng+T%C3%A2n+H%C6%B0ng+Thu%E1%BA%ADn%2C+Qu%E1%BA%ADn+12%2C+TP.HCM&t=m&z=16&output=embed&iwloc=near"
+                            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3918.6860264017773!2d106.62672649999999!3d10.8353222!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31752bd517fb85c7%3A0x219d0aa30363d8cb!2zNjEgxJDDtG5nIEjGsG5nIFRodeG6rW4gMywgxJDDtG5nIEjGsG5nIFRodeG6rW4sIFF14bqtbiAxMiwgVGjDoG5oIHBo4buRIEjhu5MgQ2jDrSBNaW5oLCBWaWV0bmFt!5e0!3m2!1sen!2s!4v1772371183545!5m2!1sen!2s"
                             width="100%"
                             height="100%"
                             style={{ border: 0 }}
@@ -89,8 +89,8 @@ export default function ContactPage() {
 
                                             <div className="flex gap-4 items-center">
                                                 <div><Mail className="h-5 w-5 text-slate-400 dark:text-slate-500 shrink-0" /></div>
-                                                <a href="mailto:dtnguyen67@gmail.com" className="hover:text-electric-orange font-medium transition-colors">
-                                                    dtnguyen67@gmail.com
+                                                <a href="mailto:telectric1992@gmail.com" className="hover:text-electric-orange font-medium transition-colors">
+                                                    telectric1992@gmail.com
                                                 </a>
                                             </div>
 

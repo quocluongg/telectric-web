@@ -342,7 +342,7 @@ export function CategorySection({
                             >
                                 Thương hiệu
                             </div>
-                            <div style={{ maxHeight: `${70 * 4}px`, overflowY: brands.length > 4 ? "auto" : "hidden" }}>
+                            <div className="scrollbar-hide" style={{ maxHeight: `${70 * 4}px`, overflowY: brands.length > 4 ? "auto" : "hidden" }}>
                                 {brands.map((b) => (
                                     <Link
                                         key={b.name}

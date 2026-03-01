@@ -69,8 +69,8 @@ const Footer = () => {
                             </p>
                             <p>
                                 <strong className="text-slate-800 dark:text-slate-200">Địa chỉ:</strong><br />
-                                61/9/6 Khu phố 63,<br />
-                                Phường Đông Hưng Thuận, TP.HCM
+                                61/9/6 ĐHT03, tổ 12, khu phố 5,<br />
+                                Phường Tân Hưng Thuận, Quận 12, TP.HCM
                             </p>
                             <p>
                                 <strong className="text-slate-800 dark:text-slate-200">Email:</strong>{' '}
