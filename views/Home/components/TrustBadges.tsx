@@ -17,7 +17,7 @@ export function TrustBadges() {
         {
             icon: <ShieldCheck className="w-8 h-8 text-electric-orange" />,
             title: "Bảo Hành 12 Tháng",
-            desc: "Mọi sản phẩm trên TLECTRIC",
+            desc: "Tùy loại sản phẩm trên TELECTRIC",
         },
         {
             icon: <RotateCcw className="w-8 h-8 text-electric-orange" />,
