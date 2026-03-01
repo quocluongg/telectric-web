@@ -113,11 +113,9 @@ export function HomeHero() {
                         )} />
                     </div>
                     <ul className={cn(
-                        "flex-1 flex flex-col lg:overflow-y-auto h-auto lg:h-[480px] transition-all duration-300 group/sidebar relative",
+                        "flex-1 flex flex-col lg:overflow-y-auto h-auto lg:h-[480px] transition-all duration-300",
                         isMobileCategoryOpen ? "block" : "hidden lg:flex"
                     )}>
-                        {/* Global active border indicator on hover (Desktop) */}
-                        <div className="hidden lg:block absolute left-0 top-0 bottom-0 w-0.5 bg-electric-orange scale-y-0 group-hover/sidebar:scale-y-100 transition-transform duration-500 origin-top z-20"></div>
                         {loadingCats ? (
                             <div className="flex justify-center py-10">
                                 <Loader2 className="animate-spin text-slate-300 w-6 h-6" />
@@ -125,7 +123,7 @@ export function HomeHero() {
                         ) : (
                             <>
                                 {categories.slice(0, 8).map((cat) => (
-                                    <li key={cat.id} className="border-b border-slate-100 dark:border-slate-800/60 last:border-0 group/nav shrink-0">
+                                    <li key={cat.id} className="border-b border-slate-100 dark:border-slate-800/60 last:border-0 relative group/nav shrink-0">
                                         <Link
                                             href={`/products?category=${cat.slug}`}
                                             className="flex items-center justify-between px-5 py-3.5 text-[15px] font-medium text-slate-700 dark:text-slate-300 hover:text-electric-orange dark:hover:text-electric-orange transition-colors"
@@ -133,10 +131,12 @@ export function HomeHero() {
                                             <span className="truncate pr-2">{cat.name}</span>
                                             <ChevronRight className="h-4 w-4 text-slate-300 group-hover/nav:text-electric-orange transition-transform" />
                                         </Link>
+                                        {/* Active border indicator on hover */}
+                                        <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-electric-orange scale-y-0 group-hover/nav:scale-y-100 transition-transform origin-center"></div>
 
                                         {/* Flyout Menu (Desktop Only) */}
                                         {cat.children && cat.children.length > 0 && (
-                                            <div className="hidden lg:block absolute left-full top-0 w-[260px] min-h-full bg-white dark:bg-[#1e2330] border border-slate-200 dark:border-slate-800 shadow-2xl opacity-0 translate-x-2 pointer-events-none group-hover/nav:opacity-100 group-hover/nav:translate-x-0 group-hover/nav:pointer-events-auto transition-all duration-300 z-50 rounded-r-lg overflow-hidden">
+                                            <div className="hidden lg:block absolute left-full top-0 w-[260px] bg-white dark:bg-[#1e2330] border border-slate-200 dark:border-slate-800 shadow-2xl opacity-0 translate-x-2 pointer-events-none group-hover/nav:opacity-100 group-hover/nav:translate-x-0 group-hover/nav:pointer-events-auto transition-all duration-300 z-50 rounded-r-lg overflow-hidden">
                                                 <ul className="py-2">
                                                     {cat.children.map((sub: any) => (
                                                         <li key={sub.id}>
