@@ -22,6 +22,15 @@ export const metadata: Metadata = {
     siteName: "TElectric",
     images: ["/img/banner.png"],
   },
+  icons: {
+    icon: [
+      { url: 'img/icon.png' },
+      new URL('/img/icon.png', 'https://telectric.vn').href,
+    ],
+    apple: [
+      { url: '/img/icon.png' },
+    ],
+  },
   twitter: {
     card: "summary_large_image",
     title: "TElectric - Chuyên dụng cụ đo lường chính hãng",
