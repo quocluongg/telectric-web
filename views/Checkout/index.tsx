@@ -245,45 +245,6 @@ export default function CheckoutPage() {
         return Object.keys(e).length === 0;
     }, [form, selectedProvince, selectedDistrict, selectedWard, cartItems]);
 
-    // --- Handle Payment ---
-    const handlePayment = async (createdOrderId: string) => {
-        try {
-            // 1. Gọi Edge Function để lấy thông tin thanh toán
-            const { data, error } = await supabase.functions.invoke('sepay-init-checkout', {
-                body: { order_id: createdOrderId }
-            });
-
-            if (error) throw error;
-
-            // 2. Tạo một form ẩn và tự động submit sang SePay
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.action = data.checkoutURL; // URL từ Edge Function trả về
-
-            // Thêm các fields đã được SDK ký (signature) vào form
-            Object.entries(data.fields).forEach(([name, value]) => {
-                const input = document.createElement('input');
-                input.type = 'hidden';
-                input.name = name;
-                input.value = value as string;
-                form.appendChild(input);
-            });
-
-            document.body.appendChild(form);
-            form.submit();
-            document.body.removeChild(form);
-        } catch (err: any) {
-            console.error('Lỗi khởi tạo thanh toán:', err.message);
-            toast({
-                title: "Lỗi thanh toán",
-                description: "Không thể khởi tạo thanh toán. Vui lòng thử lại.",
-                variant: "destructive"
-            });
-            // Fallback to normal success state if payment init fails
-            router.push(`/payment/success?orderId=${createdOrderId}&method=bank_transfer`);
-        }
-    };
-
     // --- Submit order ---
     const handleSubmit = async () => {
         if (!validate()) return;
@@ -357,8 +318,8 @@ export default function CheckoutPage() {
             clearCart();
             setCartItems([]);
 
-            if (paymentMethod === "bank_transfer") {
-                await handlePayment(newOrderId);
+            if (paymentMethod === "qr") {
+                router.push(`/payment/success?orderId=${newOrderId}&method=qr`);
             } else {
                 router.push(`/payment/success?orderId=${newOrderId}&method=cod`);
             }
@@ -616,27 +577,27 @@ export default function CheckoutPage() {
                                     </div>
                                 </label>
 
-                                {/* Bank Transfer */}
+                                {/* QR Transfer */}
                                 <label
                                     className={cn(
                                         "flex items-center gap-4 p-5 rounded-xl border-2 cursor-pointer transition-all duration-200 relative",
-                                        paymentMethod === "bank_transfer"
+                                        paymentMethod === "qr"
                                             ? "border-orange-500 bg-orange-50/50 dark:bg-orange-500/10 shadow-sm"
                                             : "border-gray-200 dark:border-white/10 hover:border-orange-300 dark:hover:border-orange-500/50 bg-white dark:bg-[#1c212c]"
                                     )}
                                 >
                                     <div className={cn(
                                         "flex items-center justify-center w-6 h-6 rounded-full border-2 transition-colors",
-                                        paymentMethod === "bank_transfer" ? "border-orange-500 bg-orange-500" : "border-gray-300 dark:border-slate-600"
+                                        paymentMethod === "qr" ? "border-orange-500 bg-orange-500" : "border-gray-300 dark:border-slate-600"
                                     )}>
-                                        {paymentMethod === "bank_transfer" && <div className="w-2 h-2 bg-white rounded-full" />}
+                                        {paymentMethod === "qr" && <div className="w-2 h-2 bg-white rounded-full" />}
                                     </div>
                                     <input
                                         type="radio"
                                         name="payment"
-                                        value="bank_transfer"
-                                        checked={paymentMethod === "bank_transfer"}
-                                        onChange={() => setPaymentMethod("bank_transfer")}
+                                        value="qr"
+                                        checked={paymentMethod === "qr"}
+                                        onChange={() => setPaymentMethod("qr")}
                                         className="hidden"
                                     />
                                     <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-500 flex-shrink-0">
@@ -644,8 +605,10 @@ export default function CheckoutPage() {
                                     </div>
                                     <div className="flex-1">
                                         <p className="font-bold text-[15px] text-slate-900 dark:text-slate-200">Chuyển khoản / Quét mã QR</p>
-                                        <p className="text-[13px] text-slate-500 dark:text-slate-400 mt-0.5">Xác nhận đơn hàng tự động ngay lập tức</p>
+                                        <p className="text-[13px] text-slate-500 dark:text-slate-400 mt-0.5">Quét mã QR ngân hàng — xác nhận nhanh</p>
                                     </div>
+                                    {/* QR badge */}
+                                    <span className="flex-shrink-0 bg-blue-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-md tracking-wide hidden sm:inline">QR PAY</span>
                                 </label>
                             </div>
 

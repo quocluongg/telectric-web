@@ -42,7 +42,7 @@ const productSchema = z.object({
 type ProductFormValues = z.infer<typeof productSchema>;
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
-const MAX_GALLERY_FILES = 5;
+const MAX_GALLERY_FILES = 9;
 
 const sanitizeFileName = (str: string) => {
     return str
