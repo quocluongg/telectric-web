@@ -702,11 +702,11 @@ export default function HomeSettingsPage() {
                                 <select
                                     value={featured[i]?.category_id || ""}
                                     onChange={(e) => handleUpdateFeatured(i, { category_id: e.target.value })}
-                                    className="w-full h-10 px-3 py-2 text-sm border rounded-md bg-transparent focus:outline-none focus:ring-2 focus:ring-orange-500"
+                                    className="w-full h-10 px-3 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-500"
                                 >
-                                    <option value="">— Chọn danh mục —</option>
+                                    <option value="" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">— Chọn danh mục —</option>
                                     {categories.map(cat => (
-                                        <option key={cat.id} value={cat.id}>{cat.name}</option>
+                                        <option key={cat.id} value={cat.id} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">{cat.name}</option>
                                     ))}
                                 </select>
                                 <p className="text-[10px] text-slate-400 italic">Sản phẩm trong danh mục này sẽ hiển thị ở tab "Tất cả".</p>
