@@ -17,8 +17,7 @@ export function FlashSale() {
         const fetchActiveCampaign = async () => {
             const now = new Date().toISOString();
 
-            // Find all active campaigns (is_active = true and current time is within run time)
-            // Order by end_time so we prioritize the one ending soonest
+            // Find all active campaigns
             const { data: activeCampaigns } = await supabase
                 .from("campaigns")
                 .select("*")
@@ -32,7 +31,7 @@ export function FlashSale() {
                 for (const potentialCampaign of activeCampaigns) {
                     const { data: itemsData } = await supabase
                         .from("campaign_items")
-                        .select("*, products(*, categories(name)), product_variants(price)")
+                        .select("*, products(*), product_variants(price)")
                         .eq("campaign_id", potentialCampaign.id);
 
                     if (itemsData && itemsData.length > 0) {
