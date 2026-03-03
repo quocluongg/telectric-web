@@ -562,10 +562,14 @@ export default function HomeSettingsPage() {
                 if (settingsRes.error) console.warn("home_featured_categories not found:", settingsRes.error.message);
                 setFeatured([0, 1, 2].map(defaultFeatured));
             } else {
-                setFeatured(settingsRes.data.map((d: any) => ({
-                    ...d,
-                    pinned_brand_names: d.pinned_brand_names || [],
-                })));
+                const loaded = [0, 1, 2].map(i => {
+                    const found = settingsRes.data.find((d: any) => d.order_index === i);
+                    if (found) {
+                        return { ...found, pinned_brand_names: found.pinned_brand_names || [] };
+                    }
+                    return defaultFeatured(i);
+                });
+                setFeatured(loaded);
             }
         } catch (err: any) {
             toastRef.current({ title: "Lỗi tải dữ liệu", description: err.message, variant: "destructive" });
