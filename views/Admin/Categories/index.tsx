@@ -61,8 +61,8 @@ export default function AdminCategoriesPage() {
     const [deleting, setDeleting] = useState(false);
 
     // Fetch
-    const fetchCategories = useCallback(async () => {
-        setLoading(true);
+    const fetchCategories = useCallback(async (showLoading = true) => {
+        if (showLoading) setLoading(true);
         const { data, error } = await supabase
             .from("categories")
             .select("*")
@@ -73,7 +73,7 @@ export default function AdminCategoriesPage() {
         } else {
             setCategories(data || []);
         }
-        setLoading(false);
+        if (showLoading) setLoading(false);
     }, [supabase, toast]);
 
     useEffect(() => {
@@ -137,7 +137,7 @@ export default function AdminCategoriesPage() {
                 toast({ title: "Đã thêm!", className: "bg-green-600 text-white" });
             }
             setDialogOpen(false);
-            fetchCategories();
+            await fetchCategories(false);
         } catch (err: any) {
             toast({ title: "Lỗi", description: err.message, variant: "destructive" });
         } finally {
@@ -158,7 +158,7 @@ export default function AdminCategoriesPage() {
             toast({ title: "Đã xóa!", className: "bg-green-600 text-white" });
             setDeleteDialogOpen(false);
             setDeletingCategory(null);
-            fetchCategories();
+            await fetchCategories(false);
         } catch (err: any) {
             toast({ title: "Lỗi", description: err.message, variant: "destructive" });
         } finally {
@@ -190,18 +190,29 @@ export default function AdminCategoriesPage() {
 
         const oldestTime = Math.min(...siblings.map(s => new Date(s.created_at).getTime()));
 
-        setLoading(true);
+        // Optimistic update
+        const updatedIds = new Set(newSiblings.map(s => s.id));
+        setCategories((prev) => {
+            const others = prev.filter(c => !updatedIds.has(c.id));
+            const updatedSiblings = newSiblings.map((s, i) => ({
+                ...s,
+                created_at: new Date(oldestTime + i * 1000).toISOString()
+            }));
+            const combined = [...others, ...updatedSiblings];
+            combined.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+            return combined;
+        });
+
         try {
             for (let i = 0; i < newSiblings.length; i++) {
                 const newT = new Date(oldestTime + i * 1000).toISOString();
                 await supabase.from("categories").update({ created_at: newT }).eq("id", newSiblings[i].id);
             }
-            await fetchCategories();
-            toast({ title: "Đã thay đổi thứ tự!", className: "bg-green-600 text-white" });
+            // Fetch silently to ensure in-sync
+            fetchCategories(false);
         } catch (err: any) {
-            toast({ title: "Lỗi", description: err.message, variant: "destructive" });
-        } finally {
-            setLoading(false);
+            toast({ title: "Lỗi khi đổi thứ tự", description: err.message, variant: "destructive" });
+            fetchCategories(false); // Revert optimistic changes
         }
     };
 
