@@ -24,10 +24,12 @@ const Footer = () => {
                     <div>
                         <h4 className="font-bold mb-6 text-slate-900 dark:text-white uppercase tracking-wider">Chính sách</h4>
                         <ul className="space-y-3 text-sm text-slate-600 dark:text-slate-gray">
-                            <li><Link href="/chinh-sach/mua-hang" className="hover:text-electric-orange transition-colors">Hướng dẫn mua hàng</Link></li>
-                            <li><Link href="/chinh-sach/bao-hanh-doi-tra" className="hover:text-electric-orange transition-colors">Chính sách bảo hành &amp; đổi trả</Link></li>
-                            <li><Link href="/chinh-sach/van-chuyen-thanh-toan" className="hover:text-electric-orange transition-colors">Vận chuyển &amp; thanh toán</Link></li>
-                            <li><Link href="/chinh-sach/bao-mat" className="hover:text-electric-orange transition-colors">Chính sách bảo mật</Link></li>
+                            <li><Link href="/chinh-sach/huong-dan-mua-hang" className="hover:text-electric-orange transition-colors">Hướng dẫn mua hàng</Link></li>
+                            <li><Link href="/chinh-sach/chinh-sach-bao-hanh" className="hover:text-electric-orange transition-colors">Chính sách bảo hành &amp; đổi trả</Link></li>
+                            <li><Link href="/chinh-sach/chinh-sach-van-chuyen" className="hover:text-electric-orange transition-colors">Vận chuyển &amp; thanh toán</Link></li>
+                            <li><Link href="/chinh-sach/chinh-sach-bao-mat" className="hover:text-electric-orange transition-colors">Chính sách bảo mật</Link></li>
+                            <li><Link href="/chinh-sach/quy-dinh-chung" className="hover:text-electric-orange transition-colors">Quy định chung</Link></li>
+                            <li><Link href="/chinh-sach/giai-quyet-khieu-nai" className="hover:text-electric-orange transition-colors">Giải quyết khiếu nại</Link></li>
                         </ul>
                     </div>
 
