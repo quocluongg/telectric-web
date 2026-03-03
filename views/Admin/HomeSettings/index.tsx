@@ -412,7 +412,7 @@ interface BrandLogo {
 
 interface HomeFeaturedCategory {
     id?: string;
-    category_id: string;
+    category_id: string | null;
     order_index: number;
     accent_color: string;
     icon_name: string;
@@ -441,7 +441,7 @@ const ICONS = [
 ];
 
 const defaultFeatured = (i: number): HomeFeaturedCategory => ({
-    category_id: "", order_index: i,
+    category_id: null, order_index: i,
     accent_color: ["bg-red-600", "bg-blue-600", "bg-orange-500"][i],
     icon_name: ["Gauge", "Wind", "Thermometer"][i],
     pinned_product_ids: [], banner_url: null, section_title: null, pinned_brand_names: [],
@@ -588,15 +588,21 @@ export default function HomeSettingsPage() {
         setSaving(true);
         try {
             for (const item of featured) {
+                const payload = {
+                    ...item,
+                    category_id: item.category_id || null,
+                    updated_at: new Date().toISOString()
+                };
                 const { error } = await supabase.from("home_featured_categories").upsert(
-                    { ...item, updated_at: new Date().toISOString() },
+                    payload,
                     { onConflict: "order_index" }
                 );
                 if (error) throw error;
             }
             toast({ title: "Đã lưu cài đặt!", className: "bg-green-600 text-white" });
-        } catch {
-            toast({ title: "Lỗi lưu cài đặt", description: "Đảm bảo đã tạo bảng home_featured_categories và thêm các cột mới.", variant: "destructive" });
+        } catch (err: any) {
+            console.error("Save Error:", err);
+            toast({ title: "Lỗi lưu cài đặt", description: err.message || "Lỗi không xác định.", variant: "destructive" });
         } finally {
             setSaving(false);
         }
