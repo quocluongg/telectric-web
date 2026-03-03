@@ -35,7 +35,7 @@ export function HomeHero() {
 
     useEffect(() => {
         const fetchCategories = async () => {
-            const { data: allData } = await supabase.from("categories").select("*").order("name");
+            const { data: allData } = await supabase.from("categories").select("*").order("created_at", { ascending: true });
             if (allData) {
                 const roots = allData.filter((c: any) => !c.parent_id);
                 const tree = roots.map((root: any) => ({
@@ -216,14 +216,13 @@ export function HomeHero() {
                 {/* Right: Hero Carousel */}
                 <div className="flex-1 min-w-0 relative group">
                     {loadingBanners ? (
-                        /* Loading state */
-                        <div className="flex items-center justify-center w-full h-[400px] md:h-[480px] bg-slate-900">
+                        <div className="flex items-center justify-center w-full h-[250px] md:h-[400px] lg:h-full lg:absolute lg:inset-0 bg-slate-900">
                             <Loader2 className="animate-spin text-slate-500 w-8 h-8" />
                         </div>
                     ) : useDbBanners ? (
                         /* ── DB-driven banner carousel ── */
                         <>
-                            <div className="overflow-hidden w-full h-[400px] md:h-[480px]" ref={emblaRef}>
+                            <div className="overflow-hidden w-full h-[250px] md:h-[400px] lg:h-full lg:absolute lg:inset-0" ref={emblaRef}>
                                 <div className="flex h-full">
                                     {dbBanners.map((banner, idx) => {
                                         const imgContent = (
@@ -298,7 +297,7 @@ export function HomeHero() {
                     ) : (
                         /* ── Fallback hardcoded slides (no DB banners yet) ── */
                         <>
-                            <div className="overflow-hidden w-full h-[400px] md:h-[480px]" ref={emblaRef}>
+                            <div className="overflow-hidden w-full h-[250px] md:h-[400px] lg:h-full lg:absolute lg:inset-0" ref={emblaRef}>
                                 <div className="flex h-full">
                                     {fallbackSlides.map((slide, idx) => (
                                         <div key={idx} className="flex-[0_0_100%] min-w-0 relative h-full">

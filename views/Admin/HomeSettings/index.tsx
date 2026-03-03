@@ -412,7 +412,7 @@ interface BrandLogo {
 
 interface HomeFeaturedCategory {
     id?: string;
-    category_id: string;
+    category_id: string | null;
     order_index: number;
     accent_color: string;
     icon_name: string;
@@ -441,7 +441,7 @@ const ICONS = [
 ];
 
 const defaultFeatured = (i: number): HomeFeaturedCategory => ({
-    category_id: "", order_index: i,
+    category_id: null, order_index: i,
     accent_color: ["bg-red-600", "bg-blue-600", "bg-orange-500"][i],
     icon_name: ["Gauge", "Wind", "Thermometer"][i],
     pinned_product_ids: [], banner_url: null, section_title: null, pinned_brand_names: [],
@@ -562,10 +562,14 @@ export default function HomeSettingsPage() {
                 if (settingsRes.error) console.warn("home_featured_categories not found:", settingsRes.error.message);
                 setFeatured([0, 1, 2].map(defaultFeatured));
             } else {
-                setFeatured(settingsRes.data.map((d: any) => ({
-                    ...d,
-                    pinned_brand_names: d.pinned_brand_names || [],
-                })));
+                const loaded = [0, 1, 2].map(i => {
+                    const found = settingsRes.data.find((d: any) => d.order_index === i);
+                    if (found) {
+                        return { ...found, pinned_brand_names: found.pinned_brand_names || [] };
+                    }
+                    return defaultFeatured(i);
+                });
+                setFeatured(loaded);
             }
         } catch (err: any) {
             toastRef.current({ title: "Lỗi tải dữ liệu", description: err.message, variant: "destructive" });
@@ -587,16 +591,25 @@ export default function HomeSettingsPage() {
     const handleSave = async () => {
         setSaving(true);
         try {
+            let idx = 0;
             for (const item of featured) {
+                const payload = {
+                    ...item,
+                    category_id: item.category_id || null,
+                    order_index: typeof item.order_index === "number" ? item.order_index : idx,
+                    updated_at: new Date().toISOString()
+                };
                 const { error } = await supabase.from("home_featured_categories").upsert(
-                    { ...item, updated_at: new Date().toISOString() },
+                    payload,
                     { onConflict: "order_index" }
                 );
                 if (error) throw error;
+                idx++;
             }
             toast({ title: "Đã lưu cài đặt!", className: "bg-green-600 text-white" });
-        } catch {
-            toast({ title: "Lỗi lưu cài đặt", description: "Đảm bảo đã tạo bảng home_featured_categories và thêm các cột mới.", variant: "destructive" });
+        } catch (err: any) {
+            console.error("Save Error:", err);
+            toast({ title: "Lỗi lưu cài đặt", description: err.message || "Lỗi không xác định.", variant: "destructive" });
         } finally {
             setSaving(false);
         }
@@ -689,11 +702,11 @@ export default function HomeSettingsPage() {
                                 <select
                                     value={featured[i]?.category_id || ""}
                                     onChange={(e) => handleUpdateFeatured(i, { category_id: e.target.value })}
-                                    className="w-full h-10 px-3 py-2 text-sm border rounded-md bg-transparent focus:outline-none focus:ring-2 focus:ring-orange-500"
+                                    className="w-full h-10 px-3 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-500"
                                 >
-                                    <option value="">— Chọn danh mục —</option>
+                                    <option value="" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">— Chọn danh mục —</option>
                                     {categories.map(cat => (
-                                        <option key={cat.id} value={cat.id}>{cat.name}</option>
+                                        <option key={cat.id} value={cat.id} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">{cat.name}</option>
                                     ))}
                                 </select>
                                 <p className="text-[10px] text-slate-400 italic">Sản phẩm trong danh mục này sẽ hiển thị ở tab "Tất cả".</p>

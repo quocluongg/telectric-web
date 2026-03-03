@@ -17,31 +17,35 @@ export function FlashSale() {
         const fetchActiveCampaign = async () => {
             const now = new Date().toISOString();
 
-            // Find active campaign (is_active = true and current time is within run time)
+            // Find all active campaigns (is_active = true and current time is within run time)
+            // Order by end_time so we prioritize the one ending soonest
             const { data: activeCampaigns } = await supabase
                 .from("campaigns")
                 .select("*")
                 .eq("is_active", true)
                 .lte("start_time", now)
                 .gte("end_time", now)
-                .order("end_time", { ascending: true })
-                .limit(1);
+                .order("end_time", { ascending: true });
 
             if (activeCampaigns && activeCampaigns.length > 0) {
-                const currentCampaign = activeCampaigns[0];
-                setCampaign(currentCampaign);
+                // Loop through active campaigns to find one that actually has items
+                for (const potentialCampaign of activeCampaigns) {
+                    const { data: itemsData } = await supabase
+                        .from("campaign_items")
+                        .select("*, products(*, categories(name)), product_variants(price)")
+                        .eq("campaign_id", potentialCampaign.id);
 
-                // Fetch items for this campaign
-                const { data: itemsData } = await supabase
-                    .from("campaign_items")
-                    .select("*, products(*, categories(name)), product_variants(price)")
-                    .eq("campaign_id", currentCampaign.id);
+                    if (itemsData && itemsData.length > 0) {
+                        setCampaign(potentialCampaign);
+                        setProducts(itemsData);
 
-                if (itemsData) setProducts(itemsData);
+                        // Calculate initial time left in seconds
+                        const end = new Date(potentialCampaign.end_time).getTime();
+                        setTimeLeft(Math.floor((end - new Date().getTime()) / 1000));
 
-                // Calculate initial time left in seconds
-                const end = new Date(currentCampaign.end_time).getTime();
-                setTimeLeft(Math.floor((end - new Date().getTime()) / 1000));
+                        break; // Stop looking once we found a campaign with products
+                    }
+                }
             }
         };
 

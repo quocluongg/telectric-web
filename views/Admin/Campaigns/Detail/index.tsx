@@ -126,10 +126,29 @@ export default function CampaignDetailPage({ campaignId }: { campaignId: string 
 
     const toggleCampaignStatus = async () => {
         const newStatus = !campaign.is_active;
+
+        // If we are turning this campaign on, first turn off all others
+        if (newStatus) {
+            const { error: deactivateError } = await supabase
+                .from("campaigns")
+                .update({ is_active: false })
+                .neq("id", campaign.id);
+
+            if (deactivateError) {
+                toast({ title: "Lỗi", description: "Không thể tắt các chiến dịch khác.", variant: "destructive" });
+                return;
+            }
+        }
+
         const { error } = await supabase.from("campaigns").update({ is_active: newStatus }).eq("id", campaign.id);
         if (!error) {
             setCampaign({ ...campaign, is_active: newStatus });
-            toast({ title: "Thành công", description: `Chiến dịch đã được ${newStatus ? "BẬT" : "TẮT"}.` });
+            toast({
+                title: "Thành công",
+                description: newStatus
+                    ? "Chiến dịch đã được BẬT. Các chiến dịch khác đã tự động tắt."
+                    : "Chiến dịch đã được TẮT."
+            });
         }
     };
 
