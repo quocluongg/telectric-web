@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import {
     Layers, Plus, Pencil, Trash2, Loader2, FolderTree, ChevronRight,
-    Search, X, Save, ArrowLeft
+    Search, X, Save, ArrowUp, ArrowDown
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -66,7 +66,7 @@ export default function AdminCategoriesPage() {
         const { data, error } = await supabase
             .from("categories")
             .select("*")
-            .order("name");
+            .order("created_at", { ascending: true });
 
         if (error) {
             toast({ title: "Lỗi", description: error.message, variant: "destructive" });
@@ -166,12 +166,44 @@ export default function AdminCategoriesPage() {
         }
     };
 
-    // Build tree
     const rootCategories = useMemo(() =>
         categories.filter(c => !c.parent_id), [categories]);
 
     const getChildren = useCallback((parentId: string) =>
         categories.filter(c => c.parent_id === parentId), [categories]);
+
+    // Handle moving categories
+    const handleMove = async (category: Category, direction: "up" | "down", siblings: Category[]) => {
+        const currentIndex = siblings.findIndex(c => c.id === category.id);
+        if (currentIndex === -1) return;
+
+        let targetIndex = -1;
+        if (direction === "up" && currentIndex > 0) targetIndex = currentIndex - 1;
+        if (direction === "down" && currentIndex < siblings.length - 1) targetIndex = currentIndex + 1;
+
+        if (targetIndex === -1) return;
+
+        const newSiblings = [...siblings];
+        const temp = newSiblings[currentIndex];
+        newSiblings[currentIndex] = newSiblings[targetIndex];
+        newSiblings[targetIndex] = temp;
+
+        const oldestTime = Math.min(...siblings.map(s => new Date(s.created_at).getTime()));
+
+        setLoading(true);
+        try {
+            for (let i = 0; i < newSiblings.length; i++) {
+                const newT = new Date(oldestTime + i * 1000).toISOString();
+                await supabase.from("categories").update({ created_at: newT }).eq("id", newSiblings[i].id);
+            }
+            await fetchCategories();
+            toast({ title: "Đã thay đổi thứ tự!", className: "bg-green-600 text-white" });
+        } catch (err: any) {
+            toast({ title: "Lỗi", description: err.message, variant: "destructive" });
+        } finally {
+            setLoading(false);
+        }
+    };
 
     // Filter
     const filteredRoots = useMemo(() => {
@@ -240,7 +272,7 @@ export default function AdminCategoriesPage() {
                 </Card>
             ) : (
                 <div className="space-y-3">
-                    {filteredRoots.map(root => (
+                    {filteredRoots.map((root, index) => (
                         <CategoryCard
                             key={root.id}
                             category={root}
@@ -249,6 +281,9 @@ export default function AdminCategoriesPage() {
                             onEdit={openEditDialog}
                             onDelete={(cat) => { setDeletingCategory(cat); setDeleteDialogOpen(true); }}
                             onAddChild={(parentId) => openAddDialog(parentId)}
+                            onMove={(cat, dir, siblings) => handleMove(cat, dir, siblings)}
+                            siblings={filteredRoots}
+                            index={index}
                         />
                     ))}
                 </div>
@@ -361,6 +396,9 @@ function CategoryCard({
     onEdit,
     onDelete,
     onAddChild,
+    onMove,
+    siblings,
+    index,
     depth = 0
 }: {
     category: Category;
@@ -369,6 +407,9 @@ function CategoryCard({
     onEdit: (cat: Category) => void;
     onDelete: (cat: Category) => void;
     onAddChild: (parentId: string) => void;
+    onMove: (cat: Category, dir: "up" | "down", siblings: Category[]) => void;
+    siblings: Category[];
+    index: number;
     depth?: number;
 }) {
     const [expanded, setExpanded] = useState(true);
@@ -412,6 +453,30 @@ function CategoryCard({
 
                 {/* Actions */}
                 <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    {/* Move Up/Down */}
+                    <div className="flex flex-col mr-2">
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-4 w-6 text-slate-400 hover:text-orange-500 hover:bg-orange-50 disabled:opacity-30 disabled:hover:bg-transparent"
+                            onClick={() => onMove(category, "up", siblings)}
+                            disabled={index === 0}
+                            title="Di chuyển lên"
+                        >
+                            <ArrowUp className="h-3 w-3" />
+                        </Button>
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-4 w-6 text-slate-400 hover:text-orange-500 hover:bg-orange-50 disabled:opacity-30 disabled:hover:bg-transparent"
+                            onClick={() => onMove(category, "down", siblings)}
+                            disabled={index === siblings.length - 1}
+                            title="Di chuyển xuống"
+                        >
+                            <ArrowDown className="h-3 w-3" />
+                        </Button>
+                    </div>
+
                     {depth === 0 && (
                         <Button
                             variant="ghost"
@@ -447,7 +512,7 @@ function CategoryCard({
             {/* Children */}
             {expanded && children.length > 0 && (
                 <div className="mt-2 space-y-2">
-                    {children.map(child => (
+                    {children.map((child, childIndex) => (
                         <CategoryCard
                             key={child.id}
                             category={child}
@@ -456,6 +521,9 @@ function CategoryCard({
                             onEdit={onEdit}
                             onDelete={onDelete}
                             onAddChild={onAddChild}
+                            onMove={onMove}
+                            siblings={children}
+                            index={childIndex}
                             depth={depth + 1}
                         />
                     ))}
