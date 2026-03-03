@@ -587,10 +587,12 @@ export default function HomeSettingsPage() {
     const handleSave = async () => {
         setSaving(true);
         try {
+            let idx = 0;
             for (const item of featured) {
                 const payload = {
                     ...item,
                     category_id: item.category_id || null,
+                    order_index: typeof item.order_index === "number" ? item.order_index : idx,
                     updated_at: new Date().toISOString()
                 };
                 const { error } = await supabase.from("home_featured_categories").upsert(
@@ -598,6 +600,7 @@ export default function HomeSettingsPage() {
                     { onConflict: "order_index" }
                 );
                 if (error) throw error;
+                idx++;
             }
             toast({ title: "Đã lưu cài đặt!", className: "bg-green-600 text-white" });
         } catch (err: any) {
