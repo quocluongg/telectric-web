@@ -427,7 +427,7 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
                 }
 
                 toast({ title: "Đã cập nhật!", description: "Sản phẩm đã được cập nhật thành công.", className: "bg-green-600 text-white" });
-                window.location.href = `/products/${editId}`;
+                window.location.href = `/admin/products`;
             } else {
                 // === CREATE MODE ===
 
