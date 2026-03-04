@@ -15,6 +15,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import * as z from "zod";
 import imageCompression from "browser-image-compression";
+import { sortAttributes } from "@/lib/utils/attributes";
 
 const productSchema = z.object({
     name: z.string().min(5, "Tên sản phẩm ít nhất 5 ký tự").max(255),
@@ -212,9 +213,12 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
                 });
             });
 
-            const attrGroupsArray = Object.entries(attrGroups).map(([name, values]) => ({
+            // Sort keys based on semantic priority
+            const sortedKeys = Object.keys(attrGroups).sort(sortAttributes);
+
+            const attrGroupsArray = sortedKeys.map((name) => ({
                 name,
-                values: Array.from(values)
+                values: Array.from(attrGroups[name])
             }));
 
             // Map variants to form format

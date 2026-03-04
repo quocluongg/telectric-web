@@ -51,6 +51,8 @@ function formatVND(value: number) {
 }
 
 // --- HELPER: Get unique attribute keys from variants ---
+import { sortAttributes } from "@/lib/utils/attributes";
+
 function getAttributeGroups(variants: ProductVariant[]) {
     const groups: Record<string, Set<string>> = {};
     variants.forEach(v => {
@@ -59,8 +61,13 @@ function getAttributeGroups(variants: ProductVariant[]) {
             groups[key].add(value);
         });
     });
+
+    // Sort keys based on semantic priority
+    const sortedKeys = Object.keys(groups).sort(sortAttributes);
+
+    // Build ordered object
     return Object.fromEntries(
-        Object.entries(groups).map(([key, set]) => [key, Array.from(set)])
+        sortedKeys.map(key => [key, Array.from(groups[key])])
     );
 }
 
