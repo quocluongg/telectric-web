@@ -11,10 +11,11 @@ import { useSearchParams } from 'next/navigation';
 
 // Bank info — cập nhật theo thông tin thực tế
 const BANK_INFO = {
-    bankName: "Vietcombank",
-    accountNumber: "0934001435",
+    bankName: "VIB",
+    bankFullName: "Ngân hàng Thương mại cổ phần Quốc tế Việt Nam",
+    accountNumber: "028365284",
     accountName: "NGUYEN DAC TAI",
-    branch: "Chi nhánh TPHCM",
+    branch: "Ngân hàng Quốc tế Việt Nam",
 };
 
 function CopyButton({ text }: { text: string }) {
@@ -53,59 +54,48 @@ function QRPaymentPanel({ orderId }: { orderId: string | null }) {
             </div>
 
             <div className="p-5 sm:p-6">
-                {/* QR Image */}
-                <div className="flex flex-col gap-6 items-center">
-                    <div className="flex-shrink-0 w-full flex flex-col items-center">
-                        <div className="relative w-64 h-64 sm:w-80 sm:h-80 lg:w-[340px] lg:h-[340px] rounded-2xl overflow-hidden border-4 border-white shadow-[0_12px_36px_rgba(37,99,235,0.15)] bg-white p-2">
+                {/* QR Image + Bank Info — side by side on desktop */}
+                <div className="flex flex-col lg:flex-row gap-6 items-center lg:items-start">
+                    <div className="flex-shrink-0 flex flex-col items-center">
+                        <div className="relative w-64 h-64 sm:w-72 sm:h-72 rounded-2xl overflow-hidden border-4 border-white shadow-[0_12px_36px_rgba(37,99,235,0.15)] bg-white p-2">
                             <Image
-                                src="/img/anh-qr-thanh-toan.jfif"
+                                src="/img/QR-ThanhToan.png"
                                 alt="QR Code thanh toán TELECTRIC"
                                 fill
                                 className="object-contain"
                             />
                         </div>
-                        <p className="text-center text-sm text-blue-600 font-bold mt-4 flex items-center justify-center gap-2">
+                        <p className="text-center text-sm text-blue-600 font-bold mt-3 flex items-center justify-center gap-2">
                             <Smartphone className="h-4 w-4" /> Quét bằng camera hoặc ứng dụng ngân hàng
                         </p>
                     </div>
 
                     {/* Bank info */}
-                    <div className="w-full space-y-3 sm:space-y-4">
-                        <div className="space-y-3">
-                            <div className="flex items-center justify-between bg-white rounded-xl border border-slate-200 px-4 py-3 shadow-sm">
-                                <div>
-                                    <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Ngân hàng</p>
-                                    <p className="font-bold text-sm sm:text-base text-slate-800">{BANK_INFO.bankName}</p>
-                                    <p className="text-xs text-slate-500">{BANK_INFO.branch}</p>
-                                </div>
-                            </div>
-
-                            <div className="flex items-center justify-between bg-white rounded-xl border border-slate-200 px-4 py-3 shadow-sm">
-                                <div>
-                                    <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Số tài khoản</p>
-                                    <p className="font-black text-lg sm:text-xl text-slate-900 tracking-widest font-mono">{BANK_INFO.accountNumber}</p>
-                                </div>
-                                <CopyButton text={BANK_INFO.accountNumber} />
-                            </div>
-
-                            <div className="flex items-center justify-between bg-white rounded-xl border border-slate-200 px-4 py-3 shadow-sm">
-                                <div>
-                                    <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Chủ tài khoản</p>
-                                    <p className="font-bold text-sm sm:text-base text-slate-800 uppercase">{BANK_INFO.accountName}</p>
-                                </div>
-                            </div>
-
-                            <div className="flex items-center justify-between bg-blue-50 rounded-xl border-2 border-blue-200 px-4 py-3 sm:py-4 shadow-sm">
-                                <div className="pr-4">
-                                    <p className="text-[11px] font-bold text-blue-500 uppercase tracking-wider mb-0.5">Nội dung chuyển khoản</p>
-                                    <p className="font-black text-base sm:text-lg text-blue-700 font-mono break-all line-clamp-2">{transferContent}</p>
-                                    <p className="text-[11px] sm:text-xs text-blue-500 mt-1">Vui lòng ghi đúng nội dung này để được xác nhận tự động</p>
-                                </div>
-                                <div className="flex-shrink-0">
-                                    <CopyButton text={transferContent} />
-                                </div>
+                    <div className="w-full space-y-3">
+                        <div className="flex items-center justify-between bg-white rounded-xl border border-slate-200 px-4 py-3 shadow-sm">
+                            <div>
+                                <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Ngân hàng</p>
+                                <p className="font-black text-sm sm:text-base text-slate-900">{BANK_INFO.bankName}</p>
+                                <p className="text-xs text-slate-500">{BANK_INFO.bankFullName}</p>
                             </div>
                         </div>
+
+                        <div className="flex items-center justify-between bg-white rounded-xl border border-slate-200 px-4 py-3 shadow-sm">
+                            <div>
+                                <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Số tài khoản</p>
+                                <p className="font-black text-lg sm:text-xl text-slate-900 tracking-widest font-mono">{BANK_INFO.accountNumber}</p>
+                            </div>
+                            <CopyButton text={BANK_INFO.accountNumber} />
+                        </div>
+
+                        <div className="flex items-center justify-between bg-white rounded-xl border border-slate-200 px-4 py-3 shadow-sm">
+                            <div>
+                                <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Chủ tài khoản</p>
+                                <p className="font-bold text-sm sm:text-base text-slate-800 uppercase">{BANK_INFO.accountName}</p>
+                            </div>
+                        </div>
+
+
                     </div>
                 </div>
 
@@ -139,7 +129,7 @@ function SuccessContent() {
     const isQR = method === 'qr';
 
     return (
-        <div className="w-full max-w-xl bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-100">
+        <div className="w-full max-w-xl lg:max-w-4xl xl:max-w-5xl bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-100">
             {/* Header */}
             <div className={`px-8 py-10 text-center relative overflow-hidden ${isQR
                 ? 'bg-gradient-to-br from-blue-500 to-blue-700'
@@ -248,7 +238,7 @@ function SuccessContent() {
 
 export default function PaymentSuccessPage() {
     return (
-        <div className="min-h-screen bg-slate-100 flex items-start justify-center pt-10 pb-16 px-4 sm:p-6 lg:p-10">
+        <div className="min-h-screen bg-slate-100 flex items-start justify-center pt-10 pb-16 px-4 sm:px-6 lg:px-12 xl:px-16">
             <Suspense fallback={
                 <div className="flex flex-col items-center gap-4 mt-20">
                     <div className="w-10 h-10 border-4 border-orange-500 border-t-transparent rounded-full animate-spin" />
