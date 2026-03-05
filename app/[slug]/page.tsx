@@ -1,13 +1,14 @@
 import ProductDetailPage from "@/views/Admin/Products/Detail";
 import { Metadata } from "next";
 import { createClient } from "@supabase/supabase-js";
+import { notFound } from "next/navigation";
 
 interface PageProps {
-    params: Promise<{ id: string }>;
+    params: Promise<{ slug: string }>;
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-    const { id } = await params;
+    const { slug } = await params;
     const supabase = createClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!
@@ -16,7 +17,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     const { data: product } = await supabase
         .from("products")
         .select("name, description, thumbnail")
-        .eq("id", id)
+        .eq("slug", slug)
         .single();
 
     if (!product) {
@@ -45,6 +46,20 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 export default async function Page({ params }: PageProps) {
-    const { id } = await params;
-    return <ProductDetailPage productId={id} />;
+    const { slug } = await params;
+
+    // Verify that the slug matches a real product, otherwise 404
+    const supabase = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!
+    );
+    const { data: product } = await supabase
+        .from("products")
+        .select("slug")
+        .eq("slug", slug)
+        .single();
+
+    if (!product) notFound();
+
+    return <ProductDetailPage productSlug={slug} />;
 }

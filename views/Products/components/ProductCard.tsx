@@ -10,6 +10,7 @@ function formatVND(value: number) {
 
 export interface ProductCardData {
     id: string;
+    slug: string;
     name: string;
     brand: string;
     origin: string;
@@ -40,7 +41,7 @@ export function ProductCard({ product }: { product: ProductCardData }) {
             <meta itemProp="productID" content={product.id} />
 
             <Link
-                href={`/products/${product.id}`}
+                href={`/${product.slug}`}
                 className="absolute inset-0 z-10"
                 aria-label={`Xem chi tiết sản phẩm ${product.name}`}
                 itemProp="url"

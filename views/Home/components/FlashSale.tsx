@@ -132,7 +132,7 @@ export function FlashSale() {
 
                                 return (
                                     <Link
-                                        href={`/products/${item.product_id}`}
+                                        href={`/${item.products?.slug || item.product_id}`}
                                         key={item.id}
                                         className="flex-[0_0_80%] sm:flex-[0_0_45%] md:flex-[0_0_30%] lg:flex-[0_0_22%] min-w-0 flex flex-col bg-white dark:bg-[#1e2330] 
                                         border border-slate-200 dark:border-slate-700/50 rounded-xl

@@ -71,7 +71,7 @@ function getAttributeGroups(variants: ProductVariant[]) {
     );
 }
 
-export default function ProductDetailPage({ productId }: { productId: string }) {
+export default function ProductDetailPage({ productSlug }: { productSlug: string }) {
     const supabase = createClient();
     const { toast } = useToast();
     const router = useRouter();
@@ -93,18 +93,18 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
     useEffect(() => {
         async function fetchProduct() {
             setLoading(true);
-            const [productRes, variantRes] = await Promise.all([
-                supabase.from("products").select("*").eq("id", productId).single(),
-                supabase.from("product_variants").select("*").eq("product_id", productId).order("created_at"),
-            ]);
+            const productRes = await supabase.from("products").select("*").eq("slug", productSlug).single();
 
-            if (productRes.error) {
+            if (productRes.error || !productRes.data) {
                 toast({ title: "Không tìm thấy sản phẩm", variant: "destructive" });
                 setLoading(false);
                 return;
             }
 
-            setProduct(productRes.data);
+            const fetchedProduct = productRes.data;
+            const variantRes = await supabase.from("product_variants").select("*").eq("product_id", fetchedProduct.id).order("created_at");
+
+            setProduct(fetchedProduct);
             setVariants(variantRes.data || []);
 
             if (variantRes.data && variantRes.data.length > 0) {
@@ -113,8 +113,8 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
             setLoading(false);
         }
 
-        if (productId) fetchProduct();
-    }, [productId]);
+        if (productSlug) fetchProduct();
+    }, [productSlug]);
 
     // Check if description needs "Read More" button
     useEffect(() => {
@@ -848,7 +848,7 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
                 </div>
                 {/* ======= RELATED PRODUCTS ======= */}
                 <RelatedProducts
-                    currentProductId={productId}
+                    currentProductId={product.id}
                     brand={product.brand}
                     origin={product.origin}
                 />

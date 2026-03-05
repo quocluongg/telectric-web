@@ -24,7 +24,7 @@ export function CategoryShowcase({ categorySlug, categoryName, brandImages, bann
                 // Fetch top 8 products in this category
                 const { data } = await supabase
                     .from("products")
-                    .select("*, categories(name)")
+                    .select("*, categories(name), slug")
                     .eq("category_id", catData.id)
                     .limit(8);
                 if (data) setProducts(data);
@@ -85,7 +85,7 @@ export function CategoryShowcase({ categorySlug, categoryName, brandImages, bann
                         <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4">
                             {products.map((product) => (
                                 <Link
-                                    href={`/products/${product.id}`}
+                                    href={`/${product.slug}`}
                                     key={product.id}
                                     className="bg-white dark:bg-[#1e2330] rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden relative group/card flex flex-col"
                                 >

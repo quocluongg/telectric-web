@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 
 interface RelatedProduct {
     id: string;
+    slug: string;
     name: string;
     brand: string;
     origin: string;
@@ -32,7 +33,7 @@ function RelatedProductCard({ product }: { product: RelatedProduct }) {
 
     return (
         <Link
-            href={`/products/${product.id}`}
+            href={`/${product.slug}`}
             className="group relative bg-white dark:bg-[#1c212c] rounded-2xl border border-gray-200 dark:border-white/5 shadow-sm hover:border-electric-orange dark:hover:border-orange-500/50 hover:shadow-[0_8px_24px_rgba(249,115,22,0.1)] transition-all duration-300 overflow-hidden flex flex-col"
         >
             {/* Discount badge */}
@@ -163,7 +164,7 @@ export function RelatedProducts({ currentProductId, brand, origin }: RelatedProd
                         product_id,
                         price,
                         stock,
-                        products!inner(id, name, brand, origin, thumbnail, images, discount_percent)
+                        products!inner(id, name, brand, origin, thumbnail, images, discount_percent, slug)
                     `)
                     .neq("products.id", currentProductId)
                     .or(`products.brand.eq.${brand},products.origin.eq.${origin}`)
@@ -178,6 +179,7 @@ export function RelatedProducts({ currentProductId, brand, origin }: RelatedProd
                         if (!map.has(p.id)) {
                             map.set(p.id, {
                                 id: p.id,
+                                slug: p.slug,
                                 name: p.name,
                                 brand: p.brand,
                                 origin: p.origin,
