@@ -546,6 +546,7 @@ export default function ProductDetailPage({ productSlug }: { productSlug: string
                                                             </div>
                                                         )}
                                                         {(() => {
+                                                            if (options.length <= 1) return null;
                                                             const variantWithImage = variants.find(v => v.attributes[attrKey] === opt && v.image);
                                                             return variantWithImage?.image ? (
                                                                 // eslint-disable-next-line @next/next/no-img-element
