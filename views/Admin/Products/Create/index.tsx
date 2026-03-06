@@ -272,12 +272,20 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
         const combinations = validGroups.reduce(cartesian, [{}]);
         const currentVariants = form.getValues("variants");
 
+        // Helper: normalize key order for reliable comparison
+        const sortedStringify = (obj: Record<string, string>) => {
+            const sorted: Record<string, string> = {};
+            Object.keys(obj).sort().forEach(k => { sorted[k] = obj[k]; });
+            return JSON.stringify(sorted);
+        };
+
         const newVariants = combinations
             .filter((combo: any) => !deletedCombos.includes(JSON.stringify(combo)))
             .map((combo: any) => {
                 // Tìm xem biến thể này đã tồn tại chưa để giữ lại Price/Stock/SKU
+                const comboKey = sortedStringify(combo);
                 const existing = currentVariants.find((v: { attributes: Record<string, string> }) =>
-                    JSON.stringify(v.attributes) === JSON.stringify(combo)
+                    sortedStringify(v.attributes) === comboKey
                 );
 
                 return existing || {
