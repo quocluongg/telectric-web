@@ -26,6 +26,7 @@ interface ProductVariant {
     price: number;
     stock: number;
     vat_percent?: number;
+    image?: string | null;
     attributes: Record<string, string>;
     created_at: string;
 }
@@ -71,7 +72,7 @@ function getAttributeGroups(variants: ProductVariant[]) {
     );
 }
 
-export default function ProductDetailPage({ productId }: { productId: string }) {
+export default function ProductDetailPage({ productSlug }: { productSlug: string }) {
     const supabase = createClient();
     const { toast } = useToast();
     const router = useRouter();
@@ -93,18 +94,18 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
     useEffect(() => {
         async function fetchProduct() {
             setLoading(true);
-            const [productRes, variantRes] = await Promise.all([
-                supabase.from("products").select("*").eq("id", productId).single(),
-                supabase.from("product_variants").select("*").eq("product_id", productId).order("created_at"),
-            ]);
+            const productRes = await supabase.from("products").select("*").eq("slug", productSlug).single();
 
-            if (productRes.error) {
+            if (productRes.error || !productRes.data) {
                 toast({ title: "Không tìm thấy sản phẩm", variant: "destructive" });
                 setLoading(false);
                 return;
             }
 
-            setProduct(productRes.data);
+            const fetchedProduct = productRes.data;
+            const variantRes = await supabase.from("product_variants").select("*").eq("product_id", fetchedProduct.id).order("created_at");
+
+            setProduct(fetchedProduct);
             setVariants(variantRes.data || []);
 
             if (variantRes.data && variantRes.data.length > 0) {
@@ -113,8 +114,8 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
             setLoading(false);
         }
 
-        if (productId) fetchProduct();
-    }, [productId]);
+        if (productSlug) fetchProduct();
+    }, [productSlug]);
 
     // Check if description needs "Read More" button
     useEffect(() => {
@@ -531,7 +532,7 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
                                                         key={opt}
                                                         onClick={() => handleSelectAttribute(attrKey, opt)}
                                                         className={cn(
-                                                            "group relative px-5 py-2.5 rounded-xl border-2 text-sm font-bold transition-all duration-300 min-w-[76px]",
+                                                            "group relative px-5 py-2.5 rounded-xl border-2 text-sm font-bold transition-all duration-300 min-w-[76px] flex items-center gap-2",
                                                             isActive
                                                                 ? "border-orange-500 bg-orange-50 dark:bg-orange-500/10 text-orange-600 shadow-[0_0_15px_rgba(249,115,22,0.15)] ring-2 ring-orange-100 dark:ring-orange-500/20"
                                                                 : isAvailable
@@ -544,6 +545,14 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
                                                                 <Check className="h-2.5 w-2.5 stroke-[4px]" />
                                                             </div>
                                                         )}
+                                                        {(() => {
+                                                            if (options.length <= 1) return null;
+                                                            const variantWithImage = variants.find(v => v.attributes[attrKey] === opt && v.image);
+                                                            return variantWithImage?.image ? (
+                                                                // eslint-disable-next-line @next/next/no-img-element
+                                                                <img src={variantWithImage.image} alt="" className="w-10 h-10 rounded object-cover flex-shrink-0 border border-slate-200 dark:border-white/10" />
+                                                            ) : null;
+                                                        })()}
                                                         <span className={cn(
                                                             "relative z-10",
                                                             !isAvailable && !isActive && "text-slate-400 dark:text-slate-600 line-through decoration-slate-300/50 dark:decoration-slate-600/50"
@@ -848,12 +857,12 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
                 </div>
                 {/* ======= RELATED PRODUCTS ======= */}
                 <RelatedProducts
-                    currentProductId={productId}
+                    currentProductId={product.id}
                     brand={product.brand}
                     origin={product.origin}
                 />
             </div>
 
-        </DefaultLayout>
+        </DefaultLayout >
     );
 }

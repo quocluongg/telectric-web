@@ -69,6 +69,7 @@ export default async function AdminProductsPage({
             const stats = variantMap[p.id];
             return {
                 id: p.id,
+                slug: p.slug,
                 name: p.name,
                 brand: p.brand || "NoBrand",
                 origin: p.origin || "Việt Nam",

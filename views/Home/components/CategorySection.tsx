@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 interface SubCategory { id: string; name: string; slug: string; }
 interface Product {
     id: string;
+    slug: string;
     name: string;
     price: number | null;
     original_price: number | null;
@@ -56,7 +57,7 @@ const ProductCard = ({ p, accent }: { p: Product; accent: string }) => {
     const accentHex = COLOR_MAP[accent] || "#dc2626";
     return (
         <Link
-            href={`/products/${p.id}`}
+            href={`/${p.slug}`}
             className="bg-white dark:bg-[#1b2133] relative group flex flex-col h-full min-h-[280px] overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5 hover:z-10"
         >
             {/* Discount badge */}
@@ -197,7 +198,7 @@ export function CategorySection({
                 let pinnedList: any[] = [];
                 if (!activeSubSlug && pinnedProductIds && pinnedProductIds.length > 0) {
                     const { data: pp } = await supabase.from("products")
-                        .select("id, name, thumbnail, brand, category_id, discount_percent")
+                        .select("id, name, thumbnail, brand, category_id, discount_percent, slug")
                         .in("id", pinnedProductIds);
                     pinnedList = pp || [];
                 }
@@ -216,7 +217,7 @@ export function CategorySection({
 
                     if (matchedIds.length > 0) {
                         let query = supabase.from("products")
-                            .select("id, name, thumbnail, brand, category_id, discount_percent")
+                            .select("id, name, thumbnail, brand, category_id, discount_percent, slug")
                             .in("id", matchedIds)
                             .order("created_at", { ascending: false }).limit(limit);
 
@@ -244,7 +245,7 @@ export function CategorySection({
                     const dp = p.discount_percent || 0;
                     let price = min, orig = null;
                     if (dp > 0 && min) { orig = min; price = min * (1 - dp / 100); }
-                    return { id: p.id, name: p.name, thumbnail: p.thumbnail, brand: p.brand, price, original_price: orig, discount_percent: dp };
+                    return { id: p.id, slug: p.slug, name: p.name, thumbnail: p.thumbnail, brand: p.brand, price, original_price: orig, discount_percent: dp };
                 }));
             } catch (err) {
                 console.error("Error in fetchAll:", err);

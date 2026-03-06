@@ -36,6 +36,7 @@ import {
 // ============================================
 export interface ProductRow {
     id: string;
+    slug: string;
     name: string;
     brand: string;
     origin: string;
@@ -161,7 +162,7 @@ function ProductRow({
                     </div>
                     <div className="min-w-0">
                         <Link
-                            href={`/products/${product.id}`}
+                            href={`/${product.slug}`}
                             className="font-semibold text-sm text-slate-900 dark:text-white hover:text-orange-600 transition-colors line-clamp-1"
                         >
                             {product.name}
@@ -232,7 +233,7 @@ function ProductRow({
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-48 dark:bg-[#1e2330] dark:border-white/5">
-                        <DropdownMenuItem onClick={() => router.push(`/products/${product.id}`)}>
+                        <DropdownMenuItem onClick={() => router.push(`/${product.slug}`)}>
                             <Eye className="h-4 w-4 mr-2" /> Xem chi tiết
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => router.push(`/admin/products/create?edit=${product.id}`)}>

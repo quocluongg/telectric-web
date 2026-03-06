@@ -82,7 +82,7 @@ export const MainHeader = () => {
             setIsSearching(true);
             const { data, error } = await supabase
                 .from("products")
-                .select("id, name, thumbnail")
+                .select("id, name, thumbnail, slug")
                 .ilike("name", `%${debouncedSearchQuery.trim()}%`)
                 .limit(5);
 
@@ -104,9 +104,9 @@ export const MainHeader = () => {
         }
     };
 
-    const handleResultClick = (productId: string) => {
+    const handleResultClick = (productSlug: string) => {
         setDropdownOpen(false);
-        router.push(`/products/${productId}`);
+        router.push(`/${productSlug}`);
     };
 
     const openAuthModal = (view: "login" | "register") => {
@@ -204,7 +204,7 @@ export const MainHeader = () => {
                                             {searchResults.map((product) => (
                                                 <li key={product.id}>
                                                     <button
-                                                        onClick={() => handleResultClick(product.id)}
+                                                        onClick={() => handleResultClick(product.slug)}
                                                         className="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-[#2a3040] transition-colors text-left group/item"
                                                     >
                                                         {product.thumbnail ? (

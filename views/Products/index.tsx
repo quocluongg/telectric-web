@@ -132,7 +132,7 @@ function ProductsPageInner() {
                 if (isAborted) return;
 
                 // Build query
-                let selectStr = "id, name, brand, origin, thumbnail, category_id, created_at, discount_percent";
+                let selectStr = "id, name, brand, origin, thumbnail, category_id, created_at, discount_percent, slug";
                 if (categoryId) {
                     selectStr += ", product_categories_mapping!inner(category_id)";
                 }
@@ -197,6 +197,7 @@ function ProductsPageInner() {
                         const catNames = prodCatMap[p.id] || [];
                         return {
                             id: p.id,
+                            slug: p.slug,
                             name: p.name,
                             brand: p.brand,
                             origin: p.origin,
