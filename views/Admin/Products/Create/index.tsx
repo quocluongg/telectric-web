@@ -37,7 +37,8 @@ const productSchema = z.object({
         price: z.coerce.number().min(0, "Giá không được âm"),
         stock: z.coerce.number().min(0, "Kho không được âm"),
         vat_percent: z.coerce.number().min(0, "VAT không được âm").max(100, "VAT tối đa 100").default(0),
-        sku: z.string().optional()
+        sku: z.string().optional(),
+        image: z.string().optional()
     })).default([])
 }) as any;
 
@@ -228,7 +229,8 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
                 price: v.price,
                 stock: v.stock,
                 vat_percent: v.vat_percent || 0,
-                sku: v.sku || ""
+                sku: v.sku || "",
+                image: v.image || ""
             }));
 
             // Reset form with loaded data
@@ -293,7 +295,8 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
                     price: 0,
                     stock: 0,
                     vat_percent: 0,
-                    sku: ""
+                    sku: "",
+                    image: ""
                 };
             });
 
@@ -364,6 +367,7 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
                                 stock: Number(v.stock) || 0,
                                 vat_percent: Number(v.vat_percent || 0),
                                 attributes: v.attributes,
+                                image: v.image || null,
                             },
                         });
                     } else {
@@ -374,6 +378,7 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
                             stock: Number(v.stock) || 0,
                             vat_percent: Number(v.vat_percent || 0),
                             attributes: v.attributes,
+                            image: v.image || null,
                         });
                     }
                 }
@@ -477,6 +482,7 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
                         stock: Number(v.stock) || 0,
                         vat_percent: Number(v.vat_percent || 0),
                         attributes: v.attributes,
+                        image: v.image || null,
                     }));
 
                     const { error: variantError } = await supabase
@@ -574,6 +580,21 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
     const removeGalleryImage = (index: number) => {
         const current = form.getValues("images") || [];
         form.setValue("images", current.filter((_: string, i: number) => i !== index));
+    };
+
+    const [uploadingVariantIdx, setUploadingVariantIdx] = useState<number | null>(null);
+
+    const handleVariantImageUpload = async (file: File, variantIdx: number) => {
+        if (file.size > MAX_FILE_SIZE) {
+            toast({ title: "File quá lớn", description: "Tối đa 5MB", variant: "destructive" });
+            return;
+        }
+        setUploadingVariantIdx(variantIdx);
+        const url = await uploadFileToSupabase(file);
+        if (url) {
+            form.setValue(`variants.${variantIdx}.image`, url);
+        }
+        setUploadingVariantIdx(null);
     };
 
     // Loading state for edit mode
@@ -870,6 +891,7 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
                                                 <thead className="bg-slate-50 dark:bg-[#0f1219] border-b border-slate-200 dark:border-white/5">
                                                     <tr>
                                                         <th className="p-3 font-semibold">Biến thể</th>
+                                                        <th className="p-3 font-semibold w-16 text-center">Ảnh</th>
                                                         <th className="p-3 font-semibold w-32">Giá bán</th>
                                                         <th className="p-3 font-semibold w-28">Kho hàng</th>
                                                         <th className="p-3 font-semibold w-28">Thuế VAT (%)</th>
@@ -882,6 +904,40 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
                                                         <tr key={vIdx} className="border-b border-slate-200 dark:border-white/5 last:border-0 hover:bg-slate-50/50 dark:hover:bg-slate-800/50">
                                                             <td className="p-3 font-medium text-slate-700 dark:text-slate-300">
                                                                 {Object.values(variant.attributes).join(" / ")}
+                                                            </td>
+                                                            <td className="p-3">
+                                                                <div className="relative w-12 h-12 mx-auto">
+                                                                    {form.watch(`variants.${vIdx}.image`) ? (
+                                                                        <div className="relative w-12 h-12 rounded-lg overflow-hidden border border-slate-200 dark:border-white/10 group">
+                                                                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                                                                            <img src={form.watch(`variants.${vIdx}.image`)} alt="" className="w-full h-full object-cover" />
+                                                                            <button
+                                                                                type="button"
+                                                                                onClick={() => form.setValue(`variants.${vIdx}.image`, "")}
+                                                                                className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity"
+                                                                            >
+                                                                                <X className="h-3 w-3 text-white" />
+                                                                            </button>
+                                                                        </div>
+                                                                    ) : uploadingVariantIdx === vIdx ? (
+                                                                        <div className="w-12 h-12 rounded-lg border-2 border-dashed border-slate-300 dark:border-white/10 flex items-center justify-center">
+                                                                            <Loader2 className="h-4 w-4 animate-spin text-orange-500" />
+                                                                        </div>
+                                                                    ) : (
+                                                                        <label className="w-12 h-12 rounded-lg border-2 border-dashed border-slate-300 dark:border-white/10 flex items-center justify-center cursor-pointer hover:border-orange-400 hover:bg-orange-50/50 dark:hover:bg-orange-500/5 transition-colors">
+                                                                            <ImageIcon className="h-4 w-4 text-slate-400" />
+                                                                            <input
+                                                                                type="file"
+                                                                                accept="image/png, image/jpeg, image/webp"
+                                                                                className="hidden"
+                                                                                onChange={(e) => {
+                                                                                    if (e.target.files?.[0]) handleVariantImageUpload(e.target.files[0], vIdx);
+                                                                                    e.target.value = "";
+                                                                                }}
+                                                                            />
+                                                                        </label>
+                                                                    )}
+                                                                </div>
                                                             </td>
                                                             <td className="p-3">
                                                                 <Input type="number" {...form.register(`variants.${vIdx}.price`)} className="h-9 bg-white dark:bg-[#0f1219] border-slate-200 dark:border-white/5" />

@@ -26,6 +26,7 @@ interface ProductVariant {
     price: number;
     stock: number;
     vat_percent?: number;
+    image?: string | null;
     attributes: Record<string, string>;
     created_at: string;
 }
@@ -531,7 +532,7 @@ export default function ProductDetailPage({ productSlug }: { productSlug: string
                                                         key={opt}
                                                         onClick={() => handleSelectAttribute(attrKey, opt)}
                                                         className={cn(
-                                                            "group relative px-5 py-2.5 rounded-xl border-2 text-sm font-bold transition-all duration-300 min-w-[76px]",
+                                                            "group relative px-5 py-2.5 rounded-xl border-2 text-sm font-bold transition-all duration-300 min-w-[76px] flex items-center gap-2",
                                                             isActive
                                                                 ? "border-orange-500 bg-orange-50 dark:bg-orange-500/10 text-orange-600 shadow-[0_0_15px_rgba(249,115,22,0.15)] ring-2 ring-orange-100 dark:ring-orange-500/20"
                                                                 : isAvailable
@@ -544,6 +545,13 @@ export default function ProductDetailPage({ productSlug }: { productSlug: string
                                                                 <Check className="h-2.5 w-2.5 stroke-[4px]" />
                                                             </div>
                                                         )}
+                                                        {(() => {
+                                                            const variantWithImage = variants.find(v => v.attributes[attrKey] === opt && v.image);
+                                                            return variantWithImage?.image ? (
+                                                                // eslint-disable-next-line @next/next/no-img-element
+                                                                <img src={variantWithImage.image} alt="" className="w-10 h-10 rounded object-cover flex-shrink-0 border border-slate-200 dark:border-white/10" />
+                                                            ) : null;
+                                                        })()}
                                                         <span className={cn(
                                                             "relative z-10",
                                                             !isAvailable && !isActive && "text-slate-400 dark:text-slate-600 line-through decoration-slate-300/50 dark:decoration-slate-600/50"
@@ -854,6 +862,6 @@ export default function ProductDetailPage({ productSlug }: { productSlug: string
                 />
             </div>
 
-        </DefaultLayout>
+        </DefaultLayout >
     );
 }
