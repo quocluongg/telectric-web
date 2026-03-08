@@ -49,20 +49,22 @@ export default async function AdminProductsPage({
 
         const { data: variants } = await supabase
             .from("product_variants")
-            .select("product_id, price, stock")
+            .select("product_id, price, stock, discount_percent")
             .in("product_id", productIds);
 
         // Aggregate per product
-        const variantMap: Record<string, { count: number; minPrice: number; maxPrice: number; totalStock: number }> = {};
+        const variantMap: Record<string, { count: number; minPrice: number; maxPrice: number; totalStock: number; maxDiscount: number }> = {};
         (variants || []).forEach((v: any) => {
             if (!variantMap[v.product_id]) {
-                variantMap[v.product_id] = { count: 0, minPrice: Infinity, maxPrice: 0, totalStock: 0 };
+                variantMap[v.product_id] = { count: 0, minPrice: Infinity, maxPrice: 0, totalStock: 0, maxDiscount: 0 };
             }
             const entry = variantMap[v.product_id];
+            const vdp = v.discount_percent || 0;
             entry.count++;
             entry.minPrice = Math.min(entry.minPrice, Number(v.price));
             entry.maxPrice = Math.max(entry.maxPrice, Number(v.price));
             entry.totalStock += Number(v.stock);
+            if (vdp > entry.maxDiscount) entry.maxDiscount = vdp;
         });
 
         productsWithStats = products.map((p: any) => {
@@ -81,7 +83,7 @@ export default async function AdminProductsPage({
                 min_price: stats ? stats.minPrice : 0,
                 max_price: stats ? stats.maxPrice : 0,
                 total_stock: stats?.totalStock || 0,
-                discount_percent: p.discount_percent || 0,
+                discount_percent: stats?.maxDiscount || 0,
             };
         });
     }

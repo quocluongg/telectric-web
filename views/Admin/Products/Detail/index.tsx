@@ -26,6 +26,7 @@ interface ProductVariant {
     price: number;
     stock: number;
     vat_percent?: number;
+    discount_percent?: number;
     image?: string | null;
     attributes: Record<string, string>;
     created_at: string;
@@ -41,7 +42,6 @@ interface Product {
     images: string[];
     created_at: string;
     updated_at: string;
-    discount_percent?: number | null;
     warranty_months?: number;
 
 }
@@ -143,7 +143,7 @@ export default function ProductDetailPage({ productSlug }: { productSlug: string
         ) || null;
     }, [variants, selectedAttributes]);
 
-    const dp = product?.discount_percent || 0;
+    const dp = selectedVariant?.discount_percent || 0;
 
     const actualPrice = useMemo(() => {
         if (!selectedVariant) return null;
@@ -154,14 +154,18 @@ export default function ProductDetailPage({ productSlug }: { productSlug: string
 
     const priceRange = useMemo(() => {
         if (!variants.length) return null;
-        const prices = variants.map(v => dp > 0 ? v.price * (1 - dp / 100) : v.price);
+        const prices = variants.map(v => {
+            const vdp = v.discount_percent || 0;
+            return vdp > 0 ? v.price * (1 - vdp / 100) : v.price;
+        });
         const originalPrices = variants.map(v => v.price);
         const min = Math.min(...prices);
         const max = Math.max(...prices);
         const originalMin = Math.min(...originalPrices);
         const originalMax = Math.max(...originalPrices);
-        return { min, max, originalMin, originalMax };
-    }, [variants, dp]);
+        const hasAnyDiscount = variants.some(v => (v.discount_percent || 0) > 0);
+        return { min, max, originalMin, originalMax, hasAnyDiscount };
+    }, [variants]);
 
     // ===== FLASH SALE — Must be after selectedVariant/priceRange =====
     const [flashSale, setFlashSale] = useState<any>(null);
@@ -504,6 +508,9 @@ export default function ProductDetailPage({ productSlug }: { productSlug: string
                                             }
                                         </div>
                                     )}
+                                    {priceRange.hasAnyDiscount && !dp && (
+                                        <p className="text-xs text-orange-500 dark:text-orange-400 mt-1 font-medium">Có giảm giá theo phân loại</p>
+                                    )}
                                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium">Chọn phân loại để xem giá chính xác</p>
                                 </div>
                             ) : (
@@ -748,52 +755,55 @@ export default function ProductDetailPage({ productSlug }: { productSlug: string
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-gray-100 dark:divide-white/5">
-                                            {variants.map(v => (
-                                                <tr
-                                                    key={v.id}
-                                                    className={cn(
-                                                        "transition-colors cursor-pointer group",
-                                                        selectedVariant?.id === v.id
-                                                            ? "bg-orange-50/50 dark:bg-orange-500/10"
-                                                            : "hover:bg-slate-50 dark:hover:bg-[#2a3040] bg-white dark:bg-[#1c212c]"
-                                                    )}
-                                                    onClick={() => setSelectedAttributes(v.attributes)}
-                                                >
-                                                    <td className="px-6 py-4 font-medium">
-                                                        {Object.entries(v.attributes).map(([k, val]) => (
-                                                            <span key={k} className="inline-block bg-slate-100 dark:bg-slate-800 text-industrial-black dark:text-slate-300 text-[11px] px-2.5 py-1 rounded-md mr-1.5 mb-1.5 font-semibold tracking-wide border border-transparent dark:border-white/5">
-                                                                {k}: {val}
-                                                            </span>
-                                                        ))}
-                                                    </td>
-                                                    <td className="px-6 py-4 text-slate-500 dark:text-slate-400 font-mono text-xs">{v.sku || "—"}</td>
-                                                    <td className="px-6 py-4 text-right">
-                                                        <div className="flex flex-col items-end">
-                                                            <span className="font-black text-red-600 dark:text-red-500">
-                                                                {formatVND(dp > 0 ? v.price * (1 - dp / 100) : v.price)}
-                                                            </span>
-                                                            {dp > 0 && (
-                                                                <span className="text-[11px] text-slate-400 dark:text-slate-1000 line-through font-mono mt-0.5">
-                                                                    {formatVND(v.price)}
+                                            {variants.map(v => {
+                                                const vdp = v.discount_percent || 0;
+                                                return (
+                                                    <tr
+                                                        key={v.id}
+                                                        className={cn(
+                                                            "transition-colors cursor-pointer group",
+                                                            selectedVariant?.id === v.id
+                                                                ? "bg-orange-50/50 dark:bg-orange-500/10"
+                                                                : "hover:bg-slate-50 dark:hover:bg-[#2a3040] bg-white dark:bg-[#1c212c]"
+                                                        )}
+                                                        onClick={() => setSelectedAttributes(v.attributes)}
+                                                    >
+                                                        <td className="px-6 py-4 font-medium">
+                                                            {Object.entries(v.attributes).map(([k, val]) => (
+                                                                <span key={k} className="inline-block bg-slate-100 dark:bg-slate-800 text-industrial-black dark:text-slate-300 text-[11px] px-2.5 py-1 rounded-md mr-1.5 mb-1.5 font-semibold tracking-wide border border-transparent dark:border-white/5">
+                                                                    {k}: {val}
                                                                 </span>
-                                                            )}
-                                                        </div>
-                                                    </td>
-                                                    <td className="px-6 py-4 text-right font-bold text-industrial-black dark:text-slate-300">{v.stock}</td>
-                                                    <td className="px-6 py-4 text-center">
-                                                        <span className={cn(
-                                                            "text-[10px] uppercase font-black px-2.5 py-1 rounded-full tracking-wider shadow-sm",
-                                                            v.stock > 10
-                                                                ? "bg-green-100 text-green-700 dark:bg-green-500/10 dark:text-green-400 border border-green-200 dark:border-green-500/20"
-                                                                : v.stock > 0
-                                                                    ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-500/10 dark:text-yellow-400 border border-yellow-200 dark:border-yellow-500/20"
-                                                                    : "bg-red-100 text-red-700 dark:bg-red-500/10 dark:text-red-400 border border-red-200 dark:border-red-500/20"
-                                                        )}>
-                                                            {v.stock > 10 ? "Còn hàng" : v.stock > 0 ? "Sắp hết" : "Hết hàng"}
-                                                        </span>
-                                                    </td>
-                                                </tr>
-                                            ))}
+                                                            ))}
+                                                        </td>
+                                                        <td className="px-6 py-4 text-slate-500 dark:text-slate-400 font-mono text-xs">{v.sku || "—"}</td>
+                                                        <td className="px-6 py-4 text-right">
+                                                            <div className="flex flex-col items-end">
+                                                                <span className="font-black text-red-600 dark:text-red-500">
+                                                                    {formatVND(vdp > 0 ? v.price * (1 - vdp / 100) : v.price)}
+                                                                </span>
+                                                                {vdp > 0 && (
+                                                                    <span className="text-[11px] text-slate-400 dark:text-slate-1000 line-through font-mono mt-0.5">
+                                                                        {formatVND(v.price)}
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                        </td>
+                                                        <td className="px-6 py-4 text-right font-bold text-industrial-black dark:text-slate-300">{v.stock}</td>
+                                                        <td className="px-6 py-4 text-center">
+                                                            <span className={cn(
+                                                                "text-[10px] uppercase font-black px-2.5 py-1 rounded-full tracking-wider shadow-sm",
+                                                                v.stock > 10
+                                                                    ? "bg-green-100 text-green-700 dark:bg-green-500/10 dark:text-green-400 border border-green-200 dark:border-green-500/20"
+                                                                    : v.stock > 0
+                                                                        ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-500/10 dark:text-yellow-400 border border-yellow-200 dark:border-yellow-500/20"
+                                                                        : "bg-red-100 text-red-700 dark:bg-red-500/10 dark:text-red-400 border border-red-200 dark:border-red-500/20"
+                                                            )}>
+                                                                {v.stock > 10 ? "Còn hàng" : v.stock > 0 ? "Sắp hết" : "Hết hàng"}
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                );
+                                            })}
                                         </tbody>
                                     </table>
                                 </div>

@@ -103,16 +103,14 @@ export default function CheckoutPage() {
             // ── Step C: Fetch real prices for non-graced suspects ──
             const { data: variantData } = await supabase
                 .from("product_variants")
-                .select("id, price, vat_percent, products(discount_percent)")
+                .select("id, price, vat_percent, discount_percent")
                 .in("id", variantIds);
 
             const variantPriceMap: Record<string, number> = {};
             (variantData || []).forEach((v: any) => {
                 const basePrice = v.price;
                 const vat = v.vat_percent || 0;
-                // Since `products` could be an array if the DB relation is weird, handle it safely or assume single
-                const discount = Array.isArray(v.products) ? v.products[0]?.discount_percent : v.products?.discount_percent;
-                const discountVal = discount || 0;
+                const discountVal = v.discount_percent || 0;
 
                 // formula: (price - discount%) + VAT%
                 const discountedPrice = basePrice * (1 - discountVal / 100);

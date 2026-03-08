@@ -132,7 +132,7 @@ function ProductsPageInner() {
                 if (isAborted) return;
 
                 // Build query
-                let selectStr = "id, name, brand, origin, thumbnail, category_id, created_at, discount_percent, slug";
+                let selectStr = "id, name, brand, origin, thumbnail, category_id, created_at, slug";
                 if (categoryId) {
                     selectStr += ", product_categories_mapping!inner(category_id)";
                 }
@@ -172,7 +172,7 @@ function ProductsPageInner() {
                 if (rows && rows.length > 0) {
                     const ids = rows.map((p: any) => p.id);
                     const [{ data: variants }, { data: allMappings }] = await Promise.all([
-                        supabase.from("product_variants").select("product_id, price, stock").in("product_id", ids),
+                        supabase.from("product_variants").select("product_id, price, stock, discount_percent").in("product_id", ids),
                         supabase.from("product_categories_mapping").select("product_id, category_id, categories(name)").in("product_id", ids),
                     ]);
 
@@ -184,12 +184,16 @@ function ProductsPageInner() {
                         if (m.categories?.name) prodCatMap[m.product_id].push(m.categories.name);
                     });
 
-                    const vMap: Record<string, { prices: number[]; stocks: number[]; count: number }> = {};
+                    const vMap: Record<string, { prices: number[]; discountedPrices: number[]; stocks: number[]; count: number; maxDiscount: number }> = {};
                     (variants || []).forEach((v: any) => {
-                        if (!vMap[v.product_id]) vMap[v.product_id] = { prices: [], stocks: [], count: 0 };
+                        if (!vMap[v.product_id]) vMap[v.product_id] = { prices: [], discountedPrices: [], stocks: [], count: 0, maxDiscount: 0 };
+                        const vdp = v.discount_percent || 0;
+                        const discountedPrice = vdp > 0 ? v.price * (1 - vdp / 100) : v.price;
                         vMap[v.product_id].prices.push(v.price);
+                        vMap[v.product_id].discountedPrices.push(discountedPrice);
                         vMap[v.product_id].stocks.push(v.stock);
                         vMap[v.product_id].count++;
+                        if (vdp > vMap[v.product_id].maxDiscount) vMap[v.product_id].maxDiscount = vdp;
                     });
 
                     let enriched: ProductCardData[] = rows.map((p: any) => {
@@ -203,11 +207,11 @@ function ProductsPageInner() {
                             origin: p.origin,
                             thumbnail: p.thumbnail,
                             category_name: catNames.length > 0 ? catNames[0] : null,
-                            min_price: v ? Math.min(...v.prices) : 0,
-                            max_price: v ? Math.max(...v.prices) : 0,
+                            min_price: v ? Math.min(...v.discountedPrices) : 0,
+                            max_price: v ? Math.max(...v.discountedPrices) : 0,
                             total_stock: v ? v.stocks.reduce((a, b: number) => a + b, 0) : 0,
                             variant_count: v ? v.count : 0,
-                            discount_percent: p.discount_percent || 0,
+                            discount_percent: v ? v.maxDiscount : 0,
                         };
                     });
 

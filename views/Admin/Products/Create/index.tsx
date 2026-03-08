@@ -24,7 +24,6 @@ const productSchema = z.object({
     brand: z.string().min(1, "Vui lòng nhập thương hiệu"),
     origin: z.string().min(1, "Vui lòng nhập xuất xứ"),
     warranty_months: z.coerce.number().min(0, "Không được âm").default(12),
-    discount_percent: z.coerce.number().min(0, "Không được âm").max(100, "Tối đa 100%").default(0),
     category_ids: z.array(z.string()).default([]),
     thumbnail: z.string().min(1, "Ảnh bìa là bắt buộc"),
     images: z.array(z.string()).default([]),
@@ -37,6 +36,7 @@ const productSchema = z.object({
         price: z.coerce.number().min(0, "Giá không được âm"),
         stock: z.coerce.number().min(0, "Kho không được âm"),
         vat_percent: z.coerce.number().min(0, "VAT không được âm").max(100, "VAT tối đa 100").default(0),
+        discount_percent: z.coerce.number().min(0, "Không được âm").max(100, "Tối đa 100%").default(0),
         sku: z.string().optional(),
         image: z.string().optional()
     })).default([])
@@ -103,7 +103,6 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
             brand: "NoBrand",
             origin: "Việt Nam",
             warranty_months: 12,
-            discount_percent: 0,
             category_id: null,
             thumbnail: "",
             images: [],
@@ -164,7 +163,6 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
                 brand: "NoBrand",
                 origin: "Việt Nam",
                 warranty_months: 12,
-                discount_percent: 0,
                 category_ids: [],
                 description: "",
                 thumbnail: "",
@@ -229,6 +227,7 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
                 price: v.price,
                 stock: v.stock,
                 vat_percent: v.vat_percent || 0,
+                discount_percent: v.discount_percent || 0,
                 sku: v.sku || "",
                 image: v.image || ""
             }));
@@ -239,7 +238,6 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
                 brand: product.brand || "NoBrand",
                 origin: product.origin || "Việt Nam",
                 warranty_months: product.warranty_months ?? 12,
-                discount_percent: product.discount_percent ?? 0,
                 category_ids: categoryIds,
                 description: product.description || "",
                 thumbnail: product.thumbnail || "",
@@ -295,6 +293,7 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
                     price: 0,
                     stock: 0,
                     vat_percent: 0,
+                    discount_percent: 0,
                     sku: "",
                     image: ""
                 };
@@ -318,7 +317,6 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
                         brand: values.brand,
                         origin: values.origin,
                         warranty_months: values.warranty_months ?? 12,
-                        discount_percent: values.discount_percent ?? 0,
                         category_id: values.category_id || null,
                         thumbnail: values.thumbnail,
                         images: values.images || [],
@@ -366,6 +364,7 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
                                 price: Number(v.price) || 0,
                                 stock: Number(v.stock) || 0,
                                 vat_percent: Number(v.vat_percent || 0),
+                                discount_percent: Number(v.discount_percent || 0),
                                 attributes: v.attributes,
                                 image: v.image || null,
                             },
@@ -377,6 +376,7 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
                             price: Number(v.price) || 0,
                             stock: Number(v.stock) || 0,
                             vat_percent: Number(v.vat_percent || 0),
+                            discount_percent: Number(v.discount_percent || 0),
                             attributes: v.attributes,
                             image: v.image || null,
                         });
@@ -456,7 +456,6 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
                         brand: values.brand,
                         origin: values.origin,
                         warranty_months: values.warranty_months ?? 12,
-                        discount_percent: values.discount_percent ?? 0,
                         category_id: values.category_ids[0] || null, // Fallback for legacy column
                         thumbnail: values.thumbnail,
                         images: values.images || [],
@@ -481,6 +480,7 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
                         price: Number(v.price) || 0,
                         stock: Number(v.stock) || 0,
                         vat_percent: Number(v.vat_percent || 0),
+                        discount_percent: Number(v.discount_percent || 0),
                         attributes: v.attributes,
                         image: v.image || null,
                     }));
@@ -626,7 +626,7 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
                                 <CardContent className="space-y-4">
                                     <InputField control={form.control} name="name" label="Tên sản phẩm" placeholder="Ví dụ: Áo thun nam co giãn..." />
 
-                                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                                    <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
                                         {/* Brand Logo Selector */}
                                         <FormField
                                             control={form.control}
@@ -705,40 +705,6 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
                                                     <FormMessage />
                                                 </FormItem>
                                             )}
-                                        />
-                                        <FormField
-                                            control={form.control}
-                                            name="discount_percent"
-                                            render={({ field }) => {
-                                                const variants = form.watch("variants") || [];
-                                                const basePrice = variants.length > 0 ? Number(variants[0].price) || 0 : 0;
-                                                const currentPercent = field.value || 0;
-                                                const computedAmount = basePrice > 0 ? (basePrice * currentPercent) / 100 : 0;
-
-                                                return (
-                                                    <FormItem>
-                                                        <FormLabel>Khuyến mãi</FormLabel>
-                                                        <div className="flex gap-2">
-                                                            <div className="relative flex-1">
-                                                                <Input
-                                                                    type="number"
-                                                                    min={0} max={100}
-                                                                    placeholder="%"
-                                                                    {...field}
-                                                                    className="h-10 pr-6 pl-2 bg-white dark:bg-[#0f1219] border-slate-200 dark:border-white/5"
-                                                                />
-                                                                <span className="absolute right-2 top-2.5 text-slate-400 text-sm">%</span>
-                                                            </div>
-                                                        </div>
-                                                        {currentPercent > 0 && basePrice > 0 && (
-                                                            <p className="text-[10px] text-orange-600 mt-1">
-                                                                Sản phẩm giảm {currentPercent}%, tương đương tiết kiệm {new Intl.NumberFormat('vi-VN').format(Math.round(computedAmount))}đ.
-                                                            </p>
-                                                        )}
-                                                        <FormMessage />
-                                                    </FormItem>
-                                                )
-                                            }}
                                         />
                                     </div>
 
@@ -895,6 +861,7 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
                                                         <th className="p-3 font-semibold w-32">Giá bán</th>
                                                         <th className="p-3 font-semibold w-28">Kho hàng</th>
                                                         <th className="p-3 font-semibold w-28">Thuế VAT (%)</th>
+                                                        <th className="p-3 font-semibold w-28">Giảm giá (%)</th>
                                                         <th className="p-3 font-semibold">Mã SKU</th>
                                                         <th className="p-3 font-semibold w-12 text-center">Xóa</th>
                                                     </tr>
@@ -947,6 +914,9 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
                                                             </td>
                                                             <td className="p-3">
                                                                 <Input type="number" {...form.register(`variants.${vIdx}.vat_percent`)} className="h-9 bg-white dark:bg-[#0f1219] border-slate-200 dark:border-white/5" />
+                                                            </td>
+                                                            <td className="p-3">
+                                                                <Input type="number" min={0} max={100} {...form.register(`variants.${vIdx}.discount_percent`)} placeholder="0" className="h-9 bg-white dark:bg-[#0f1219] border-slate-200 dark:border-white/5" />
                                                             </td>
                                                             <td className="p-3">
                                                                 <Input {...form.register(`variants.${vIdx}.sku`)} placeholder="SKU..." className="h-9 bg-white dark:bg-[#0f1219] border-slate-200 dark:border-white/5" />

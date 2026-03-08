@@ -28,9 +28,9 @@ export function ProductCard({ product }: { product: ProductCardData }) {
     const hasMultiplePrices = product.min_price !== product.max_price;
     const dp = product.discount_percent || 0;
 
-    // According to the original visual, only the final price is shown
-    const minPrice = dp > 0 ? product.min_price * (1 - dp / 100) : product.min_price;
-    const maxPrice = dp > 0 ? product.max_price * (1 - dp / 100) : product.max_price;
+    // min_price / max_price are already discounted from upstream
+    const minPrice = product.min_price;
+    const maxPrice = product.max_price;
 
     return (
         <article

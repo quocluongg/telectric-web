@@ -198,7 +198,7 @@ export function CategorySection({
                 let pinnedList: any[] = [];
                 if (!activeSubSlug && pinnedProductIds && pinnedProductIds.length > 0) {
                     const { data: pp } = await supabase.from("products")
-                        .select("id, name, thumbnail, brand, category_id, discount_percent, slug")
+                        .select("id, name, thumbnail, brand, category_id, slug")
                         .in("id", pinnedProductIds);
                     pinnedList = pp || [];
                 }
@@ -217,7 +217,7 @@ export function CategorySection({
 
                     if (matchedIds.length > 0) {
                         let query = supabase.from("products")
-                            .select("id, name, thumbnail, brand, category_id, discount_percent, slug")
+                            .select("id, name, thumbnail, brand, category_id, slug")
                             .in("id", matchedIds)
                             .order("created_at", { ascending: false }).limit(limit);
 
@@ -232,19 +232,28 @@ export function CategorySection({
 
                 const ids = combined.map((p: any) => p.id);
                 const { data: variants } = await supabase.from("product_variants")
-                    .select("product_id, price").in("product_id", ids);
+                    .select("product_id, price, discount_percent").in("product_id", ids);
 
-                const priceMap: Record<string, number> = {};
+                const priceMap: Record<string, { minPrice: number; origPrice: number; maxDiscount: number }> = {};
                 (variants || []).forEach((v: any) => {
-                    if (priceMap[v.product_id] === undefined || v.price < priceMap[v.product_id])
-                        priceMap[v.product_id] = v.price;
+                    const vdp = v.discount_percent || 0;
+                    const discountedPrice = vdp > 0 ? v.price * (1 - vdp / 100) : v.price;
+                    if (!priceMap[v.product_id]) {
+                        priceMap[v.product_id] = { minPrice: discountedPrice, origPrice: v.price, maxDiscount: vdp };
+                    } else {
+                        if (discountedPrice < priceMap[v.product_id].minPrice) {
+                            priceMap[v.product_id].minPrice = discountedPrice;
+                            priceMap[v.product_id].origPrice = v.price;
+                        }
+                        if (vdp > priceMap[v.product_id].maxDiscount) priceMap[v.product_id].maxDiscount = vdp;
+                    }
                 });
 
                 setProducts(combined.map((p: any) => {
-                    const min = priceMap[p.id] ?? null;
-                    const dp = p.discount_percent || 0;
-                    let price = min, orig = null;
-                    if (dp > 0 && min) { orig = min; price = min * (1 - dp / 100); }
+                    const info = priceMap[p.id];
+                    const price = info?.minPrice ?? null;
+                    const orig = info && info.maxDiscount > 0 ? info.origPrice : null;
+                    const dp = info?.maxDiscount || 0;
                     return { id: p.id, slug: p.slug, name: p.name, thumbnail: p.thumbnail, brand: p.brand, price, original_price: orig, discount_percent: dp };
                 }));
             } catch (err) {
