@@ -34,7 +34,7 @@ export default function NewsDetailPage({ article, relatedArticles }: NewsDetailP
 
     return (
         <div className="bg-gray-50 dark:bg-[#0a0d14] min-h-screen">
-            <div className="container mx-auto max-w-7xl px-4 py-8">
+            <div className="container mx-auto px-4 py-8 max-w-7xl">
                 <div className="flex flex-col lg:flex-row gap-8">
                     {/* Main Content */}
                     <article className="flex-1">
@@ -69,14 +69,14 @@ export default function NewsDetailPage({ article, relatedArticles }: NewsDetailP
                                         overflow: hidden;
                                         word-wrap: break-word;
                                         overflow-wrap: break-word;
+                                        text-align: justify;
+                                        hyphens: none;
                                     }
                                     .dark .article-body {
                                         color: #94a3b8;
                                     }
                                     .article-body > p, .article-body > h1, .article-body > h2, .article-body > h3, .article-body > h4, .article-body > h5, .article-body > h6, .article-body > ul, .article-body > ol, .article-body > blockquote {
-                                        max-width: 65ch;
-                                        margin-left: auto;
-                                        margin-right: auto;
+                                        max-width: 100%;
                                     }
                                     .article-body img {
                                         max-width: 100%;
@@ -91,7 +91,12 @@ export default function NewsDetailPage({ article, relatedArticles }: NewsDetailP
 
                                 <div
                                     className="article-body"
-                                    dangerouslySetInnerHTML={{ __html: article.content || "" }}
+                                    dangerouslySetInnerHTML={{
+                                        __html: (article.content || "")
+                                            .replace(/[\u00AD\u200B\u200C\u200D\u2060\uFEFF]/g, '') // Remove zero-width chars
+                                            .replace(/&nbsp;/g, ' ') // Replace HTML non-breaking spaces
+                                            .replace(/\u00A0/g, ' ') // Replace Unicode non-breaking spaces
+                                    }}
                                 />
                             </CardContent>
                         </Card>

@@ -699,17 +699,27 @@ export default function ProductDetailPage({ productSlug }: { productSlug: string
                             <div className="bg-slate-50 dark:bg-[#1c212c]/80 text-industrial-black dark:text-slate-200 px-6 py-4 font-black uppercase tracking-widest text-sm border-b border-gray-200 dark:border-white/5">
                                 Mô tả sản phẩm
                             </div>
-                            <div className="p-6 md:p-8 relative">
+                            <div className="px-2 py-4 sm:px-4 md:py-5 lg:px-5 lg:py-6 relative">
                                 {product.description ? (
                                     <>
                                         <div
                                             ref={descRef}
                                             className={cn(
-                                                "prose prose-slate dark:prose-invert max-w-none whitespace-pre-line text-[15px] leading-loose text-slate-700 dark:text-slate-300 transition-all duration-500 overflow-hidden relative",
+                                                "prose prose-slate dark:prose-invert max-w-none whitespace-pre-line text-[15px] leading-loose text-slate-700 dark:text-slate-300 transition-all duration-500 overflow-hidden relative text-justify [word-break:break-word] hyphens-none",
                                                 !isDescExpanded && showReadMore ? "max-h-[500px]" : "max-h-none"
                                             )}
                                         >
-                                            {product.description}
+                                            {
+                                                product.description
+                                                    .replace(/[\u00AD\u200B\u200C\u200D\u2060\uFEFF]/g, '') // Xoá ký tự ngắt dòng ẩn (phòng chép từ PDF/Word)
+                                                    .replace(/\r\n/g, '\n')
+                                                    .replace(/\n\n+/g, '____DOUBLE_NEWLINE____')
+                                                    .replace(/\n\s*(?=[-+*•]\s|\d+\.\s)/g, '____BULLET_NEWLINE____')
+                                                    .replace(/\n/g, ' ')
+                                                    .replace(/\s+([.,;:!?])/g, '$1') // Xoá khoảng trắng dư trước dấu câu
+                                                    .replace(/____DOUBLE_NEWLINE____/g, '\n\n')
+                                                    .replace(/____BULLET_NEWLINE____/g, '\n')
+                                            }
                                         </div>
 
                                         {showReadMore && (
