@@ -39,6 +39,19 @@ const productSchema = z.object({
         discount_percent: z.coerce.number().min(0, "Không được âm").max(100, "Tối đa 100%").default(0),
         sku: z.string().optional(),
         image: z.string().optional()
+    })).default([]),
+    custom_tabs: z.array(z.object({
+        id: z.string(),
+        name: z.string().min(1, "Vui lòng nhập tên tab"),
+        sections: z.array(z.object({
+            id: z.string(),
+            name: z.string().min(1, "Vui lòng nhập tên nhóm"),
+            links: z.array(z.object({
+                id: z.string(),
+                name: z.string().min(1, "Vui lòng nhập tên link"),
+                url: z.string().min(1, "Vui lòng nhập URL")
+            })).default([])
+        })).default([])
     })).default([])
 }) as any;
 
@@ -107,13 +120,19 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
             thumbnail: "",
             images: [],
             attrGroups: [],
-            variants: []
+            variants: [],
+            custom_tabs: []
         },
     });
 
     const { fields: attrFields, append: addGroup, remove: removeGroup } = useFieldArray({
         control: form.control,
         name: "attrGroups"
+    });
+
+    const { fields: tabFields, append: addTab, remove: removeTab } = useFieldArray({
+        control: form.control,
+        name: "custom_tabs"
     });
 
     const watchedGroups = form.watch("attrGroups");
@@ -168,7 +187,8 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
                 thumbnail: "",
                 images: [],
                 attrGroups: [],
-                variants: []
+                variants: [],
+                custom_tabs: []
             });
             return;
         }
@@ -243,7 +263,8 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
                 thumbnail: product.thumbnail || "",
                 images: product.images || [],
                 attrGroups: attrGroupsArray.length > 0 ? attrGroupsArray : [],
-                variants: variantsArray
+                variants: variantsArray,
+                custom_tabs: product.custom_tabs || []
             });
 
             setIsLoadingProduct(false);
@@ -320,6 +341,7 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
                         category_id: values.category_id || null,
                         thumbnail: values.thumbnail,
                         images: values.images || [],
+                        custom_tabs: values.custom_tabs || [],
                         updated_at: new Date().toISOString()
                     })
                     .eq("id", editId);
@@ -459,6 +481,7 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
                         category_id: values.category_ids[0] || null, // Fallback for legacy column
                         thumbnail: values.thumbnail,
                         images: values.images || [],
+                        custom_tabs: values.custom_tabs || [],
                     })
                     .select("id")
                     .single();
@@ -784,6 +807,150 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
                                             </FormItem>
                                         )}
                                     />
+                                    
+                                    {/* PHẦN TAB TÙY CHỈNH */}
+                                    <div className="space-y-4 pt-4 border-t border-slate-200 dark:border-white/5">
+                                        <div className="flex items-center justify-between">
+                                            <FormLabel className="text-base flex items-center gap-2">
+                                                <Layers className="h-4 w-4" /> Tabs mô tả tùy chỉnh
+                                            </FormLabel>
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => {
+                                                    addTab({
+                                                        id: crypto.randomUUID(),
+                                                        name: "",
+                                                        sections: []
+                                                    });
+                                                }}
+                                                className="border-dashed"
+                                            >
+                                                <Plus className="h-4 w-4 mr-2" /> Thêm tab (Ví dụ: Thông số, Model...)
+                                            </Button>
+                                        </div>
+
+                                        {tabFields.map((tab, tIdx) => (
+                                            <div key={tab.id} className="p-4 border border-slate-200 dark:border-white/10 rounded-lg bg-slate-50/50 dark:bg-white/5 space-y-4 relative group/tab">
+                                                <Button
+                                                    type="button"
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="absolute top-2 right-2 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-500/10 opacity-0 group-hover/tab:opacity-100 transition-opacity h-8 w-8"
+                                                    onClick={() => removeTab(tIdx)}
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                </Button>
+
+                                                <InputField
+                                                    control={form.control}
+                                                    name={`custom_tabs.${tIdx}.name`}
+                                                    label={`Tên Tab ${tIdx + 1}`}
+                                                    placeholder="Ví dụ: Phụ kiện tương thích"
+                                                />
+
+                                                {/* SECTIONS */}
+                                                <div className="space-y-3 pl-4 border-l-2 border-slate-200 dark:border-white/10 ml-2">
+                                                    <div className="flex items-center justify-between">
+                                                        <span className="text-sm font-medium text-slate-600 dark:text-slate-400">Các nhóm trong tab:</span>
+                                                        <Button
+                                                            type="button"
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            className="h-8 text-[13px]"
+                                                            onClick={() => {
+                                                                const currentSections = form.getValues(`custom_tabs.${tIdx}.sections`) || [];
+                                                                form.setValue(`custom_tabs.${tIdx}.sections`, [
+                                                                    ...currentSections,
+                                                                    { id: crypto.randomUUID(), name: "", links: [] }
+                                                                ]);
+                                                            }}
+                                                        >
+                                                            <Plus className="h-3.5 w-3.5 mr-1" /> Thêm nhóm
+                                                        </Button>
+                                                    </div>
+
+                                                    {(form.watch(`custom_tabs.${tIdx}.sections`) || []).map((section: any, sIdx: number) => (
+                                                        <div key={section.id} className="p-3 border border-slate-200 dark:border-white/5 bg-white dark:bg-[#0f1219] rounded-md relative group/sec space-y-3">
+                                                            <div className="flex gap-2">
+                                                                <div className="flex-1">
+                                                                    <InputField
+                                                                        control={form.control}
+                                                                        name={`custom_tabs.${tIdx}.sections.${sIdx}.name`}
+                                                                        placeholder="Tên nhóm (VD: Sách hướng dẫn)"
+                                                                    />
+                                                                </div>
+                                                                <Button
+                                                                    type="button"
+                                                                    variant="ghost"
+                                                                    size="icon"
+                                                                    className="text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 h-10 w-10 shrink-0"
+                                                                    onClick={() => {
+                                                                        const currentSections = form.getValues(`custom_tabs.${tIdx}.sections`);
+                                                                        form.setValue(`custom_tabs.${tIdx}.sections`, currentSections.filter((_: any, i: number) => i !== sIdx));
+                                                                    }}
+                                                                >
+                                                                    <Trash2 className="h-4 w-4" />
+                                                                </Button>
+                                                            </div>
+
+                                                            {/* LINKS */}
+                                                            <div className="space-y-2 pl-4">
+                                                                <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+                                                                    <span>Danh sách Link:</span>
+                                                                    <button
+                                                                        type="button"
+                                                                        className="flex items-center hover:text-orange-500 transition-colors"
+                                                                        onClick={() => {
+                                                                            const currentLinks = form.getValues(`custom_tabs.${tIdx}.sections.${sIdx}.links`) || [];
+                                                                            form.setValue(`custom_tabs.${tIdx}.sections.${sIdx}.links`, [
+                                                                                ...currentLinks,
+                                                                                { id: crypto.randomUUID(), name: "", url: "" }
+                                                                            ]);
+                                                                        }}
+                                                                    >
+                                                                        <Plus className="h-3 w-3 mr-1" /> Thêm link
+                                                                    </button>
+                                                                </div>
+                                                                {(form.watch(`custom_tabs.${tIdx}.sections.${sIdx}.links`) || []).map((link: any, lIdx: number) => (
+                                                                    <div key={link.id} className="grid grid-cols-12 gap-2 items-start">
+                                                                        <div className="col-span-5">
+                                                                            <InputField
+                                                                                control={form.control}
+                                                                                name={`custom_tabs.${tIdx}.sections.${sIdx}.links.${lIdx}.name`}
+                                                                                placeholder="Tên link hiển thị"
+                                                                            />
+                                                                        </div>
+                                                                        <div className="col-span-6">
+                                                                            <InputField
+                                                                                control={form.control}
+                                                                                name={`custom_tabs.${tIdx}.sections.${sIdx}.links.${lIdx}.url`}
+                                                                                placeholder="URL (https://...)"
+                                                                            />
+                                                                        </div>
+                                                                        <div className="col-span-1 pt-1">
+                                                                            <button
+                                                                                type="button"
+                                                                                className="p-2 text-slate-400 hover:text-red-500 transition-colors"
+                                                                                onClick={() => {
+                                                                                    const currentLinks = form.getValues(`custom_tabs.${tIdx}.sections.${sIdx}.links`);
+                                                                                    form.setValue(`custom_tabs.${tIdx}.sections.${sIdx}.links`, currentLinks.filter((_: any, i: number) => i !== lIdx));
+                                                                                }}
+                                                                            >
+                                                                                <X className="h-4 w-4" />
+                                                                            </button>
+                                                                        </div>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+
                                 </CardContent>
                             </Card>
 

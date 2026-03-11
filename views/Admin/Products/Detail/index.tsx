@@ -10,7 +10,7 @@ import {
     Package, ShoppingCart, ArrowLeft, Tag, MapPin, Star, Truck,
     Shield, ChevronLeft, ChevronRight, Minus, Plus, Check, Layers,
     Home, ChevronRight as ChevronSep, Phone, Heart, Share2, Zap, Clock,
-    ChevronDown as ArrowDown, ChevronUp as ArrowUp
+    ChevronDown as ArrowDown, ChevronUp as ArrowUp, ExternalLink
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -43,7 +43,19 @@ interface Product {
     created_at: string;
     updated_at: string;
     warranty_months?: number;
-
+    custom_tabs?: {
+        id: string;
+        name: string;
+        sections: {
+            id: string;
+            name: string;
+            links: {
+                id: string;
+                name: string;
+                url: string;
+            }[];
+        }[];
+    }[];
 }
 
 // --- HELPER: Format VND ---
@@ -86,9 +98,24 @@ export default function ProductDetailPage({ productSlug }: { productSlug: string
     const [selectedAttributes, setSelectedAttributes] = useState<Record<string, string>>({});
     const [quantity, setQuantity] = useState(1);
     const [isWishlisted, setIsWishlisted] = useState(false);
+    
+    // Tab State
+    const [activeTabId, setActiveTabId] = useState<string>("description");
+    
+    // Description State
     const [isDescExpanded, setIsDescExpanded] = useState(false);
     const [showReadMore, setShowReadMore] = useState(false);
     const descRef = React.useRef<HTMLDivElement>(null);
+
+    // Accordion State
+    const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
+
+    const toggleSection = (sectionId: string) => {
+        setExpandedSections(prev => ({
+            ...prev,
+            [sectionId]: !prev[sectionId]
+        }));
+    };
 
     // Fetch data
     useEffect(() => {
@@ -119,14 +146,14 @@ export default function ProductDetailPage({ productSlug }: { productSlug: string
 
     // Check if description needs "Read More" button
     useEffect(() => {
-        if (descRef.current) {
+        if (activeTabId === "description" && descRef.current) {
             if (descRef.current.scrollHeight > 500) {
                 setShowReadMore(true);
             } else {
                 setShowReadMore(false);
             }
         }
-    }, [product?.description]);
+    }, [product?.description, activeTabId]);
 
     // Computed values
     const allImages = useMemo(() => {
@@ -693,57 +720,161 @@ export default function ProductDetailPage({ productSlug }: { productSlug: string
                 {/* ======= BOTTOM SECTIONS ======= */}
                 <div className="mt-12 grid grid-cols-1 lg:grid-cols-12 gap-8">
 
-                    {/* Description */}
+                    {/* Description & Custom Tabs */}
                     <div className="lg:col-span-8">
                         <div className="bg-white dark:bg-[#1c212c] border border-gray-200 dark:border-white/5 rounded-2xl overflow-hidden shadow-sm">
-                            <div className="bg-slate-50 dark:bg-[#1c212c]/80 text-industrial-black dark:text-slate-200 px-6 py-4 font-black uppercase tracking-widest text-sm border-b border-gray-200 dark:border-white/5">
-                                Mô tả sản phẩm
-                            </div>
-                            <div className="px-2 py-4 sm:px-4 md:py-5 lg:px-5 lg:py-6 relative">
-                                {product.description ? (
-                                    <>
-                                        <div
-                                            ref={descRef}
-                                            className={cn(
-                                                "prose prose-slate dark:prose-invert max-w-none whitespace-pre-line text-[15px] leading-loose text-slate-700 dark:text-slate-300 transition-all duration-500 overflow-hidden relative text-justify [word-break:break-word] hyphens-none",
-                                                !isDescExpanded && showReadMore ? "max-h-[500px]" : "max-h-none"
-                                            )}
-                                        >
-                                            {
-                                                product.description
-                                                    .replace(/[\u00AD\u200B\u200C\u200D\u2060\uFEFF]/g, '') // Xoá ký tự ngắt dòng ẩn (phòng chép từ PDF/Word)
-                                                    .replace(/\r\n/g, '\n')
-                                                    .replace(/\n\n+/g, '____DOUBLE_NEWLINE____')
-                                                    .replace(/\n\s*(?=[-+*•]\s|\d+\.\s)/g, '____BULLET_NEWLINE____')
-                                                    .replace(/\n/g, ' ')
-                                                    .replace(/\s+([.,;:!?])/g, '$1') // Xoá khoảng trắng dư trước dấu câu
-                                                    .replace(/____DOUBLE_NEWLINE____/g, '\n\n')
-                                                    .replace(/____BULLET_NEWLINE____/g, '\n')
-                                            }
-                                        </div>
-
-                                        {showReadMore && (
-                                            <div className={cn(
-                                                "flex justify-center mt-4 pt-10 relative",
-                                                !isDescExpanded && "absolute bottom-0 left-0 right-0 bg-gradient-to-t from-white via-white/80 to-transparent dark:from-[#1c212c] dark:via-[#1c212c]/80 dark:to-transparent z-10"
-                                            )}>
-                                                <Button
-                                                    variant="outline"
-                                                    onClick={() => setIsDescExpanded(!isDescExpanded)}
-                                                    className="border-electric-orange text-electric-orange hover:bg-orange-50 dark:hover:bg-orange-500/10 font-bold px-8 shadow-sm"
-                                                >
-                                                    {isDescExpanded ? (
-                                                        <>Thu gọn <ArrowUp className="ml-2 h-4 w-4" /></>
-                                                    ) : (
-                                                        <>Xem thêm <ArrowDown className="ml-2 h-4 w-4" /></>
-                                                    )}
-                                                </Button>
-                                            </div>
+                            
+                            {/* Horizontal Tabs Header */}
+                            <div className="flex overflow-x-auto bg-[#F8F9FA] dark:bg-[#1c212c]/80 border-b border-gray-200 dark:border-white/5 custom-scrollbar hide-scrollbar-mobile">
+                                <button
+                                    onClick={() => setActiveTabId("description")}
+                                    className={cn(
+                                        "px-6 py-4 font-bold uppercase tracking-widest text-[13px] whitespace-nowrap transition-colors relative border-r border-gray-200 dark:border-white/5",
+                                        activeTabId === "description" 
+                                            ? "text-electric-orange bg-white dark:bg-[#1c212c]" 
+                                            : "text-slate-500 hover:text-industrial-black dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/50"
+                                    )}
+                                >
+                                    Tổng quan sản phẩm
+                                    {activeTabId === "description" && (
+                                        <div className="absolute bottom-[-1px] left-0 right-0 h-[3px] bg-electric-orange z-10" />
+                                    )}
+                                </button>
+                                
+                                {product.custom_tabs?.map(tab => (
+                                    <button
+                                        key={tab.id}
+                                        onClick={() => setActiveTabId(tab.id)}
+                                        className={cn(
+                                            "px-6 py-4 font-bold uppercase tracking-widest text-[13px] whitespace-nowrap transition-colors relative border-r border-gray-200 dark:border-white/5",
+                                            activeTabId === tab.id 
+                                                ? "text-electric-orange bg-white dark:bg-[#1c212c]" 
+                                                : "text-slate-500 hover:text-industrial-black dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/50"
                                         )}
-                                    </>
-                                ) : (
-                                    <p className="text-sm text-slate-500 dark:text-slate-400 italic">Chưa có mô tả chi tiết cho sản phẩm này.</p>
+                                    >
+                                        {tab.name}
+                                        {activeTabId === tab.id && (
+                                            <div className="absolute bottom-[-1px] left-0 right-0 h-[3px] bg-electric-orange z-10" />
+                                        )}
+                                    </button>
+                                ))}
+                            </div>
+
+                            {/* Tab Content */}
+                            <div className="px-4 py-6 sm:px-6 md:py-8 min-h-[300px]">
+                                
+                                {/* Tab: Description */}
+                                {activeTabId === "description" && (
+                                    <div className="relative">
+                                        {product.description ? (
+                                            <>
+                                                <div
+                                                    ref={descRef}
+                                                    className={cn(
+                                                        "prose prose-slate dark:prose-invert max-w-none whitespace-pre-line text-[15px] leading-loose text-slate-700 dark:text-slate-300 transition-all duration-500 overflow-hidden relative text-justify [word-break:break-word] hyphens-none",
+                                                        !isDescExpanded && showReadMore ? "max-h-[500px]" : "max-h-none"
+                                                    )}
+                                                >
+                                                    {
+                                                        product.description
+                                                            .replace(/[\u00AD\u200B\u200C\u200D\u2060\uFEFF]/g, '') // Xoá ký tự ngắt dòng ẩn (phòng chép từ PDF/Word)
+                                                            .replace(/\r\n/g, '\n')
+                                                            .replace(/\n\n+/g, '____DOUBLE_NEWLINE____')
+                                                            .replace(/\n\s*(?=[-+*•]\s|\d+\.\s)/g, '____BULLET_NEWLINE____')
+                                                            .replace(/\n/g, ' ')
+                                                            .replace(/\s+([.,;:!?])/g, '$1') // Xoá khoảng trắng dư trước dấu câu
+                                                            .replace(/____DOUBLE_NEWLINE____/g, '\n\n')
+                                                            .replace(/____BULLET_NEWLINE____/g, '\n')
+                                                    }
+                                                </div>
+
+                                                {showReadMore && (
+                                                    <div className={cn(
+                                                        "flex justify-center mt-4 pt-10 relative",
+                                                        !isDescExpanded && "absolute bottom-0 left-0 right-0 bg-gradient-to-t from-white via-white/80 to-transparent dark:from-[#1c212c] dark:via-[#1c212c]/80 dark:to-transparent z-10"
+                                                    )}>
+                                                        <Button
+                                                            variant="outline"
+                                                            onClick={() => setIsDescExpanded(!isDescExpanded)}
+                                                            className="border-electric-orange text-electric-orange hover:bg-orange-50 dark:hover:bg-orange-500/10 font-bold px-8 shadow-sm"
+                                                        >
+                                                            {isDescExpanded ? (
+                                                                <>Thu gọn <ArrowUp className="ml-2 h-4 w-4" /></>
+                                                            ) : (
+                                                                <>Xem thêm <ArrowDown className="ml-2 h-4 w-4" /></>
+                                                            )}
+                                                        </Button>
+                                                    </div>
+                                                )}
+                                            </>
+                                        ) : (
+                                            <p className="text-sm text-slate-500 dark:text-slate-400 italic">Chưa có mô tả chi tiết cho sản phẩm này.</p>
+                                        )}
+                                    </div>
                                 )}
+
+                                {/* Tab: Custom */}
+                                {product.custom_tabs?.map(tab => (
+                                    <div key={tab.id} className={cn(activeTabId === tab.id ? "block" : "hidden")}>
+                                        {tab.sections && tab.sections.length > 0 ? (
+                                            <div className="space-y-4">
+                                                {tab.sections.map((section) => {
+                                                    const isExpanded = expandedSections[section.id] ?? true; // Default to expanded
+                                                    return (
+                                                        <div key={section.id} className="border border-gray-200 dark:border-white/10 rounded-[12px] bg-white dark:bg-[#12141c]/50">
+                                                            <button
+                                                                onClick={() => toggleSection(section.id)}
+                                                                className="w-full flex items-center justify-between px-6 py-5 bg-white dark:bg-[#1c212c] hover:bg-slate-50 dark:hover:bg-[#12141c] transition-colors rounded-t-[12px]"
+                                                            >
+                                                                <span className="font-bold text-[17px] text-industrial-black dark:text-slate-200">{section.name}</span>
+                                                                <div className="h-8 w-8 flex items-center justify-center rounded-full bg-[#f1f3f5] dark:bg-slate-800 text-slate-600 dark:text-slate-400">
+                                                                    <ArrowDown className={cn("h-4 w-4 transition-transform duration-300", isExpanded ? "rotate-180" : "rotate-0")} />
+                                                                </div>
+                                                            </button>
+                                                            
+                                                            <div className={cn(
+                                                                "overflow-hidden transition-all duration-300",
+                                                                isExpanded ? "max-h-[1000px] opacity-100" : "max-h-0 opacity-0"
+                                                            )}>
+                                                                <div className="px-6 pb-6 pt-5 grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-gray-100 dark:border-white/5 bg-white dark:bg-[#1c212c]">
+                                                                    {section.links && section.links.length > 0 ? (
+                                                                        section.links.map(link => (
+                                                                            <a
+                                                                                key={link.id}
+                                                                                href={link.url}
+                                                                                target="_blank"
+                                                                                rel="noopener noreferrer"
+                                                                                className="flex items-center justify-between gap-4 px-4 py-3.5 rounded-[12px] border border-gray-200 dark:border-white/10 bg-white dark:bg-[#1c212c] hover:border-orange-400 hover:bg-orange-50/50 dark:hover:border-orange-500/50 hover:shadow-sm transition-all group"
+                                                                            >
+                                                                                <div className="flex items-center gap-4">
+                                                                                    <div className="h-10 w-10 flex items-center justify-center flex-shrink-0 relative">
+                                                                                        <div className="absolute inset-0 rounded-full bg-slate-50 dark:bg-slate-800 group-hover:bg-[#FFF3EC] dark:group-hover:bg-orange-500/10 transition-colors" />
+                                                                                        <Layers className="h-[18px] w-[18px] text-slate-500 dark:text-slate-400 group-hover:text-electric-orange relative z-10 transition-colors" />
+                                                                                    </div>
+                                                                                    <span className="text-[15px] font-semibold text-slate-700 dark:text-slate-300 group-hover:text-electric-orange transition-colors line-clamp-2 leading-snug">
+                                                                                        {link.name}
+                                                                                    </span>
+                                                                                </div>
+                                                                                <div className="flex items-center gap-1.5 text-[12px] font-bold text-slate-500 bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-full group-hover:bg-electric-orange group-hover:text-white transition-all whitespace-nowrap">
+                                                                                    Mở liên kết <ExternalLink className="h-3.5 w-3.5" />
+                                                                                </div>
+                                                                            </a>
+                                                                        ))
+                                                                    ) : (
+                                                                        <p className="text-sm text-slate-500 dark:text-slate-400 italic col-span-full">Chưa có liên kết nào trong nhóm này.</p>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        ) : (
+                                            <p className="text-sm text-slate-500 dark:text-slate-400 italic">Chưa có nội dung cho tab này.</p>
+                                        )}
+                                    </div>
+                                ))}
+
                             </div>
                         </div>
 
