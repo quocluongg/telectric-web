@@ -59,6 +59,16 @@ const Footer = () => {
                                 <img src="https://play-lh.googleusercontent.com/vrrgAukb27gHzlI-lwHQoabie4ByvZKMN9QVN7jgd5KCFgEKCbQClsujkfqhExpfrUdS=w600-h300-pc0xffffff-pd" alt="Shopee" className="h-6" />
                             </Link>
                         </div>
+
+                        <div className="mt-6">
+                            <a href="http://online.gov.vn/Home/WebDetails/140980" target="_blank" rel="noopener noreferrer">
+                                <img
+                                    src="//bizweb.dktcdn.net/100/342/772/themes/701682/assets/guarantee_img.png?1692241652903"
+                                    alt="Đã thông báo Bộ Công Thương"
+                                    className="h-16 w-auto"
+                                />
+                            </a>
+                        </div>
                     </div>
 
                     {/* Cột 4: Thông tin doanh nghiệp */}
@@ -89,6 +99,7 @@ const Footer = () => {
                                 Cơ quan cấp: UBND Quận 12
                             </p>
                         </div>
+
                     </div>
 
                 </div>
