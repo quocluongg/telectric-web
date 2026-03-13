@@ -113,9 +113,6 @@ const Footer = () => {
                         Đại diện: <strong className="text-slate-700 dark:text-slate-300">Nguyễn Đắc Tài</strong>
                         {' · '}
                         <a href="tel:0934001435" className="hover:text-electric-orange transition-colors">0934 001 435</a>
-                        <p className="text-left">
-                            CCCD: <strong className="text-slate-700 dark:text-slate-300">046092015916</strong>
-                        </p>
                     </p>
 
                 </div>

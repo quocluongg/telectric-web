@@ -223,35 +223,7 @@ export function LoginForm({
                 </form>
             </Form>
 
-            <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                    <span className="w-full border-t border-slate-200 dark:border-gray-700" />
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-white dark:bg-[#0f111a] px-2 text-slate-500 dark:text-gray-400">
-                        HOẶC ĐĂNG NHẬP BẰNG
-                    </span>
-                </div>
-            </div>
 
-            <div className="flex justify-center gap-4">
-                <Button
-                    variant="outline"
-                    className="rounded-full bg-slate-100 hover:bg-slate-200 border-slate-200 dark:bg-[#1e2330] dark:border-0 dark:hover:bg-[#2a3040] w-12 h-12 p-0 flex items-center justify-center text-slate-900 dark:text-white"
-                    disabled={isLoading}
-                >
-                    {/* Google Icon Placeholder or SVG */}
-                    <span className="text-xl">G</span>
-                </Button>
-                <Button
-                    variant="outline"
-                    className="rounded-full bg-slate-100 hover:bg-slate-200 border-slate-200 dark:bg-[#1e2330] dark:border-0 dark:hover:bg-[#2a3040] w-12 h-12 p-0 flex items-center justify-center text-slate-900 dark:text-white"
-                    disabled={isLoading}
-                >
-                    {/* Discord Icon Placeholder or SVG */}
-                    <span className="text-xl">D</span>
-                </Button>
-            </div>
         </div>
     )
 }
