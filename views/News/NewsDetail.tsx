@@ -78,6 +78,57 @@ export default function NewsDetailPage({ article, relatedArticles }: NewsDetailP
                                     .article-body > p, .article-body > h1, .article-body > h2, .article-body > h3, .article-body > h4, .article-body > h5, .article-body > h6, .article-body > ul, .article-body > ol, .article-body > blockquote {
                                         max-width: 100%;
                                     }
+
+                                    /* === List styles with Quill nested hierarchy === */
+                                    .article-body ul, .article-body ol {
+                                        padding-left: 24px !important;
+                                        margin-bottom: 20px;
+                                    }
+                                    .article-body ul { list-style-type: disc; }
+                                    .article-body ol { list-style-type: decimal; }
+                                    .article-body li {
+                                        margin-bottom: 8px;
+                                        padding-left: 4px;
+                                    }
+
+                                    /* Level 1 indent: a, b, c, d */
+                                    .article-body li.ql-indent-1 {
+                                        padding-left: 3em !important;
+                                        list-style-type: lower-alpha !important;
+                                    }
+                                    /* Level 2 indent: i, ii, iii, iv */
+                                    .article-body li.ql-indent-2 {
+                                        padding-left: 6em !important;
+                                        list-style-type: lower-roman !important;
+                                    }
+                                    /* Level 3 indent: A, B, C, D */
+                                    .article-body li.ql-indent-3 {
+                                        padding-left: 9em !important;
+                                        list-style-type: upper-alpha !important;
+                                    }
+                                    /* Level 4 indent: I, II, III, IV */
+                                    .article-body li.ql-indent-4 {
+                                        padding-left: 12em !important;
+                                        list-style-type: upper-roman !important;
+                                    }
+                                    /* Level 5+ indent */
+                                    .article-body li.ql-indent-5 {
+                                        padding-left: 15em !important;
+                                        list-style-type: lower-alpha !important;
+                                    }
+                                    .article-body li.ql-indent-6 {
+                                        padding-left: 18em !important;
+                                        list-style-type: lower-roman !important;
+                                    }
+                                    .article-body li.ql-indent-7 {
+                                        padding-left: 21em !important;
+                                        list-style-type: upper-alpha !important;
+                                    }
+                                    .article-body li.ql-indent-8 {
+                                        padding-left: 24em !important;
+                                        list-style-type: upper-roman !important;
+                                    }
+
                                     .article-body img {
                                         max-width: 100%;
                                         height: auto;
