@@ -68,13 +68,32 @@ function printBill(order: any) {
     const status = STATUS_CONFIG_LABELS[order.status] || "Chờ xử lý";
     const payMethod = order.payment_method === "cod" ? "Thanh toán khi nhận hàng (COD)" : order.payment_method === "bank_transfer" ? "Chuyển khoản ngân hàng" : "Chưa xác định";
 
+    // Tính phí vận chuyển theo chính sách
+    const subtotal = order.total_amount || 0;
+    let shippingFee = 0;
+    let shippingLabel = "";
+    if (subtotal < 500000) {
+        // Đơn hàng dưới 500.000đ: phí cố định 25.000đ
+        shippingFee = 25000;
+        shippingLabel = formatVND(shippingFee);
+    } else if (subtotal >= 500000 && subtotal <= 5000000) {
+        // Đơn hàng 500.000đ - 5.000.000đ: miễn phí (hỗ trợ tối đa 25.000đ)
+        shippingFee = 0;
+        shippingLabel = "Miễn phí";
+    } else {
+        // Đơn hàng trên 5.000.000đ: hỗ trợ phí lên đến 70.000đ → miễn phí
+        shippingFee = 0;
+        shippingLabel = "Miễn phí";
+    }
+    const grandTotal = subtotal + shippingFee;
+
     const itemsHTML = items.map((item: any, idx: number) => {
         const product = item.product_variants?.products;
         const variant = item.product_variants;
         const attrs = variant?.attributes
             ? Object.entries(variant.attributes).map(([k, v]) => `${k}: ${v}`).join(", ")
             : "";
-        const subtotal = (item.price_at_purchase || 0) * (item.quantity || 1);
+        const itemSubtotal = (item.price_at_purchase || 0) * (item.quantity || 1);
         return `
             <tr>
                 <td style="padding:10px 8px;border-bottom:1px solid #eee;text-align:center;color:#666;">${idx + 1}</td>
@@ -84,10 +103,12 @@ function printBill(order: any) {
                 </td>
                 <td style="padding:10px 8px;border-bottom:1px solid #eee;text-align:center;">${item.quantity}</td>
                 <td style="padding:10px 8px;border-bottom:1px solid #eee;text-align:right;">${formatVND(item.price_at_purchase)}</td>
-                <td style="padding:10px 8px;border-bottom:1px solid #eee;text-align:right;font-weight:600;">${formatVND(subtotal)}</td>
+                <td style="padding:10px 8px;border-bottom:1px solid #eee;text-align:right;font-weight:600;">${formatVND(itemSubtotal)}</td>
             </tr>
         `;
     }).join("");
+
+    const logoUrl = window.location.origin + "/img/logo-telectric.png";
 
     const html = `
 <!DOCTYPE html>
@@ -110,7 +131,7 @@ function printBill(order: any) {
         <div style="display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #ea580c;padding-bottom:20px;margin-bottom:24px;">
             <div>
                 <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px;">
-                    <img src="https://quocluong.id.vn/img/logo-telectric.png" alt="TLECTRIC" style="height:80px;width:auto;object-fit:contain;" />
+                    <img src="${logoUrl}" alt="TELECTRIC" style="height:80px;width:auto;object-fit:contain;" />
                 </div>
                 <div style="font-size:12px;color:#888;margin-top:4px;">Thiết bị điện công nghiệp chính hãng</div>
             </div>
@@ -158,23 +179,23 @@ function printBill(order: any) {
             <div style="width:280px;">
                 <div style="display:flex;justify-content:space-between;padding:8px 0;font-size:13px;color:#666;">
                     <span>Tạm tính:</span>
-                    <span>${formatVND(order.total_amount)}</span>
+                    <span>${formatVND(subtotal)}</span>
                 </div>
                 <div style="display:flex;justify-content:space-between;padding:8px 0;font-size:13px;color:#666;">
                     <span>Phí vận chuyển:</span>
-                    <span style="color:#16a34a;font-weight:600;">Miễn phí</span>
+                    <span style="color:${shippingFee > 0 ? '#333' : '#16a34a'};font-weight:600;">${shippingLabel}</span>
                 </div>
                 <div style="display:flex;justify-content:space-between;padding:12px 0;font-size:18px;font-weight:800;color:#ea580c;border-top:2px solid #ea580c;margin-top:4px;">
                     <span>Tổng cộng:</span>
-                    <span>${formatVND(order.total_amount)}</span>
+                    <span>${formatVND(grandTotal)}</span>
                 </div>
             </div>
         </div>
 
         <!-- Footer -->
         <div style="border-top:1px solid #e5e7eb;padding-top:20px;text-align:center;">
-            <p style="font-size:13px;color:#888;margin-bottom:4px;">Cảm ơn quý khách đã mua hàng tại <strong style="color:#ea580c;">TLECTRIC</strong></p>
-            <p style="font-size:11px;color:#aaa;">Liên hệ hỗ trợ: 1900 xxxx · support@tlectric.vn</p>
+            <p style="font-size:13px;color:#888;margin-bottom:4px;">Cảm ơn quý khách đã mua hàng tại <strong style="color:#ea580c;">TELECTRIC</strong></p>
+            <p style="font-size:11px;color:#aaa;">Liên hệ hỗ trợ: 093.400.14.35 · telectric1992@gmail.com</p>
         </div>
 
         <!-- Print Button -->
