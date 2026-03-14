@@ -7,12 +7,26 @@ interface PageProps {
     params: Promise<{ slug: string }>;
 }
 
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-    const { slug } = await params;
-    const supabase = createClient(
+function getSupabase() {
+    return createClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!
     );
+}
+
+// Giúp next-sitemap tạo URL cho từng sản phẩm trong sitemap.xml
+export async function generateStaticParams() {
+    const supabase = getSupabase();
+    const { data: products } = await supabase
+        .from("products")
+        .select("slug");
+
+    return (products || []).map((p) => ({ slug: p.slug }));
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+    const { slug } = await params;
+    const supabase = getSupabase();
 
     const { data: product } = await supabase
         .from("products")
@@ -26,10 +40,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
     const title = `${product.name} | TELECTRIC`;
     const description = product.description || "Mua sản phẩm chính hãng tại TELECTRIC với giá ưu đãi.";
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://telectric.vn";
 
     return {
         title,
         description,
+        alternates: {
+            canonical: `${siteUrl}/${slug}`,
+        },
         openGraph: {
             title,
             description,
@@ -47,19 +65,40 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function Page({ params }: PageProps) {
     const { slug } = await params;
+    const supabase = getSupabase();
 
-    // Verify that the slug matches a real product, otherwise 404
-    const supabase = createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!
-    );
+    // Fetch product data for both 404 check and JSON-LD
     const { data: product } = await supabase
         .from("products")
-        .select("slug")
+        .select("name, slug, description, thumbnail")
         .eq("slug", slug)
         .single();
 
     if (!product) notFound();
 
-    return <ProductDetailPage productSlug={slug} />;
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://telectric.vn";
+
+    // Structured Data (JSON-LD) cho Google Rich Snippets
+    const jsonLd = {
+        "@context": "https://schema.org",
+        "@type": "Product",
+        name: product.name,
+        description: product.description || "Sản phẩm chính hãng tại TELECTRIC",
+        image: product.thumbnail || undefined,
+        url: `${siteUrl}/${product.slug}`,
+        brand: {
+            "@type": "Organization",
+            name: "TELECTRIC",
+        },
+    };
+
+    return (
+        <>
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+            />
+            <ProductDetailPage productSlug={slug} />
+        </>
+    );
 }

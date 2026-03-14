@@ -15,6 +15,9 @@ export const metadata: Metadata = {
   metadataBase: new URL(defaultUrl),
   title: "TElectric - Chuyên dụng cụ đo lường chính hãng",
   description: "Chuyên cung cấp các loại dụng cụ đo lường điện chính hãng, giá tốt nhất thị trường.",
+  alternates: {
+    canonical: defaultUrl,
+  },
   openGraph: {
     title: "TElectric - Chuyên dụng cụ đo lường chính hãng",
     description: "Chuyên cung cấp các loại dụng cụ đo lường điện chính hãng, giá tốt nhất thị trường.",
@@ -61,8 +64,23 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="vi" suppressHydrationWarning>
       <body className={`${inter.variable} ${outfit.variable} font-sans antialiased`}>
+        {/* Organization Structured Data cho Google */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Organization",
+              name: "TELECTRIC",
+              url: "https://telectric.vn",
+              logo: "https://telectric.vn/img/icon.png",
+              description: "Chuyên cung cấp các loại dụng cụ đo lường điện chính hãng, giá tốt nhất thị trường.",
+              sameAs: [],
+            }),
+          }}
+        />
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
