@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createStaticClient } from "@/lib/supabase/server";
 import DefaultLayout from "@/components/layout/DefaultLayout";
 import NewsListPage from "@/views/News";
 
@@ -22,7 +22,7 @@ export const metadata: Metadata = {
 };
 
 export default async function Page() {
-    const supabase = await createClient();
+    const supabase = await createStaticClient();
 
     // Fetch published articles (Lấy full trường nên không lo lỗi)
     const { data: articles } = await supabase

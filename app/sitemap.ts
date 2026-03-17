@@ -1,9 +1,9 @@
 import { MetadataRoute } from "next";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createStaticClient } from "@/lib/supabase/server";
 export const revalidate = 0; // Không cache, luôn fetch mới khi có người truy cập sitemap
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const baseUrl = "https://www.telectric.vn";
-    const supabase = await createClient();
+    const supabase = await createStaticClient();
 
     // 1. Fetch all published products
     const { data: products } = await supabase

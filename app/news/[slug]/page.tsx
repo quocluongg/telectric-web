@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createStaticClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import DefaultLayout from "@/components/layout/DefaultLayout";
 import NewsDetailPage from "@/views/News/NewsDetail";
@@ -19,7 +19,7 @@ interface PageProps {
 
 // Giúp next-sitemap tạo URL cho từng bài viết trong sitemap.xml
 export async function generateStaticParams() {
-    const supabase = await createClient();
+    const supabase = await createStaticClient();
     const { data: articles } = await supabase
         .from("news")
         .select("slug")
@@ -30,7 +30,7 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
     const { slug } = await params;
-    const supabase = await createClient();
+    const supabase = await createStaticClient();
 
     const { data: article } = await supabase
         .from("news")
@@ -70,7 +70,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function Page({ params }: PageProps) {
     const { slug } = await params;
-    const supabase = await createClient();
+    const supabase = await createStaticClient();
 
     // Fetch the article - lấy full data
     const { data: article } = await supabase
