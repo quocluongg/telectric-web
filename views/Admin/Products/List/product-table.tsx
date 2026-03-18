@@ -225,10 +225,10 @@ function ProductRow({
             </TableCell>
 
             {/* Actions */}
-            <TableCell className="text-right">
+            <TableCell className="text-right sticky right-0 bg-white dark:bg-[#1e2330] group-hover:bg-slate-50 dark:group-hover:bg-slate-800/50 transition-colors">
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Button variant="ghost" size="icon" className="h-8 w-8">
                             <MoreHorizontal className="h-4 w-4" />
                         </Button>
                     </DropdownMenuTrigger>
@@ -517,7 +517,7 @@ export default function ProductTable({
                                     <TableHead className="font-semibold">Tồn kho</TableHead>
                                     <TableHead className="font-semibold">Biến thể</TableHead>
                                     <TableHead className="font-semibold">Ngày tạo</TableHead>
-                                    <TableHead className="text-right font-semibold w-[60px]">
+                                    <TableHead className="text-right font-semibold w-[60px] sticky right-0 bg-slate-50 dark:bg-slate-800/50">
                                         <span className="sr-only">Thao tác</span>
                                     </TableHead>
                                 </TableRow>
