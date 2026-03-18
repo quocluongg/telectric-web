@@ -234,41 +234,41 @@ const STATUS_CONFIG: Record<string, {
 }> = {
     pending: {
         label: "Chờ xử lý",
-        color: "text-amber-700",
-        bgColor: "bg-amber-50",
-        borderColor: "border-amber-200",
+        color: "text-amber-700 dark:text-amber-400",
+        bgColor: "bg-amber-50 dark:bg-amber-900/20",
+        borderColor: "border-amber-200 dark:border-amber-900/50",
         icon: <Clock className="h-3.5 w-3.5" />,
         dotColor: "bg-amber-500"
     },
     processing: {
         label: "Đang xử lý",
-        color: "text-blue-700",
-        bgColor: "bg-blue-50",
-        borderColor: "border-blue-200",
+        color: "text-blue-700 dark:text-blue-400",
+        bgColor: "bg-blue-50 dark:bg-blue-900/20",
+        borderColor: "border-blue-200 dark:border-blue-900/50",
         icon: <Package className="h-3.5 w-3.5" />,
         dotColor: "bg-blue-500"
     },
     shipped: {
         label: "Đang giao",
-        color: "text-violet-700",
-        bgColor: "bg-violet-50",
-        borderColor: "border-violet-200",
+        color: "text-violet-700 dark:text-violet-400",
+        bgColor: "bg-violet-50 dark:bg-violet-900/20",
+        borderColor: "border-violet-200 dark:border-violet-900/50",
         icon: <Truck className="h-3.5 w-3.5" />,
         dotColor: "bg-violet-500"
     },
     delivered: {
         label: "Đã giao",
-        color: "text-emerald-700",
-        bgColor: "bg-emerald-50",
-        borderColor: "border-emerald-200",
+        color: "text-emerald-700 dark:text-emerald-400",
+        bgColor: "bg-emerald-50 dark:bg-emerald-900/20",
+        borderColor: "border-emerald-200 dark:border-emerald-900/50",
         icon: <CheckCircle2 className="h-3.5 w-3.5" />,
         dotColor: "bg-emerald-500"
     },
     cancelled: {
         label: "Đã hủy",
-        color: "text-red-700",
-        bgColor: "bg-red-50",
-        borderColor: "border-red-200",
+        color: "text-red-700 dark:text-red-400",
+        bgColor: "bg-red-50 dark:bg-red-900/20",
+        borderColor: "border-red-200 dark:border-red-900/50",
         icon: <XCircle className="h-3.5 w-3.5" />,
         dotColor: "bg-red-500"
     },
@@ -281,9 +281,9 @@ const STATUS_TRANSITIONS: Record<string, string[]> = Object.fromEntries(
 );
 
 const PAYMENT_STATUS_CONFIG: Record<string, { label: string; className: string }> = {
-    unpaid: { label: "Chưa TT", className: "text-red-600 bg-red-50 border-red-200" },
-    paid: { label: "Đã TT", className: "text-emerald-600 bg-emerald-50 border-emerald-200" },
-    refunded: { label: "Hoàn tiền", className: "text-slate-600 bg-slate-50 border-slate-200" },
+    unpaid: { label: "Chưa TT", className: "text-red-600 bg-red-50 border-red-200 dark:text-red-400 dark:bg-red-900/20 dark:border-red-900/50" },
+    paid: { label: "Đã TT", className: "text-emerald-600 bg-emerald-50 border-emerald-200 dark:text-emerald-400 dark:bg-emerald-900/20 dark:border-emerald-900/50" },
+    refunded: { label: "Hoàn tiền", className: "text-slate-600 bg-slate-50 border-slate-200 dark:text-slate-400 dark:bg-slate-800/50 dark:border-slate-700" },
 };
 
 // ===================== TYPES =====================
@@ -448,7 +448,7 @@ function OrderDetailDialog({
                             <FileText className="h-5 w-5 text-orange-600" />
                         </div>
                         <div>
-                            <p className="text-base">Chi tiết đơn hàng</p>
+                            <p className="text-base font-semibold text-slate-900 dark:text-slate-100">Chi tiết đơn hàng</p>
                             <p className="text-xs font-normal text-slate-500 mt-0.5">
                                 #{order.id?.slice(0, 8)} · {formatDateTime(order.created_at)}
                             </p>
@@ -469,7 +469,7 @@ function OrderDetailDialog({
                             {payStatus.label}
                         </span>
                         {order.payment_method && (
-                            <span className="text-xs text-slate-500 bg-slate-100 px-2.5 py-1 rounded-full border border-slate-200">
+                            <span className="text-xs text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-full border border-slate-200 dark:border-slate-700">
                                 <CreditCard className="h-3 w-3 inline mr-1" />
                                 {order.payment_method === "cod" ? "COD" : "Chuyển khoản"}
                             </span>
@@ -477,27 +477,27 @@ function OrderDetailDialog({
                     </div>
 
                     {/* Customer */}
-                    <div className="bg-slate-50 rounded-xl p-4 border">
+                    <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-4 border dark:border-slate-800">
                         <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Khách hàng</h4>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
                             <div className="flex items-center gap-2.5">
                                 <div className="h-8 w-8 rounded-lg bg-orange-100 flex items-center justify-center flex-shrink-0">
                                     <User className="h-4 w-4 text-orange-600" />
                                 </div>
-                                <span className="font-semibold text-slate-900">{order.customer_name}</span>
+                                <span className="font-semibold text-slate-900 dark:text-slate-100">{order.customer_name}</span>
                             </div>
                             <div className="flex items-center gap-2.5">
                                 <div className="h-8 w-8 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
                                     <Phone className="h-4 w-4 text-blue-600" />
                                 </div>
-                                <span className="text-slate-700">{order.customer_phone}</span>
+                                <span className="text-slate-700 dark:text-slate-300">{order.customer_phone}</span>
                             </div>
                             {order.shipping_address && (
                                 <div className="flex items-start gap-2.5 sm:col-span-2">
                                     <div className="h-8 w-8 rounded-lg bg-emerald-100 flex items-center justify-center flex-shrink-0 mt-0.5">
                                         <MapPin className="h-4 w-4 text-emerald-600" />
                                     </div>
-                                    <span className="text-slate-700 leading-relaxed">{order.shipping_address}</span>
+                                    <span className="text-slate-700 dark:text-slate-300 leading-relaxed">{order.shipping_address}</span>
                                 </div>
                             )}
                         </div>
@@ -513,27 +513,27 @@ function OrderDetailDialog({
                                 const product = item.product_variants?.products;
                                 const variant = item.product_variants;
                                 return (
-                                    <div key={idx} className="flex items-center gap-3 p-3 bg-white border rounded-xl hover:shadow-sm transition">
+                                    <div key={idx} className="flex items-center gap-3 p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl hover:shadow-sm transition">
                                         {product?.thumbnail ? (
                                             // eslint-disable-next-line @next/next/no-img-element
                                             <img
                                                 src={product.thumbnail}
                                                 alt={product?.name || ""}
-                                                className="w-12 h-12 rounded-lg object-cover border"
+                                                className="w-12 h-12 rounded-lg object-cover border dark:border-slate-700"
                                             />
                                         ) : (
-                                            <div className="w-12 h-12 rounded-lg bg-slate-100 flex items-center justify-center">
-                                                <Package className="h-5 w-5 text-slate-300" />
+                                            <div className="w-12 h-12 rounded-lg bg-slate-100 dark:bg-slate-700 flex items-center justify-center">
+                                                <Package className="h-5 w-5 text-slate-300 dark:text-slate-500" />
                                             </div>
                                         )}
                                         <div className="flex-1 min-w-0">
-                                            <p className="font-semibold text-sm text-slate-900 truncate">
+                                            <p className="font-semibold text-sm text-slate-900 dark:text-slate-100 truncate">
                                                 {product?.name || "Sản phẩm"}
                                             </p>
                                             {variant?.attributes && (
                                                 <div className="flex gap-1 mt-1 flex-wrap">
                                                     {Object.entries(variant.attributes).map(([k, v]) => (
-                                                        <span key={k} className="text-[10px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded font-medium">
+                                                        <span key={k} className="text-[10px] bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-1.5 py-0.5 rounded font-medium">
                                                             {k}: {v as string}
                                                         </span>
                                                     ))}
@@ -541,7 +541,7 @@ function OrderDetailDialog({
                                             )}
                                         </div>
                                         <div className="text-right flex-shrink-0">
-                                            <p className="font-bold text-sm text-slate-900">{formatVND(item.price_at_purchase)}</p>
+                                            <p className="font-bold text-sm text-slate-900 dark:text-slate-100">{formatVND(item.price_at_purchase)}</p>
                                             <p className="text-xs text-slate-400 mt-0.5">x{item.quantity}</p>
                                         </div>
                                     </div>
@@ -558,9 +558,9 @@ function OrderDetailDialog({
 
                     {/* Notes */}
                     {order.notes && (
-                        <div className="bg-amber-50 border border-amber-200 rounded-xl p-3">
-                            <p className="text-xs font-bold text-amber-600 uppercase tracking-wider mb-1">Ghi chú</p>
-                            <p className="text-sm text-amber-800">{order.notes}</p>
+                        <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-900/50 rounded-xl p-3">
+                            <p className="text-xs font-bold text-amber-600 dark:text-amber-500 uppercase tracking-wider mb-1">Ghi chú</p>
+                            <p className="text-sm text-amber-800 dark:text-amber-400">{order.notes}</p>
                         </div>
                     )}
 
@@ -842,12 +842,12 @@ export function OrderTable({
                                     return (
                                         <TableRow
                                             key={order.id}
-                                            className="hover:bg-orange-50/40 transition-colors cursor-pointer group"
+                                            className="hover:bg-orange-50/40 dark:hover:bg-slate-800/50 transition-colors cursor-pointer group"
                                             onClick={() => { setDetailOrder(order); setShowDetail(true); }}
                                         >
                                             {/* Order ID */}
                                             <TableCell>
-                                                <span className="font-mono text-xs font-bold text-orange-600 bg-orange-50 px-2 py-1 rounded">
+                                                <span className="font-mono text-xs font-bold text-orange-600 bg-orange-50 dark:bg-orange-500/10 dark:text-orange-400 px-2 py-1 rounded">
                                                     #{order.id?.slice(0, 8)}
                                                 </span>
                                             </TableCell>
@@ -855,7 +855,7 @@ export function OrderTable({
                                             {/* Customer */}
                                             <TableCell>
                                                 <div>
-                                                    <p className="font-semibold text-sm text-slate-900 group-hover:text-orange-700 transition-colors">
+                                                    <p className="font-semibold text-sm text-slate-900 dark:text-slate-100 group-hover:text-orange-700 transition-colors">
                                                         {order.customer_name}
                                                     </p>
                                                     <p className="text-xs text-slate-400 mt-0.5 flex items-center gap-1">
@@ -866,14 +866,14 @@ export function OrderTable({
 
                                             {/* Item Count */}
                                             <TableCell className="text-center">
-                                                <Badge variant="secondary" className="font-bold text-[11px] px-2 py-0.5 bg-slate-100">
+                                                <Badge variant="secondary" className="font-bold text-[11px] px-2 py-0.5 bg-slate-100 dark:bg-slate-800 dark:text-slate-300">
                                                     {itemCount}
                                                 </Badge>
                                             </TableCell>
 
                                             {/* Total */}
                                             <TableCell className="text-right">
-                                                <span className="font-bold text-sm text-slate-900">{formatVND(order.total_amount)}</span>
+                                                <span className="font-bold text-sm text-slate-900 dark:text-slate-100">{formatVND(order.total_amount)}</span>
                                             </TableCell>
 
                                             {/* Status */}
@@ -894,7 +894,7 @@ export function OrderTable({
                                             {/* Date */}
                                             <TableCell>
                                                 <div>
-                                                    <p className="text-xs text-slate-600">{formatDate(order.created_at)}</p>
+                                                    <p className="text-xs text-slate-600 dark:text-slate-300">{formatDate(order.created_at)}</p>
                                                     <p className="text-[10px] text-slate-400">{timeAgo(order.created_at)}</p>
                                                 </div>
                                             </TableCell>
