@@ -276,11 +276,9 @@ export const MainHeader = () => {
                                         </Link>
                                     </DropdownMenuItem>
                                 )}
-                                <DropdownMenuItem asChild>
-                                    <Link href="/account" className="focus:bg-slate-100 dark:focus:bg-[#2a3040] focus:text-slate-900 dark:focus:text-white cursor-pointer w-full flex items-center">
-                                        <UserCircle className="mr-2 h-4 w-4" />
-                                        <span>Hồ sơ</span>
-                                    </Link>
+                                <DropdownMenuItem onClick={() => router.push("/account/profile")} className="focus:bg-slate-100 dark:focus:bg-[#2a3040] focus:text-slate-900 dark:focus:text-white cursor-pointer w-full flex items-center">
+                                    <UserCircle className="mr-2 h-4 w-4" />
+                                    <span>Hồ sơ</span>
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator className="bg-slate-200 dark:bg-slate-700" />
                                 <DropdownMenuItem onClick={handleLogout} className="focus:bg-slate-100 dark:focus:bg-[#2a3040] focus:text-red-500 dark:focus:text-red-400 text-red-500 dark:text-red-400 cursor-pointer">

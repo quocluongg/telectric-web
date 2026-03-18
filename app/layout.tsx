@@ -27,7 +27,7 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: 'img/icon.png' },
+      { url: '/img/icon.png' },
       new URL('/img/icon.png', 'https://telectric.vn').href,
     ],
     apple: [

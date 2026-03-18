@@ -48,7 +48,7 @@ interface DashboardStats {
 interface RecentOrder {
     id: string;
     customer_name: string;
-    total_price: number;
+    total_amount: number;
     status: string;
     created_at: string;
 }
@@ -245,7 +245,7 @@ const RecentOrders = ({ orders }: RecentOrdersProps) => (
                                 <p className="text-xs text-slate-400 dark:text-slate-500">{formatDate(order.created_at)}</p>
                             </div>
                             <div className="flex flex-col items-end gap-1 flex-shrink-0">
-                                <p className="text-sm font-bold text-slate-700 dark:text-slate-200">{formatCurrency(order.total_price)}</p>
+                                <p className="text-sm font-bold text-slate-700 dark:text-slate-200">{formatCurrency(order.total_amount)}</p>
                                 <span className={`flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full ${cfg.color}`}>
                                     {cfg.icon}
                                     {cfg.label}
@@ -297,7 +297,7 @@ export default function AdminDashboard() {
                     recentRes,
                 ] = await Promise.all([
                     supabase.from("orders").select("*", { count: "exact", head: true }),
-                    supabase.from("orders").select("total_price").eq("status", "delivered"),
+                    supabase.from("orders").select("total_amount").eq("status", "delivered"),
                     supabase.from("products").select("*", { count: "exact", head: true }),
                     supabase.from("profiles").select("*", { count: "exact", head: true }),
                     supabase.from("news").select("*", { count: "exact", head: true }),
@@ -308,12 +308,12 @@ export default function AdminDashboard() {
                     supabase.from("orders").select("*", { count: "exact", head: true }).eq("status", "cancelled"),
                     supabase
                         .from("orders")
-                        .select("id, customer_name, total_price, status, created_at")
+                        .select("id, customer_name, total_amount, status, created_at")
                         .order("created_at", { ascending: false })
                         .limit(6),
                 ]);
 
-                const totalRevenue = (revenueRes.data || []).reduce((sum: number, o: any) => sum + (o.total_price || 0), 0);
+                const totalRevenue = (revenueRes.data || []).reduce((sum: number, o: any) => sum + (o.total_amount || 0), 0);
 
                 setStats({
                     totalOrders: ordersRes.count || 0,

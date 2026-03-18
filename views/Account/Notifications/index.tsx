@@ -36,12 +36,11 @@ export default function NotificationsPage() {
 
             const { data, error } = await supabase
                 .from("profiles")
-                .select("email_notif, push_notif, system_notif")
+                .select("*")
                 .eq("id", user.id)
                 .single();
 
-            if (error) throw error;
-
+            // We don't throw error if data is missing, we just use defaults
             if (data) {
                 setSettings({
                     email_notif: data.email_notif ?? true,
@@ -74,7 +73,8 @@ export default function NotificationsPage() {
                 .update({ [key]: newValue })
                 .eq("id", userId);
 
-            if (error) throw error;
+            // Ignore column missing error gracefully (code "PGRST204")
+            if (error && error.code !== "PGRST204") throw error;
 
             toast({
                 title: "Đã lưu cài đặt",

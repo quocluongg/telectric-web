@@ -34,9 +34,9 @@ type Profile = {
     full_name: string | null
     avatar_url: string | null
     website: string | null
-    email: string | null
-    role: 'user' | 'admin' | 'moderator'
-    updated_at: string | null
+    email: string | null;
+    role: 'user' | 'admin' | 'moderator';
+    updated_at?: string | null;
 }
 
 const roleConfig: Record<string, { label: string; color: string; icon: React.ReactNode; dot: string; bg: string }> = {
@@ -106,7 +106,6 @@ export default function AdminUsersPage() {
         let query = supabase
             .from('profiles')
             .select('*', { count: 'exact' })
-            .order('updated_at', { ascending: false, nullsFirst: false })
             .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1)
 
         if (searchQuery.trim()) {
@@ -154,8 +153,7 @@ export default function AdminUsersPage() {
                 username: editForm.username || null,
                 email: editForm.email || null,
                 website: editForm.website || null,
-                role: editForm.role,
-                updated_at: new Date().toISOString(),
+                role: editForm.role
             })
             .eq('id', editingUser.id)
 
@@ -165,7 +163,7 @@ export default function AdminUsersPage() {
         fetchStats()
     }
 
-    const formatDate = (dateStr: string | null) => {
+    const formatDate = (dateStr: string | null | undefined) => {
         if (!dateStr) return '—'
         return new Date(dateStr).toLocaleDateString('vi-VN', {
             day: '2-digit', month: '2-digit', year: 'numeric'

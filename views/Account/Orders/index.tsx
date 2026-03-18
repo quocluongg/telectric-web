@@ -378,14 +378,14 @@ export default function OrdersPage() {
                         }
                     }
 
-                    // Also try matching by user's email in customer_name
+                    // Also try matching by user's email in customer_email if it exists, but for now we fallback to nothing
+                    // as TLECTRIC's order table primarily uses phone and user_id.
                     if ((!data || data.length === 0) && user.email) {
                         const res = await supabase
                             .from("orders")
                             .select(ORDER_SELECT)
-                            .eq("user_id", user.id)
+                            .eq("customer_phone", (user.user_metadata?.phone || "").replace(/\s/g, "")) // attempt with phone fallback
                             .order("created_at", { ascending: false });
-                        // This won't help for old orders, but at least shows new ones
                         if (!res.error && res.data) {
                             data = res.data;
                         }
