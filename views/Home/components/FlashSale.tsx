@@ -117,7 +117,7 @@ export function FlashSale() {
 
                 {/* ===== Product Cards Carousel ===== */}
                 <div className="bg-white dark:bg-[#1a1f2e] rounded-b-xl border border-slate-200 dark:border-slate-800 shadow-sm p-4 md:p-6">
-                    <div className="overflow-visible" ref={emblaRef}>
+                    <div className="overflow-hidden" ref={emblaRef}>
                         <div className="flex gap-4 md:gap-5 pb-4 pt-1">
                             {products.map((item) => {
                                 const originalPrice = item.product_variants?.price || 0;
