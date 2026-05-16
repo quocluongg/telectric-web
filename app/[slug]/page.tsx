@@ -67,18 +67,28 @@ export default async function Page({ params }: PageProps) {
     const { slug } = await params;
     const supabase = getSupabase();
 
-    // Fetch product data for both 404 check and JSON-LD
+    // Fetch FULL product data server-side (cho SEO)
     const { data: product } = await supabase
         .from("products")
-        .select("name, slug, description, thumbnail")
+        .select("*")
         .eq("slug", slug)
         .single();
 
     if (!product) notFound();
 
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://telectric.vn";
+    // Fetch variants server-side
+    const { data: variants } = await supabase
+        .from("product_variants")
+        .select("*")
+        .eq("product_id", product.id)
+        .order("created_at");
 
-    // Structured Data (JSON-LD) cho Google Rich Snippets
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://telectric.vn";
+    const safeVariants = variants || [];
+    const minPrice = safeVariants.length > 0 ? Math.min(...safeVariants.map(v => v.price)) : 0;
+    const maxPrice = safeVariants.length > 0 ? Math.max(...safeVariants.map(v => v.price)) : 0;
+
+    // Structured Data (JSON-LD) cho Google Rich Snippets — bao gồm giá
     const jsonLd = {
         "@context": "https://schema.org",
         "@type": "Product",
@@ -87,9 +97,21 @@ export default async function Page({ params }: PageProps) {
         image: product.thumbnail || undefined,
         url: `${siteUrl}/${product.slug}`,
         brand: {
-            "@type": "Organization",
-            name: "TELECTRIC",
+            "@type": "Brand",
+            name: product.brand || "TELECTRIC",
         },
+        ...(safeVariants.length > 0 && {
+            offers: {
+                "@type": "AggregateOffer",
+                priceCurrency: "VND",
+                lowPrice: minPrice,
+                highPrice: maxPrice,
+                offerCount: safeVariants.length,
+                availability: safeVariants.some(v => v.stock > 0)
+                    ? "https://schema.org/InStock"
+                    : "https://schema.org/OutOfStock",
+            },
+        }),
     };
 
     return (
@@ -98,7 +120,24 @@ export default async function Page({ params }: PageProps) {
                 type="application/ld+json"
                 dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
             />
-            <ProductDetailPage productSlug={slug} />
+            {/* SEO: Nội dung ẩn cho Google crawler đọc được (server-rendered HTML) */}
+            <div className="sr-only" aria-hidden="false">
+                <h1>{product.name}</h1>
+                <p>Thương hiệu: {product.brand} | Xuất xứ: {product.origin}</p>
+                <p>{product.description}</p>
+                {safeVariants.map(v => (
+                    <div key={v.id}>
+                        <span>SKU: {v.sku} - Giá: {v.price.toLocaleString("vi-VN")}₫</span>
+                        <span>{Object.entries(v.attributes || {}).map(([k, val]) => `${k}: ${val}`).join(", ")}</span>
+                    </div>
+                ))}
+            </div>
+            <ProductDetailPage
+                productSlug={slug}
+                initialProduct={product}
+                initialVariants={safeVariants}
+            />
         </>
     );
 }
+

@@ -84,18 +84,24 @@ function getAttributeGroups(variants: ProductVariant[]) {
     );
 }
 
-export default function ProductDetailPage({ productSlug }: { productSlug: string }) {
+export default function ProductDetailPage({ productSlug, initialProduct, initialVariants }: {
+    productSlug: string;
+    initialProduct?: any;
+    initialVariants?: any[];
+}) {
     const supabase = createClient();
     const { toast } = useToast();
     const router = useRouter();
 
-    const [product, setProduct] = useState<Product | null>(null);
-    const [variants, setVariants] = useState<ProductVariant[]>([]);
-    const [loading, setLoading] = useState(true);
+    const [product, setProduct] = useState<Product | null>(initialProduct || null);
+    const [variants, setVariants] = useState<ProductVariant[]>(initialVariants || []);
+    const [loading, setLoading] = useState(!initialProduct);
 
     // UI State
     const [selectedImage, setSelectedImage] = useState(0);
-    const [selectedAttributes, setSelectedAttributes] = useState<Record<string, string>>({});
+    const [selectedAttributes, setSelectedAttributes] = useState<Record<string, string>>(
+        () => initialVariants && initialVariants.length > 0 ? initialVariants[0].attributes : {}
+    );
     const [quantity, setQuantity] = useState(1);
     const [isWishlisted, setIsWishlisted] = useState(false);
     
@@ -117,8 +123,10 @@ export default function ProductDetailPage({ productSlug }: { productSlug: string
         }));
     };
 
-    // Fetch data
+    // Fetch data — skip nếu đã có initialProduct từ server
     useEffect(() => {
+        if (initialProduct) return; // Đã có data từ server, không cần fetch lại
+
         async function fetchProduct() {
             setLoading(true);
             const productRes = await supabase.from("products").select("*").eq("slug", productSlug).single();
