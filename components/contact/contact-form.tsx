@@ -28,6 +28,7 @@ type FormValues = z.infer<typeof formSchema>;
 
 export default function ContactForm() {
     const [isLoading, setIsLoading] = useState(false);
+    const [lastSentAt, setLastSentAt] = useState(0);
     const { toast } = useToast();
 
     const form = useForm<FormValues>({
@@ -43,6 +44,18 @@ export default function ContactForm() {
     const supabase = createClient();
 
     async function onSubmit(data: FormValues) {
+        // Rate limit: 1 lần / 60 giây
+        const now = Date.now();
+        if (now - lastSentAt < 60_000) {
+            const secs = Math.ceil((60_000 - (now - lastSentAt)) / 1000);
+            toast({
+                title: "Vui lòng chờ",
+                description: `Bạn có thể gửi lại sau ${secs} giây.`,
+                variant: "destructive",
+            });
+            return;
+        }
+
         setIsLoading(true);
         try {
             const { data: response, error } = await supabase.functions.invoke('contact-email', {
@@ -52,6 +65,7 @@ export default function ContactForm() {
             if (error) throw error;
 
             if (response?.success) {
+                setLastSentAt(Date.now());
                 toast({
                     title: "Thành công!",
                     description: response.message || "Gửi yêu cầu thành công!",

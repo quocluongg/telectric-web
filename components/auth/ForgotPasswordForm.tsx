@@ -28,7 +28,11 @@ const otpSchema = z.object({
 })
 
 const passwordSchema = z.object({
-    password: z.string().min(6, "Mật khẩu phải có ít nhất 6 ký tự"),
+    password: z.string()
+        .min(8, "Mật khẩu phải có ít nhất 8 ký tự")
+        .max(32, "Mật khẩu không được quá 32 ký tự")
+        .regex(/[A-Z]/, "Mật khẩu phải có ít nhất 1 chữ hoa")
+        .regex(/[0-9]/, "Mật khẩu phải có ít nhất 1 chữ số"),
     confirmPassword: z.string(),
 }).refine((data) => data.password === data.confirmPassword, {
     message: "Mật khẩu không khớp",

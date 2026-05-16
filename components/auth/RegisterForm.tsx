@@ -22,7 +22,11 @@ const formSchema = z
     .object({
         fullName: z.string().min(2, "Vui lòng nhập họ và tên"),
         email: z.string().email("Email không hợp lệ"),
-        password: z.string().min(6, "Mật khẩu phải có ít nhất 6 ký tự"),
+        password: z.string()
+            .min(8, "Mật khẩu phải có ít nhất 8 ký tự")
+            .max(32, "Mật khẩu không được quá 32 ký tự")
+            .regex(/[A-Z]/, "Mật khẩu phải có ít nhất 1 chữ hoa")
+            .regex(/[0-9]/, "Mật khẩu phải có ít nhất 1 chữ số"),
         confirmPassword: z.string(),
     })
     .refine((data) => data.password === data.confirmPassword, {
@@ -310,33 +314,6 @@ export function RegisterForm({ onSwitchToLogin, onClose }: RegisterFormProps) {
                         </button>
                     </div>
 
-                    <div className="relative my-4">
-                        <div className="absolute inset-0 flex items-center">
-                            <span className="w-full border-t border-slate-200 dark:border-gray-700" />
-                        </div>
-                        <div className="relative flex justify-center text-xs uppercase">
-                            <span className="bg-white dark:bg-[#0f111a] px-2 text-slate-500 dark:text-gray-400">
-                                HOẶC ĐĂNG NHẬP BẰNG
-                            </span>
-                        </div>
-                    </div>
-
-                    <div className="flex justify-center gap-4">
-                        <Button
-                            variant="outline"
-                            className="rounded-full bg-slate-100 hover:bg-slate-200 border-slate-200 dark:bg-[#1e2330] dark:border-0 dark:hover:bg-[#2a3040] w-12 h-12 p-0 flex items-center justify-center text-slate-900 dark:text-white"
-                            disabled={isLoading}
-                        >
-                            <span className="text-xl">G</span>
-                        </Button>
-                        <Button
-                            variant="outline"
-                            className="rounded-full bg-slate-100 hover:bg-slate-200 border-slate-200 dark:bg-[#1e2330] dark:border-0 dark:hover:bg-[#2a3040] w-12 h-12 p-0 flex items-center justify-center text-slate-900 dark:text-white"
-                            disabled={isLoading}
-                        >
-                            <span className="text-xl">D</span>
-                        </Button>
-                    </div>
                 </form>
             </Form>
         </div>

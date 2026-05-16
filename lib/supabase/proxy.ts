@@ -69,6 +69,32 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
+  // Admin role check: only users with 'admin' role can access /admin/*
+  const isAdminPath = request.nextUrl.pathname.startsWith("/admin");
+  if (isAdminPath && user) {
+    // Role is stored in the profiles table, not in JWT claims.
+    // Query the profiles table to verify admin role.
+    const userId = (user as Record<string, unknown>).sub as string;
+    if (userId) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", userId)
+        .single();
+
+      if (profile?.role !== "admin") {
+        const url = request.nextUrl.clone();
+        url.pathname = "/";
+        return NextResponse.redirect(url);
+      }
+    } else {
+      // No user ID found, redirect to home
+      const url = request.nextUrl.clone();
+      url.pathname = "/";
+      return NextResponse.redirect(url);
+    }
+  }
+
   // IMPORTANT: You *must* return the supabaseResponse object as it is.
   // If you're creating a new response object with NextResponse.next() make sure to:
   // 1. Pass the request in it, like so:

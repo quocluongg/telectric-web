@@ -74,7 +74,8 @@ export function LoginForm({
             const searchParams = new URLSearchParams(window.location.search)
             const redirectTo = searchParams.get("redirect")
 
-            if (redirectTo) {
+            // Only allow relative redirects to prevent open redirect attacks
+            if (redirectTo && redirectTo.startsWith("/") && !redirectTo.startsWith("//")) {
                 router.push(redirectTo)
             } else {
                 router.refresh()

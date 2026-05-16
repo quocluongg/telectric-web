@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Calendar, ArrowLeft, Newspaper, TrendingUp } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import DOMPurify from "dompurify";
 
 // 1. Định nghĩa lại Type cho bài viết liên quan (chỉ cần các trường cần thiết)
 interface RelatedArticleMinimal {
@@ -143,10 +144,16 @@ export default function NewsDetailPage({ article, relatedArticles }: NewsDetailP
                                 <div
                                     className="article-body"
                                     dangerouslySetInnerHTML={{
-                                        __html: (article.content || "")
-                                            .replace(/[\u00AD\u200B\u200C\u200D\u2060\uFEFF]/g, '') // Remove zero-width chars
-                                            .replace(/&nbsp;/g, ' ') // Replace HTML non-breaking spaces
-                                            .replace(/\u00A0/g, ' ') // Replace Unicode non-breaking spaces
+                                        __html: DOMPurify.sanitize(
+                                            (article.content || "")
+                                                .replace(/[\u00AD\u200B\u200C\u200D\u2060\uFEFF]/g, '') // Remove zero-width chars
+                                                .replace(/&nbsp;/g, ' ') // Replace HTML non-breaking spaces
+                                                .replace(/\u00A0/g, ' '), // Replace Unicode non-breaking spaces
+                                            {
+                                                ALLOWED_TAGS: ['p','h1','h2','h3','h4','h5','h6','ul','ol','li','strong','em','b','i','u','s','a','img','blockquote','br','span','div','table','thead','tbody','tr','th','td','pre','code','hr','sub','sup','figure','figcaption'],
+                                                ALLOWED_ATTR: ['href','src','alt','class','style','target','rel','width','height','colspan','rowspan'],
+                                            }
+                                        )
                                     }}
                                 />
                             </CardContent>

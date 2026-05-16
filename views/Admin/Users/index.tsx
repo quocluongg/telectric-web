@@ -146,7 +146,7 @@ export default function AdminUsersPage() {
         if (!editingUser) return
         setSaving(true)
 
-        await supabase
+        const { error } = await supabase
             .from('profiles')
             .update({
                 full_name: editForm.full_name || null,
@@ -158,6 +158,12 @@ export default function AdminUsersPage() {
             .eq('id', editingUser.id)
 
         setSaving(false)
+
+        if (error) {
+            alert(`Lỗi cập nhật: ${error.message}`)
+            return
+        }
+
         setEditingUser(null)
         fetchUsers()
         fetchStats()

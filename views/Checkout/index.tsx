@@ -11,7 +11,7 @@ import {
 } from "@/lib/cart";
 import {
     ChevronLeft, Trash2, Loader2, ShieldCheck, Truck,
-    CreditCard, Banknote, Package, Minus, Plus, Tag, CheckCircle2
+    CreditCard, Banknote, Package, Minus, Plus, CheckCircle2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -56,8 +56,7 @@ export default function CheckoutPage() {
     // Payment
     const [paymentMethod, setPaymentMethod] = useState("cod");
 
-    // Coupon
-    const [couponCode, setCouponCode] = useState("");
+
 
     // Order state
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -292,12 +291,17 @@ export default function CheckoutPage() {
 
             const newOrderId = (data as string) || "";
 
-            // Cập nhật customer_email riêng để tránh lỗi nếu RPC chưa hỗ trợ tham số p_customer_email
-            if (newOrderId && form.email) {
-                await supabase
-                    .from("orders")
-                    .update({ customer_email: form.email })
-                    .eq("id", newOrderId);
+            // Cập nhật customer_email + notes riêng để tránh lỗi nếu RPC chưa hỗ trợ các tham số này
+            if (newOrderId) {
+                const updateData: Record<string, string> = {};
+                if (form.email) updateData.customer_email = form.email;
+                if (form.notes.trim()) updateData.notes = form.notes.trim();
+                if (Object.keys(updateData).length > 0) {
+                    await supabase
+                        .from("orders")
+                        .update(updateData)
+                        .eq("id", newOrderId);
+                }
             }
 
             setOrderId(newOrderId);
@@ -691,21 +695,7 @@ export default function CheckoutPage() {
                                     ))}
                                 </div>
 
-                                {/* Coupon */}
-                                <div className="flex gap-2 mb-6">
-                                    <div className="flex-1 relative">
-                                        <Tag className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                                        <input
-                                            placeholder="Mã khuyến mãi"
-                                            value={couponCode}
-                                            onChange={e => setCouponCode(e.target.value)}
-                                            className="w-full h-12 pl-10 pr-4 rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-[#12141c] text-slate-900 dark:text-slate-200 placeholder-slate-400 text-sm outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition"
-                                        />
-                                    </div>
-                                    <button className="px-5 h-12 bg-slate-900 dark:bg-slate-800 text-white dark:text-slate-200 rounded-xl text-sm font-bold hover:bg-slate-800 dark:hover:bg-slate-700 transition">
-                                        Áp dụng
-                                    </button>
-                                </div>
+
 
                                 {/* Cost Breakdown */}
                                 <div className="space-y-3 mb-6 p-4 bg-gray-50 dark:bg-[#1c212c] rounded-xl border border-gray-100 dark:border-white/5">
