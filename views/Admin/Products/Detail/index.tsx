@@ -240,10 +240,11 @@ export default function ProductDetailPage({ productSlug }: { productSlug: string
 
     const formatTime = (seconds: number) => {
         if (seconds < 0) seconds = 0;
-        const h = Math.floor(seconds / 3600);
+        const d = Math.floor(seconds / 86400);
+        const h = Math.floor((seconds % 86400) / 3600);
         const m = Math.floor((seconds % 3600) / 60);
         const s = seconds % 60;
-        return { h: h.toString().padStart(2, "0"), m: m.toString().padStart(2, "0"), s: s.toString().padStart(2, "0") };
+        return { d: d.toString().padStart(2, "0"), h: h.toString().padStart(2, "0"), m: m.toString().padStart(2, "0"), s: s.toString().padStart(2, "0") };
     };
 
     // Handlers
@@ -430,7 +431,9 @@ export default function ProductDetailPage({ productSlug }: { productSlug: string
                                             <Zap className="w-4 h-4 mr-1" fill="currentColor" /> {flashSale.campaigns?.name || "Flash Sale"}
                                         </Badge>
                                         <div className="text-sm font-bold text-red-500 flex items-center gap-1.5 bg-red-50 dark:bg-red-500/10 px-3 py-1 rounded-full border border-red-100 dark:border-red-500/20">
-                                            <Clock className="w-4 h-4" /> Bảng đếm ngược:
+                                            <Clock className="w-4 h-4" /> Còn lại:
+                                            <span className="font-mono bg-white dark:bg-[#1c212c] px-1.5 py-0.5 rounded shadow-sm mx-0.5">{formatTime(timeLeft).d}</span>
+                                            <span className="text-[10px]">ngày</span>
                                             <span className="font-mono bg-white dark:bg-[#1c212c] px-1.5 py-0.5 rounded shadow-sm mx-0.5">{formatTime(timeLeft).h}</span>
                                             :
                                             <span className="font-mono bg-white dark:bg-[#1c212c] px-1.5 py-0.5 rounded shadow-sm mx-0.5">{formatTime(timeLeft).m}</span>
