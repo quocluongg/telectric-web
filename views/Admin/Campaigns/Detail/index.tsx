@@ -28,7 +28,7 @@ export default function CampaignDetailPage({ campaignId }: { campaignId: string 
     const [selectedProduct, setSelectedProduct] = useState<any>(null);
     const [productVariants, setProductVariants] = useState<any[]>([]);
     const [selectedVariant, setSelectedVariant] = useState<any>(null);
-    const [salePrice, setSalePrice] = useState("");
+    const [discountPercent, setDiscountPercent] = useState("");
     const [addingItem, setAddingItem] = useState(false);
 
     useEffect(() => {
@@ -78,13 +78,17 @@ export default function CampaignDetailPage({ campaignId }: { campaignId: string 
 
     const handleSelectVariant = (variant: any) => {
         setSelectedVariant(variant);
-        setSalePrice(String(variant.price));
+        setDiscountPercent("");
         setStep(2);
     };
 
+    const computedSalePrice = selectedVariant && discountPercent
+        ? Math.round(selectedVariant.price * (1 - Number(discountPercent) / 100))
+        : null;
+
     const handleAddItem = async () => {
-        if (!selectedVariant || !salePrice) {
-            toast({ title: "Lỗi", description: "Vui lòng chọn phân loại và nhập giá Sale.", variant: "destructive" });
+        if (!selectedVariant || !discountPercent || !computedSalePrice || computedSalePrice <= 0) {
+            toast({ title: "Lỗi", description: "Vui lòng nhập % giảm giá hợp lệ.", variant: "destructive" });
             return;
         }
         setAddingItem(true);
@@ -92,7 +96,7 @@ export default function CampaignDetailPage({ campaignId }: { campaignId: string 
             campaign_id: id,
             product_id: selectedProduct.id,
             variant_id: selectedVariant.id,
-            sale_price: parseFloat(salePrice.replace(/,/g, "")),
+            sale_price: computedSalePrice,
             stock_quantity: selectedVariant.stock || 100,
         });
         setAddingItem(false);
@@ -112,7 +116,7 @@ export default function CampaignDetailPage({ campaignId }: { campaignId: string 
         setSelectedProduct(null);
         setProductVariants([]);
         setSelectedVariant(null);
-        setSalePrice("");
+        setDiscountPercent("");
     };
 
     const handleRemoveItem = async (itemId: string) => {
@@ -286,10 +290,33 @@ export default function CampaignDetailPage({ campaignId }: { campaignId: string 
                                     <p className="text-xs text-slate-500">Giá gốc: <span className="line-through">{fmt(selectedVariant.price)}</span></p>
                                 </div>
                                 <div>
-                                    <label className="text-xs font-semibold text-slate-500 mb-1 block">Giá Flash Sale (VNĐ)</label>
-                                    <Input type="number" value={salePrice} onChange={(e) => setSalePrice(e.target.value)} className="border-electric-orange focus-visible:ring-electric-orange h-10 text-lg font-bold text-electric-orange" />
-                                    {salePrice && Number(salePrice) < selectedVariant.price && (
-                                        <p className="text-xs text-green-600 mt-1 font-semibold">Giảm {Math.round((1 - Number(salePrice) / selectedVariant.price) * 100)}% so với giá gốc</p>
+                                    <label className="text-xs font-semibold text-slate-500 mb-1 block">Giảm giá (%)</label>
+                                    <div className="relative">
+                                        <Input
+                                            type="number"
+                                            min="1"
+                                            max="99"
+                                            placeholder="VD: 10"
+                                            value={discountPercent}
+                                            onChange={(e) => {
+                                                const val = e.target.value;
+                                                if (val === '' || (Number(val) >= 0 && Number(val) <= 100)) {
+                                                    setDiscountPercent(val);
+                                                }
+                                            }}
+                                            className="border-electric-orange focus-visible:ring-electric-orange h-10 text-lg font-bold text-electric-orange pr-8"
+                                        />
+                                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-lg font-bold text-electric-orange pointer-events-none">%</span>
+                                    </div>
+                                    {discountPercent && Number(discountPercent) > 0 && Number(discountPercent) < 100 && (
+                                        <div className="mt-2 p-2 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
+                                            <p className="text-xs text-slate-500">Giá sau giảm:</p>
+                                            <p className="text-lg font-black text-green-600">{fmt(computedSalePrice!)}</p>
+                                            <p className="text-xs text-red-500 font-semibold">Tiết kiệm: {fmt(selectedVariant.price - computedSalePrice!)}</p>
+                                        </div>
+                                    )}
+                                    {discountPercent && Number(discountPercent) >= 100 && (
+                                        <p className="text-xs text-red-500 mt-1 font-semibold">% giảm phải nhỏ hơn 100</p>
                                     )}
                                 </div>
                                 <div className="flex gap-2">
