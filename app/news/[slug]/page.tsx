@@ -3,6 +3,9 @@ import { createClient, createStaticClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import DefaultLayout from "@/components/layout/DefaultLayout";
 import NewsDetailPage from "@/views/News/NewsDetail";
+import Link from "next/link";
+
+const SITE_URL = "https://www.telectric.vn";
 
 // 1. Khai báo Interface News rút gọn cho relatedArticles để không bị lỗi Type
 interface RelatedNews {
@@ -45,7 +48,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
     const title = `${article.title} | TELECTRIC`;
     const description = article.excerpt || "Cập nhật tin tức mới nhất từ TELECTRIC.";
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://telectric.vn";
+    const siteUrl = SITE_URL;
 
     return {
         title,
@@ -91,7 +94,7 @@ export default async function Page({ params }: PageProps) {
         .order("published_at", { ascending: false })
         .limit(5);
 
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://telectric.vn";
+    const siteUrl = SITE_URL;
 
     // Structured Data (JSON-LD) cho Google Rich Snippets
     const jsonLd = {
@@ -102,11 +105,32 @@ export default async function Page({ params }: PageProps) {
         image: article.thumbnail || undefined,
         url: `${siteUrl}/news/${slug}`,
         datePublished: article.published_at || undefined,
-        publisher: {
+        dateModified: article.updated_at || article.published_at || undefined,
+        author: {
             "@type": "Organization",
             name: "TELECTRIC",
             url: siteUrl,
         },
+        publisher: {
+            "@type": "Organization",
+            name: "TELECTRIC",
+            url: siteUrl,
+            logo: {
+                "@type": "ImageObject",
+                url: `${siteUrl}/img/icon.png`,
+            },
+        },
+    };
+
+    // BreadcrumbList JSON-LD
+    const breadcrumbJsonLd = {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        itemListElement: [
+            { "@type": "ListItem", position: 1, name: "Trang chủ", item: siteUrl },
+            { "@type": "ListItem", position: 2, name: "Bài viết", item: `${siteUrl}/news` },
+            { "@type": "ListItem", position: 3, name: article.title, item: `${siteUrl}/news/${slug}` },
+        ],
     };
 
     return (
@@ -115,6 +139,23 @@ export default async function Page({ params }: PageProps) {
                 type="application/ld+json"
                 dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
             />
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+            />
+            {/* SEO: Server-rendered article content */}
+            <div className="sr-only" role="article" aria-label={article.title}>
+                <nav aria-label="Breadcrumb">
+                    <ol>
+                        <li><Link href="/">Trang chủ</Link></li>
+                        <li><Link href="/news">Bài viết</Link></li>
+                        <li>{article.title}</li>
+                    </ol>
+                </nav>
+                <h1>{article.title}</h1>
+                {article.excerpt && <p>{article.excerpt}</p>}
+                {article.published_at && <time dateTime={article.published_at}>Ngày đăng: {new Date(article.published_at).toLocaleDateString("vi-VN")}</time>}
+            </div>
             <DefaultLayout>
                 <NewsDetailPage
                     article={article}

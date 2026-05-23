@@ -3,32 +3,30 @@ import { Inter, Outfit } from "next/font/google";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import "./globals.css";
 
-const defaultUrl = process.env.NEXT_PUBLIC_SITE_URL
-  ? process.env.NEXT_PUBLIC_SITE_URL
-  : process.env.VERCEL_PROJECT_PRODUCTION_URL
-    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
-    : process.env.VERCEL_URL
-      ? `https://${process.env.VERCEL_URL}`
-      : "https://telectric.vn";
+const SITE_URL = "https://www.telectric.vn";
 
 export const metadata: Metadata = {
-  metadataBase: new URL(defaultUrl),
-  title: "TElectric - Chuyên dụng cụ đo lường chính hãng",
-  description: "Chuyên cung cấp các loại dụng cụ đo lường điện chính hãng, giá tốt nhất thị trường.",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: "TELECTRIC - Chuyên Dụng Cụ Đo Lường Điện Chính Hãng",
+    template: "%s | TELECTRIC",
+  },
+  description: "Chuyên cung cấp các loại dụng cụ đo lường điện chính hãng, giá tốt nhất thị trường. Fluke, Hioki, Kyoritsu, Sanwa, APECH.",
   alternates: {
-    canonical: defaultUrl,
+    canonical: SITE_URL,
   },
   openGraph: {
-    title: "TElectric - Chuyên dụng cụ đo lường chính hãng",
+    title: "TELECTRIC - Chuyên Dụng Cụ Đo Lường Điện Chính Hãng",
     description: "Chuyên cung cấp các loại dụng cụ đo lường điện chính hãng, giá tốt nhất thị trường.",
     type: "website",
-    siteName: "TElectric",
-    images: ["/img/banner.png"],
+    siteName: "TELECTRIC",
+    url: SITE_URL,
+    locale: "vi_VN",
+    images: [`${SITE_URL}/img/banner.png`],
   },
   icons: {
     icon: [
       { url: '/img/icon.png' },
-      new URL('/img/icon.png', 'https://telectric.vn').href,
     ],
     apple: [
       { url: '/img/icon.png' },
@@ -36,9 +34,24 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "TElectric - Chuyên dụng cụ đo lường chính hãng",
+    title: "TELECTRIC - Chuyên Dụng Cụ Đo Lường Điện Chính Hãng",
     description: "Chuyên cung cấp các loại dụng cụ đo lường điện chính hãng, giá tốt nhất thị trường.",
-    images: ["/img/banner.png"],
+    images: [`${SITE_URL}/img/banner.png`],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+  verification: {
+    // TODO: Thêm Google Search Console verification code
+    // google: "YOUR_GOOGLE_VERIFICATION_CODE",
   },
 };
 
@@ -55,7 +68,6 @@ const outfit = Outfit({
 });
 
 import { Toaster } from "@/components/ui/toaster";
-import DefaultLayout from "@/components/layout/DefaultLayout";
 import ZaloButton from "@/components/common/ZaloButton";
 
 export default function RootLayout({
@@ -74,10 +86,35 @@ export default function RootLayout({
               "@context": "https://schema.org",
               "@type": "Organization",
               name: "TELECTRIC",
-              url: "https://telectric.vn",
-              logo: "https://telectric.vn/img/icon.png",
-              description: "Chuyên cung cấp các loại dụng cụ đo lường điện chính hãng, giá tốt nhất thị trường.",
-              sameAs: [],
+              url: SITE_URL,
+              logo: `${SITE_URL}/img/icon.png`,
+              description: "Nhà phân phối dụng cụ đo lường điện chính hãng hàng đầu Việt Nam. Fluke, Hioki, Kyoritsu, Sanwa, APECH.",
+              contactPoint: {
+                "@type": "ContactPoint",
+                telephone: "+84-934-001-435",
+                contactType: "sales",
+                areaServed: "VN",
+                availableLanguage: "Vietnamese",
+              },
+              sameAs: [
+                "https://zalo.me/0934001435",
+              ],
+            }),
+          }}
+        />
+        {/* LocalBusiness for Google Maps / Local SEO */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Store",
+              name: "TELECTRIC - Thiết Bị Đo Lường Chính Hãng",
+              url: SITE_URL,
+              telephone: "+84-934-001-435",
+              priceRange: "₫₫",
+              image: `${SITE_URL}/img/icon.png`,
+              description: "Chuyên cung cấp dụng cụ đo lường điện chính hãng từ các thương hiệu Fluke, Hioki, Kyoritsu, Sanwa, APECH với giá tốt nhất.",
             }),
           }}
         />
