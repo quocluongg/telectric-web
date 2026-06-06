@@ -369,45 +369,32 @@ function StatusUpdateDialog({
                         </div>
                     </div>
 
-                    {/* Order Status Change */}
+                    {/* Order Status Change - Button Group */}
                     {allowedTransitions.length > 0 ? (
                         <div>
                             <p className="text-xs font-medium text-slate-500 mb-2">Chuyển trạng thái đơn hàng</p>
-                            <Select value={newStatus} onValueChange={setNewStatus}>
-                                <SelectTrigger className="h-11">
-                                    <SelectValue placeholder="Chọn trạng thái mới" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {allowedTransitions.map((key) => {
-                                        const config = STATUS_CONFIG[key];
-                                        return (
-                                            <SelectItem key={key} value={key}>
-                                                <span className="flex items-center gap-2">
-                                                    <span className={cn("w-2 h-2 rounded-full", config.dotColor)} />
-                                                    {config.label}
-                                                </span>
-                                            </SelectItem>
-                                        );
-                                    })}
-                                </SelectContent>
-                            </Select>
-
-                            {/* Visual transition */}
-                            {newStatus && (
-                                <div className="mt-3 flex items-center gap-2 text-sm">
-                                    <span className={cn("px-2 py-1 rounded border", currentConfig.bgColor, currentConfig.borderColor, currentConfig.color)}>
-                                        {currentConfig.label}
-                                    </span>
-                                    <ArrowRight className="h-4 w-4 text-slate-400" />
-                                    <span className={cn("px-2 py-1 rounded border",
-                                        STATUS_CONFIG[newStatus]?.bgColor,
-                                        STATUS_CONFIG[newStatus]?.borderColor,
-                                        STATUS_CONFIG[newStatus]?.color
-                                    )}>
-                                        {STATUS_CONFIG[newStatus]?.label}
-                                    </span>
-                                </div>
-                            )}
+                            <div className="flex flex-wrap gap-2">
+                                {allowedTransitions.map((key) => {
+                                    const config = STATUS_CONFIG[key];
+                                    const isSelected = newStatus === key;
+                                    return (
+                                        <button
+                                            key={key}
+                                            type="button"
+                                            onClick={() => setNewStatus(key)}
+                                            className={cn(
+                                                "inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border text-xs font-semibold transition-all",
+                                                isSelected
+                                                    ? cn(config.bgColor, config.borderColor, config.color, "ring-2 ring-offset-1 ring-orange-400 scale-[1.03]")
+                                                    : "bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:border-slate-300 dark:hover:border-slate-600"
+                                            )}
+                                        >
+                                            <span className={cn("w-2 h-2 rounded-full", config.dotColor)} />
+                                            {config.label}
+                                        </button>
+                                    );
+                                })}
+                            </div>
                         </div>
                     ) : (
                         <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-4 text-center">
@@ -415,38 +402,31 @@ function StatusUpdateDialog({
                         </div>
                     )}
 
-                    {/* Payment Status */}
+                    {/* Payment Status - Button Group */}
                     <div>
                         <p className="text-xs font-medium text-slate-500 mb-2">Trạng thái thanh toán</p>
-                        <Select value={newPaymentStatus} onValueChange={setNewPaymentStatus}>
-                            <SelectTrigger className="h-11">
-                                <SelectValue placeholder="Chọn trạng thái thanh toán" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {Object.entries(PAYMENT_STATUS_CONFIG).map(([key, config]) => (
-                                    <SelectItem key={key} value={key}>
-                                        <span className="flex items-center gap-2">
-                                            <span className={cn(
-                                                "w-2 h-2 rounded-full",
-                                                key === "paid" ? "bg-emerald-500" : key === "refunded" ? "bg-slate-500" : "bg-red-500"
-                                            )} />
-                                            {config.label}
-                                        </span>
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                        {newPaymentStatus !== currentPaymentStatus && (
-                            <div className="mt-3 flex items-center gap-2 text-sm">
-                                <span className={cn("px-2 py-1 rounded border text-xs font-semibold", currentPayConfig.className)}>
-                                    {currentPayConfig.label}
-                                </span>
-                                <ArrowRight className="h-4 w-4 text-slate-400" />
-                                <span className={cn("px-2 py-1 rounded border text-xs font-semibold", PAYMENT_STATUS_CONFIG[newPaymentStatus]?.className)}>
-                                    {PAYMENT_STATUS_CONFIG[newPaymentStatus]?.label}
-                                </span>
-                            </div>
-                        )}
+                        <div className="flex flex-wrap gap-2">
+                            {Object.entries(PAYMENT_STATUS_CONFIG).map(([key, config]) => {
+                                const isSelected = newPaymentStatus === key;
+                                const dotColor = key === "paid" ? "bg-emerald-500" : key === "refunded" ? "bg-slate-500" : "bg-red-500";
+                                return (
+                                    <button
+                                        key={key}
+                                        type="button"
+                                        onClick={() => setNewPaymentStatus(key)}
+                                        className={cn(
+                                            "inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border text-xs font-semibold transition-all",
+                                            isSelected
+                                                ? cn(config.className, "ring-2 ring-offset-1 ring-orange-400 scale-[1.03]")
+                                                : "bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:border-slate-300 dark:hover:border-slate-600"
+                                        )}
+                                    >
+                                        <span className={cn("w-2 h-2 rounded-full", dotColor)} />
+                                        {config.label}
+                                    </button>
+                                );
+                            })}
+                        </div>
                     </div>
                 </div>
 
