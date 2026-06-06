@@ -17,6 +17,7 @@ import * as z from "zod";
 import imageCompression from "browser-image-compression";
 import { sortAttributes } from "@/lib/utils/attributes";
 import { generateSlug } from "@/lib/utils/slugify";
+import { ORIGIN_LIST } from "@/lib/constants/origins";
 
 const productSchema = z.object({
     name: z.string().min(5, "Tên sản phẩm ít nhất 5 ký tự").max(255),
@@ -715,7 +716,81 @@ export default function ProductForm({ initialData }: { initialData?: any }) {
                                                 );
                                             }}
                                         />
-                                        <InputField control={form.control} name="origin" label="Xuất xứ" />
+                                        <FormField
+                                            control={form.control}
+                                            name="origin"
+                                            render={({ field }) => {
+                                                const [originOpen, setOriginOpen] = useState(false);
+                                                const [originSearch, setOriginSearch] = useState("");
+                                                const originRef = useRef<HTMLDivElement>(null);
+
+                                                // Close dropdown on outside click
+                                                useEffect(() => {
+                                                    const handler = (e: MouseEvent) => {
+                                                        if (originRef.current && !originRef.current.contains(e.target as Node)) {
+                                                            setOriginOpen(false);
+                                                        }
+                                                    };
+                                                    document.addEventListener("mousedown", handler);
+                                                    return () => document.removeEventListener("mousedown", handler);
+                                                }, []);
+
+                                                const filtered = ORIGIN_LIST.filter(o => {
+                                                    if (!originSearch.trim()) return true;
+                                                    const q = originSearch.toLowerCase().trim();
+                                                    return o.label.toLowerCase().includes(q) || o.aliases.some(a => a.includes(q));
+                                                });
+
+                                                return (
+                                                    <FormItem>
+                                                        <FormLabel>Xuất xứ</FormLabel>
+                                                        <div className="relative" ref={originRef}>
+                                                            <Input
+                                                                value={originOpen ? originSearch : field.value || ""}
+                                                                onChange={(e) => {
+                                                                    setOriginSearch(e.target.value);
+                                                                    if (!originOpen) setOriginOpen(true);
+                                                                }}
+                                                                onFocus={() => {
+                                                                    setOriginOpen(true);
+                                                                    setOriginSearch(field.value || "");
+                                                                }}
+                                                                placeholder="Tìm quốc gia..."
+                                                                className="h-10 bg-white dark:bg-[#0f1219] border-slate-200 dark:border-white/5"
+                                                                autoComplete="off"
+                                                            />
+                                                            {originOpen && (
+                                                                <div className="absolute z-50 top-full left-0 mt-1 w-full max-h-[240px] overflow-y-auto bg-white dark:bg-[#1e2330] border border-slate-200 dark:border-white/10 rounded-lg shadow-xl p-1">
+                                                                    {filtered.length === 0 ? (
+                                                                        <div className="px-3 py-2 text-xs text-slate-400">Không tìm thấy</div>
+                                                                    ) : (
+                                                                        filtered.map(o => (
+                                                                            <button
+                                                                                key={o.label}
+                                                                                type="button"
+                                                                                onClick={() => {
+                                                                                    field.onChange(o.label);
+                                                                                    setOriginOpen(false);
+                                                                                    setOriginSearch("");
+                                                                                }}
+                                                                                className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${
+                                                                                    field.value === o.label
+                                                                                        ? "bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 font-semibold"
+                                                                                        : "text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5"
+                                                                                }`}
+                                                                            >
+                                                                                {o.label}
+                                                                            </button>
+                                                                        ))
+                                                                    )}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                );
+                                            }}
+                                        />
                                         <FormField
                                             control={form.control}
                                             name="warranty_months"

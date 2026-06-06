@@ -28,6 +28,7 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
+import { groupOrigins } from "@/lib/constants/origins";
 
 interface Category {
     id: string;
@@ -172,25 +173,37 @@ function FilterBody({
 
             <Separator />
 
-            {/* Origins */}
+            {/* Origins (normalized) */}
             {availableOrigins.length > 0 && (
                 <div>
                     <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2.5 flex items-center gap-1.5">
                         <MapPin className="h-3.5 w-3.5 text-orange-500" /> Xuất xứ
                     </h4>
                     <div className="space-y-2">
-                        {availableOrigins.map(origin => (
-                            <label key={origin} className="flex items-center gap-2.5 cursor-pointer group">
-                                <Checkbox
-                                    checked={filters.origins.includes(origin)}
-                                    onCheckedChange={() => toggleArr("origins", origin)}
-                                    className="data-[state=checked]:bg-orange-500 data-[state=checked]:border-orange-500"
-                                />
-                                <span className="text-sm text-slate-600 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">
-                                    {origin}
-                                </span>
-                            </label>
-                        ))}
+                        {Array.from(groupOrigins(availableOrigins)).sort((a, b) => a[0].localeCompare(b[0])).map(([normalized, rawValues]) => {
+                            // Check if ANY of the raw values for this group are selected
+                            const isChecked = rawValues.some(v => filters.origins.includes(v));
+                            return (
+                                <label key={normalized} className="flex items-center gap-2.5 cursor-pointer group">
+                                    <Checkbox
+                                        checked={isChecked}
+                                        onCheckedChange={() => {
+                                            if (isChecked) {
+                                                // Remove all raw values of this group
+                                                update({ origins: filters.origins.filter(o => !rawValues.includes(o)) });
+                                            } else {
+                                                // Add all raw values of this group
+                                                update({ origins: [...filters.origins, ...rawValues] });
+                                            }
+                                        }}
+                                        className="data-[state=checked]:bg-orange-500 data-[state=checked]:border-orange-500"
+                                    />
+                                    <span className="text-sm text-slate-600 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">
+                                        {normalized}
+                                    </span>
+                                </label>
+                            );
+                        })}
                     </div>
                 </div>
             )}
@@ -374,12 +387,15 @@ export function DesktopToolbar({
                         {b} <X className="h-3 w-3" />
                     </Badge>
                 ))}
-                {filters.origins.map(o => (
-                    <Badge key={o} variant="secondary" className="text-[11px] cursor-pointer hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-900/20 transition-colors gap-1"
-                        onClick={() => update({ origins: filters.origins.filter(x => x !== o) })}>
-                        {o} <X className="h-3 w-3" />
-                    </Badge>
-                ))}
+                {(() => {
+                    const groups = groupOrigins(filters.origins);
+                    return Array.from(groups).map(([normalized, rawValues]) => (
+                        <Badge key={normalized} variant="secondary" className="text-[11px] cursor-pointer hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-900/20 transition-colors gap-1"
+                            onClick={() => update({ origins: filters.origins.filter(x => !rawValues.includes(x)) })}>
+                            {normalized} <X className="h-3 w-3" />
+                        </Badge>
+                    ));
+                })()}
                 {filters.inStockOnly && (
                     <Badge variant="secondary" className="text-[11px] cursor-pointer hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-900/20 transition-colors gap-1"
                         onClick={() => update({ inStockOnly: false })}>
