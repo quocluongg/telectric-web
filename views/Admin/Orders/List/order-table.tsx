@@ -319,21 +319,17 @@ function StatusUpdateDialog({
 }) {
     const [newStatus, setNewStatus] = useState("");
     const [newPaymentStatus, setNewPaymentStatus] = useState("");
-    const currentStatus = order?.status || "pending";
-    const currentPaymentStatus = order?.payment_status || "unpaid";
-    const allowedTransitions = STATUS_TRANSITIONS[currentStatus] || [];
-    const currentConfig = STATUS_CONFIG[currentStatus] || STATUS_CONFIG.pending;
-    const currentPayConfig = PAYMENT_STATUS_CONFIG[currentPaymentStatus] || PAYMENT_STATUS_CONFIG.unpaid;
+
+    // 3 trạng thái đơn hàng chính
+    const ORDER_STATUSES = ["processing", "delivered", "cancelled"] as const;
 
     // Reset khi mở dialog
     React.useEffect(() => {
         if (open) {
-            if (allowedTransitions.length > 0) {
-                setNewStatus(allowedTransitions[0]);
-            }
+            setNewStatus(order?.status || "processing");
             setNewPaymentStatus(order?.payment_status || "unpaid");
         }
-    }, [open, allowedTransitions, order?.payment_status]);
+    }, [open, order?.status, order?.payment_status]);
 
     if (!order) return null;
 
@@ -346,63 +342,40 @@ function StatusUpdateDialog({
                         Cập nhật trạng thái
                     </DialogTitle>
                     <DialogDescription>
-                        Đơn hàng <span className="font-mono font-bold text-slate-700">#{order.id?.slice(0, 8)}</span>
+                        Đơn hàng <span className="font-mono font-bold text-slate-700 dark:text-slate-300">#{order.id?.slice(0, 8)}</span>
                         {" · "}{order.customer_name}
                     </DialogDescription>
                 </DialogHeader>
 
                 <div className="py-4 space-y-5">
-                    {/* Current Status */}
+                    {/* Order Status - 3 buttons always visible */}
                     <div>
-                        <p className="text-xs font-medium text-slate-500 mb-2">Trạng thái hiện tại</p>
-                        <div className="flex items-center gap-2 flex-wrap">
-                            <div className={cn(
-                                "inline-flex items-center gap-2 px-3 py-2 rounded-lg border text-sm font-semibold",
-                                currentConfig.bgColor, currentConfig.borderColor, currentConfig.color
-                            )}>
-                                {currentConfig.icon}
-                                {currentConfig.label}
-                            </div>
-                            <span className={cn("text-xs font-semibold px-2.5 py-1.5 rounded-lg border", currentPayConfig.className)}>
-                                {currentPayConfig.label}
-                            </span>
+                        <p className="text-xs font-medium text-slate-500 mb-2">Trạng thái đơn hàng</p>
+                        <div className="flex flex-wrap gap-2">
+                            {ORDER_STATUSES.map((key) => {
+                                const config = STATUS_CONFIG[key];
+                                const isSelected = newStatus === key;
+                                return (
+                                    <button
+                                        key={key}
+                                        type="button"
+                                        onClick={() => setNewStatus(key)}
+                                        className={cn(
+                                            "inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-lg border text-xs font-semibold transition-all",
+                                            isSelected
+                                                ? cn(config.bgColor, config.borderColor, config.color, "ring-2 ring-offset-1 ring-orange-400 scale-[1.03]")
+                                                : "bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:border-slate-300 dark:hover:border-slate-600"
+                                        )}
+                                    >
+                                        {config.icon}
+                                        {config.label}
+                                    </button>
+                                );
+                            })}
                         </div>
                     </div>
 
-                    {/* Order Status Change - Button Group */}
-                    {allowedTransitions.length > 0 ? (
-                        <div>
-                            <p className="text-xs font-medium text-slate-500 mb-2">Chuyển trạng thái đơn hàng</p>
-                            <div className="flex flex-wrap gap-2">
-                                {allowedTransitions.map((key) => {
-                                    const config = STATUS_CONFIG[key];
-                                    const isSelected = newStatus === key;
-                                    return (
-                                        <button
-                                            key={key}
-                                            type="button"
-                                            onClick={() => setNewStatus(key)}
-                                            className={cn(
-                                                "inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border text-xs font-semibold transition-all",
-                                                isSelected
-                                                    ? cn(config.bgColor, config.borderColor, config.color, "ring-2 ring-offset-1 ring-orange-400 scale-[1.03]")
-                                                    : "bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:border-slate-300 dark:hover:border-slate-600"
-                                            )}
-                                        >
-                                            <span className={cn("w-2 h-2 rounded-full", config.dotColor)} />
-                                            {config.label}
-                                        </button>
-                                    );
-                                })}
-                            </div>
-                        </div>
-                    ) : (
-                        <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-4 text-center">
-                            <p className="text-sm text-slate-500 dark:text-slate-400">Đơn hàng đã ở trạng thái cuối, không thể thay đổi.</p>
-                        </div>
-                    )}
-
-                    {/* Payment Status - Button Group */}
+                    {/* Payment Status - 3 buttons always visible */}
                     <div>
                         <p className="text-xs font-medium text-slate-500 mb-2">Trạng thái thanh toán</p>
                         <div className="flex flex-wrap gap-2">
@@ -415,7 +388,7 @@ function StatusUpdateDialog({
                                         type="button"
                                         onClick={() => setNewPaymentStatus(key)}
                                         className={cn(
-                                            "inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border text-xs font-semibold transition-all",
+                                            "inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-lg border text-xs font-semibold transition-all",
                                             isSelected
                                                 ? cn(config.className, "ring-2 ring-offset-1 ring-orange-400 scale-[1.03]")
                                                 : "bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:border-slate-300 dark:hover:border-slate-600"
@@ -436,7 +409,7 @@ function StatusUpdateDialog({
                     </Button>
                     <Button
                         className="bg-orange-600 hover:bg-orange-700"
-                        disabled={isUpdating || (!newStatus && newPaymentStatus === currentPaymentStatus)}
+                        disabled={isUpdating}
                         onClick={() => onUpdate(order.id, newStatus, newPaymentStatus)}
                     >
                         {isUpdating ? (
