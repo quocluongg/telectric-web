@@ -136,6 +136,10 @@ export default function AdminWarrantyPage() {
     const [historyForm, setHistoryForm] = useState<HistoryFormData>(emptyHistoryForm)
     const [savingHistory, setSavingHistory] = useState(false)
 
+    // Edit history
+    const [editingHistoryId, setEditingHistoryId] = useState<string | null>(null)
+    const [editHistoryForm, setEditHistoryForm] = useState<HistoryFormData>(emptyHistoryForm)
+
     const supabase = createClient()
 
     const fetchCards = useCallback(async () => {
@@ -271,6 +275,41 @@ export default function AdminWarrantyPage() {
 
         setHistoryForm(emptyHistoryForm)
         setShowHistoryForm(null)
+        setSavingHistory(false)
+    }
+
+    const startEditHistory = (h: WarrantyHistory) => {
+        setEditingHistoryId(h.id)
+        setEditHistoryForm({
+            issue_description: h.issue_description || '',
+            repair_action: h.repair_action || '',
+            repair_status: h.repair_status,
+        })
+    }
+
+    const handleUpdateHistory = async (historyId: string, cardId: string) => {
+        if (!editHistoryForm.issue_description.trim()) return
+        setSavingHistory(true)
+
+        await supabase.from('warranty_history').update({
+            issue_description: editHistoryForm.issue_description,
+            repair_action: editHistoryForm.repair_action || null,
+            repair_status: editHistoryForm.repair_status,
+        }).eq('id', historyId)
+
+        // Refresh history
+        const { data } = await supabase
+            .from('warranty_history')
+            .select('*')
+            .eq('warranty_card_id', cardId)
+            .order('request_date', { ascending: false })
+
+        if (data) {
+            setHistories(prev => ({ ...prev, [cardId]: data }))
+        }
+
+        setEditingHistoryId(null)
+        setEditHistoryForm(emptyHistoryForm)
         setSavingHistory(false)
     }
 
@@ -549,26 +588,95 @@ export default function AdminWarrantyPage() {
                                                                 <div className="space-y-2">
                                                                     {cardHistories.map(h => {
                                                                         const repairOpt = repairStatusOptions.find(o => o.value === h.repair_status)
+                                                                        const isEditing = editingHistoryId === h.id
                                                                         return (
-                                                                            <div key={h.id} className="flex items-start gap-3 p-3 bg-white dark:bg-slate-800 rounded-xl border border-gray-100 dark:border-slate-700 group">
-                                                                                <div className="w-2 h-2 bg-orange-400 rounded-full mt-2 flex-shrink-0" />
-                                                                                <div className="flex-1 min-w-0">
-                                                                                    <div className="flex items-center gap-2 mb-1">
-                                                                                        <span className="text-xs text-slate-400">{formatDate(h.request_date)}</span>
-                                                                                        <span className="text-xs px-2 py-0.5 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded font-medium">
-                                                                                            {repairOpt?.label || h.repair_status}
-                                                                                        </span>
+                                                                            <div key={h.id} className="bg-white dark:bg-slate-800 rounded-xl border border-gray-100 dark:border-slate-700 group overflow-hidden">
+                                                                                {isEditing ? (
+                                                                                    /* Inline edit form */
+                                                                                    <div className="p-4 space-y-3 bg-orange-50/50 dark:bg-orange-500/5">
+                                                                                        <div className="flex items-center gap-2 mb-1">
+                                                                                            <Edit3 size={14} className="text-orange-500" />
+                                                                                            <span className="text-xs font-semibold text-orange-600 dark:text-orange-400">Chỉnh sửa lịch sử — {formatDate(h.request_date)}</span>
+                                                                                        </div>
+                                                                                        <div>
+                                                                                            <label className="text-xs font-medium text-slate-600 dark:text-slate-400 mb-1 block">Mô tả vấn đề *</label>
+                                                                                            <textarea
+                                                                                                value={editHistoryForm.issue_description}
+                                                                                                onChange={e => setEditHistoryForm(prev => ({ ...prev, issue_description: e.target.value }))}
+                                                                                                className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg text-sm text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500/30 resize-none"
+                                                                                                rows={2}
+                                                                                            />
+                                                                                        </div>
+                                                                                        <div>
+                                                                                            <label className="text-xs font-medium text-slate-600 dark:text-slate-400 mb-1 block">Hành động xử lý</label>
+                                                                                            <textarea
+                                                                                                value={editHistoryForm.repair_action}
+                                                                                                onChange={e => setEditHistoryForm(prev => ({ ...prev, repair_action: e.target.value }))}
+                                                                                                className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg text-sm text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500/30 resize-none"
+                                                                                                rows={2}
+                                                                                            />
+                                                                                        </div>
+                                                                                        <div>
+                                                                                            <label className="text-xs font-medium text-slate-600 dark:text-slate-400 mb-1 block">Trạng thái</label>
+                                                                                            <select
+                                                                                                value={editHistoryForm.repair_status}
+                                                                                                onChange={e => setEditHistoryForm(prev => ({ ...prev, repair_status: e.target.value }))}
+                                                                                                className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg text-sm text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500/30"
+                                                                                            >
+                                                                                                {repairStatusOptions.map(opt => (
+                                                                                                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                                                                                                ))}
+                                                                                            </select>
+                                                                                        </div>
+                                                                                        <div className="flex justify-end gap-2">
+                                                                                            <button
+                                                                                                onClick={() => { setEditingHistoryId(null); setEditHistoryForm(emptyHistoryForm) }}
+                                                                                                className="px-4 py-2 text-sm text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
+                                                                                            >
+                                                                                                Huỷ
+                                                                                            </button>
+                                                                                            <button
+                                                                                                onClick={() => handleUpdateHistory(h.id, card.id)}
+                                                                                                disabled={savingHistory || !editHistoryForm.issue_description.trim()}
+                                                                                                className="inline-flex items-center gap-1.5 px-4 py-2 text-sm bg-orange-500 text-white font-semibold rounded-lg hover:bg-orange-600 disabled:opacity-50 transition-colors"
+                                                                                            >
+                                                                                                {savingHistory ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
+                                                                                                Lưu
+                                                                                            </button>
+                                                                                        </div>
                                                                                     </div>
-                                                                                    {h.issue_description && <p className="text-sm text-slate-600 dark:text-slate-300">{h.issue_description}</p>}
-                                                                                    {h.repair_action && <p className="text-sm text-slate-400 mt-0.5">→ {h.repair_action}</p>}
-                                                                                </div>
-                                                                                <button
-                                                                                    onClick={() => deleteHistory(h.id, card.id)}
-                                                                                    className="p-1 text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"
-                                                                                    title="Xoá"
-                                                                                >
-                                                                                    <Trash2 size={14} />
-                                                                                </button>
+                                                                                ) : (
+                                                                                    /* Normal display */
+                                                                                    <div className="flex items-start gap-3 p-3">
+                                                                                        <div className="w-2 h-2 bg-orange-400 rounded-full mt-2 flex-shrink-0" />
+                                                                                        <div className="flex-1 min-w-0">
+                                                                                            <div className="flex items-center gap-2 mb-1">
+                                                                                                <span className="text-xs text-slate-400">{formatDate(h.request_date)}</span>
+                                                                                                <span className="text-xs px-2 py-0.5 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded font-medium">
+                                                                                                    {repairOpt?.label || h.repair_status}
+                                                                                                </span>
+                                                                                            </div>
+                                                                                            {h.issue_description && <p className="text-sm text-slate-600 dark:text-slate-300">{h.issue_description}</p>}
+                                                                                            {h.repair_action && <p className="text-sm text-slate-400 mt-0.5">→ {h.repair_action}</p>}
+                                                                                        </div>
+                                                                                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all">
+                                                                                            <button
+                                                                                                onClick={() => startEditHistory(h)}
+                                                                                                className="p-1 text-slate-300 hover:text-orange-500 transition-colors"
+                                                                                                title="Sửa"
+                                                                                            >
+                                                                                                <Edit3 size={14} />
+                                                                                            </button>
+                                                                                            <button
+                                                                                                onClick={() => deleteHistory(h.id, card.id)}
+                                                                                                className="p-1 text-slate-300 hover:text-red-500 transition-colors"
+                                                                                                title="Xoá"
+                                                                                            >
+                                                                                                <Trash2 size={14} />
+                                                                                            </button>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                )}
                                                                             </div>
                                                                         )
                                                                     })}

@@ -79,7 +79,9 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
                 {menuItems.map((item) => {
                     const isActive = item.path === '/admin'
                         ? pathname === '/admin'
-                        : pathname?.startsWith(item.path)
+                        : item.path === '/admin/warranty'
+                            ? pathname === '/admin/warranty'
+                            : pathname?.startsWith(item.path)
 
                     return (
                         <Link

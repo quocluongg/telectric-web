@@ -644,8 +644,8 @@ export function OrderTable({
 
             if (error) throw error;
 
-            // Auto-create warranty cards when status changes to "shipped"
-            if (newStatus === "shipped") {
+            // Auto-create warranty cards when status changes to "delivered"
+            if (newStatus === "delivered") {
                 try {
                     // Fetch order with items + product info
                     const { data: orderData } = await supabase
@@ -693,6 +693,48 @@ export function OrderTable({
                 } catch (warrantyErr) {
                     console.error("Auto-create warranty failed:", warrantyErr);
                     // Don't block the status update if warranty creation fails
+                }
+            }
+
+            // Auto-void warranty cards when order is cancelled
+            if (newStatus === "cancelled") {
+                try {
+                    const { data: orderData } = await supabase
+                        .from("orders")
+                        .select(`
+                            customer_phone,
+                            order_items (
+                                product_variants (
+                                    products ( name )
+                                )
+                            )
+                        `)
+                        .eq("id", orderId)
+                        .single();
+
+                    if (orderData?.customer_phone && orderData?.order_items) {
+                        const productNames = (orderData.order_items as any[])
+                            .map((item: any) => item.product_variants?.products?.name)
+                            .filter(Boolean);
+
+                        if (productNames.length > 0) {
+                            const { count } = await supabase
+                                .from("warranty_cards")
+                                .update({ status: "voided", updated_at: new Date().toISOString() })
+                                .eq("customer_phone", orderData.customer_phone)
+                                .in("product_name", productNames)
+                                .eq("status", "active");
+
+                            if (count && count > 0) {
+                                toast({
+                                    title: "⚠️ Đã huỷ phiếu bảo hành",
+                                    description: `Huỷ ${count} phiếu bảo hành do đơn hàng bị huỷ`,
+                                });
+                            }
+                        }
+                    }
+                } catch (voidErr) {
+                    console.error("Auto-void warranty failed:", voidErr);
                 }
             }
 

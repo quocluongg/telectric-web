@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import {
     Search,
@@ -63,15 +63,52 @@ export default function AdminWarrantyCheckPage() {
     const [phone, setPhone] = useState('')
     const [results, setResults] = useState<WarrantyCard[]>([])
     const [histories, setHistories] = useState<Record<string, WarrantyHistory[]>>({})
-    const [loading, setLoading] = useState(false)
+    const [loading, setLoading] = useState(true)
     const [searched, setSearched] = useState(false)
     const [expandedCard, setExpandedCard] = useState<string | null>(null)
 
     const supabase = createClient()
 
+    // Load warranty cards that have history records on page mount
+    const loadCardsWithHistory = useCallback(async () => {
+        setLoading(true)
+
+        // Get all warranty_history card IDs
+        const { data: historyData } = await supabase
+            .from('warranty_history')
+            .select('warranty_card_id')
+
+        const cardIds = [...new Set((historyData || []).map(h => h.warranty_card_id))]
+
+        if (cardIds.length > 0) {
+            const { data, error } = await supabase
+                .from('warranty_cards')
+                .select('*')
+                .in('id', cardIds)
+                .neq('status', 'voided')
+                .order('created_at', { ascending: false })
+
+            if (!error && data) {
+                setResults(data)
+            }
+        } else {
+            setResults([])
+        }
+        setLoading(false)
+    }, [])
+
+    useEffect(() => {
+        loadCardsWithHistory()
+    }, [loadCardsWithHistory])
+
     const handleSearch = async (e: React.FormEvent) => {
         e.preventDefault()
-        if (!phone.trim()) return
+        if (!phone.trim()) {
+            // If search is cleared, reload cards with history
+            setSearched(false)
+            loadCardsWithHistory()
+            return
+        }
 
         setLoading(true)
         setSearched(true)
@@ -83,6 +120,7 @@ export default function AdminWarrantyCheckPage() {
             .from('warranty_cards')
             .select('*')
             .or(`customer_phone.ilike.%${cleanPhone}%,customer_name.ilike.%${cleanPhone}%,serial_number.ilike.%${cleanPhone}%`)
+            .neq('status', 'voided')
             .order('created_at', { ascending: false })
 
         if (!error && data) {
@@ -163,20 +201,29 @@ export default function AdminWarrantyCheckPage() {
             </form>
 
             {/* Results */}
-            {searched && !loading && (
+            {!loading && (
                 <div className="space-y-4">
                     {results.length === 0 ? (
                         <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-2xl p-12 text-center">
                             <div className="w-16 h-16 bg-slate-100 dark:bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-4">
                                 <Search size={28} className="text-slate-300 dark:text-slate-500" />
                             </div>
-                            <h3 className="text-lg font-semibold text-slate-600 dark:text-slate-300 mb-1">Không tìm thấy</h3>
-                            <p className="text-slate-400 text-sm">Không có thẻ bảo hành nào khớp với từ khoá tìm kiếm.</p>
+                            <h3 className="text-lg font-semibold text-slate-600 dark:text-slate-300 mb-1">
+                                {searched ? 'Không tìm thấy' : 'Chưa có lịch sử bảo hành'}
+                            </h3>
+                            <p className="text-slate-400 text-sm">
+                                {searched
+                                    ? 'Không có thẻ bảo hành nào khớp với từ khoá tìm kiếm.'
+                                    : 'Chưa có sản phẩm nào được ghi nhận lịch sử bảo hành.'}
+                            </p>
                         </div>
                     ) : (
                         <>
                             <p className="text-sm text-slate-500 dark:text-slate-400">
-                                Tìm thấy <span className="font-semibold text-slate-700 dark:text-white">{results.length}</span> kết quả
+                                {searched
+                                    ? <>Tìm thấy <span className="font-semibold text-slate-700 dark:text-white">{results.length}</span> kết quả</>
+                                    : <>Hiển thị <span className="font-semibold text-slate-700 dark:text-white">{results.length}</span> sản phẩm có lịch sử bảo hành</>
+                                }
                             </p>
 
                             {results.map((card) => {

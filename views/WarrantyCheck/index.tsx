@@ -98,6 +98,7 @@ export default function WarrantyCheckPage() {
             .from('warranty_cards')
             .select('*')
             .eq('customer_phone', cleanPhone)
+            .neq('status', 'voided')
             .order('created_at', { ascending: false })
 
         if (!error && data) {

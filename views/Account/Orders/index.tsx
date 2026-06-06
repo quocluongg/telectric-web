@@ -409,7 +409,8 @@ export default function OrdersPage() {
         setShowDetail(true);
         setWarranties([]);
 
-        if (order.customer_phone) {
+        // Chỉ load warranties cho đơn hàng đã giao thành công, không load cho đơn đã hủy
+        if (order.customer_phone && order.status !== "cancelled") {
             try {
                 const { data } = await supabase
                     .from("warranty_cards")
@@ -544,7 +545,7 @@ export default function OrdersPage() {
                                                         <td className="py-3 text-center">
                                                             <div className="flex flex-col items-center gap-1">
                                                                 <StatusBadge status={order.status} />
-                                                                {(order.status === "shipped" || order.status === "delivered") && (
+                                                                {order.status === "delivered" && (
                                                                     <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/30 text-emerald-700 dark:text-emerald-400">
                                                                         <ShieldCheck className="h-3 w-3" /> Còn hạn BH
                                                                     </span>
