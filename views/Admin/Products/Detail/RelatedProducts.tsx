@@ -155,9 +155,25 @@ export function RelatedProducts({ currentProductId, brand, origin }: RelatedProd
                 .select("*");
 
             if (data && data.length > 0) {
-                // Filter out products without a valid slug
-                const validProducts = data.filter((p: any) => p.slug);
-                setProducts(validProducts);
+                // RPC có thể không trả slug → fetch slug riêng
+                const needSlug = data.filter((p: any) => !p.slug);
+                if (needSlug.length > 0) {
+                    const ids = needSlug.map((p: any) => p.id);
+                    const { data: slugData } = await supabase
+                        .from("products")
+                        .select("id, slug")
+                        .in("id", ids);
+
+                    if (slugData) {
+                        const slugMap = new Map(slugData.map((s: any) => [s.id, s.slug]));
+                        data.forEach((p: any) => {
+                            if (!p.slug && slugMap.has(p.id)) {
+                                p.slug = slugMap.get(p.id);
+                            }
+                        });
+                    }
+                }
+                setProducts(data.filter((p: any) => p.slug));
             } else {
                 // Fallback: simple brand/origin query without RPC
                 const { data: branded } = await supabase
@@ -177,7 +193,7 @@ export function RelatedProducts({ currentProductId, brand, origin }: RelatedProd
                     const map = new Map<string, RelatedProduct>();
                     branded.forEach((row: any) => {
                         const p = row.products;
-                        if (!p || p.id === currentProductId) return;
+                        if (!p || p.id === currentProductId || !p.slug) return;
                         if (!map.has(p.id)) {
                             map.set(p.id, {
                                 id: p.id,
@@ -208,7 +224,7 @@ export function RelatedProducts({ currentProductId, brand, origin }: RelatedProd
                         return aMatch - bMatch;
                     });
 
-                    setProducts(list.filter(p => p.slug).slice(0, 12));
+                    setProducts(list.slice(0, 12));
                 }
             }
 
