@@ -33,7 +33,7 @@ function RelatedProductCard({ product }: { product: RelatedProduct }) {
 
     return (
         <Link
-            href={`/${product.slug}`}
+            href={product.slug ? `/${product.slug}` : "#"}
             className="group relative bg-white dark:bg-[#1c212c] rounded-2xl border border-gray-200 dark:border-white/5 shadow-sm hover:border-electric-orange dark:hover:border-orange-500/50 hover:shadow-[0_8px_24px_rgba(249,115,22,0.1)] transition-all duration-300 overflow-hidden flex flex-col"
         >
             {/* Discount badge */}
@@ -155,7 +155,9 @@ export function RelatedProducts({ currentProductId, brand, origin }: RelatedProd
                 .select("*");
 
             if (data && data.length > 0) {
-                setProducts(data);
+                // Filter out products without a valid slug
+                const validProducts = data.filter((p: any) => p.slug);
+                setProducts(validProducts);
             } else {
                 // Fallback: simple brand/origin query without RPC
                 const { data: branded } = await supabase
@@ -206,7 +208,7 @@ export function RelatedProducts({ currentProductId, brand, origin }: RelatedProd
                         return aMatch - bMatch;
                     });
 
-                    setProducts(list.slice(0, 12));
+                    setProducts(list.filter(p => p.slug).slice(0, 12));
                 }
             }
 
