@@ -314,20 +314,26 @@ function StatusUpdateDialog({
     open: boolean;
     onOpenChange: (open: boolean) => void;
     order: any;
-    onUpdate: (orderId: string, newStatus: string) => void;
+    onUpdate: (orderId: string, newStatus: string, newPaymentStatus: string) => void;
     isUpdating: boolean;
 }) {
     const [newStatus, setNewStatus] = useState("");
+    const [newPaymentStatus, setNewPaymentStatus] = useState("");
     const currentStatus = order?.status || "pending";
+    const currentPaymentStatus = order?.payment_status || "unpaid";
     const allowedTransitions = STATUS_TRANSITIONS[currentStatus] || [];
     const currentConfig = STATUS_CONFIG[currentStatus] || STATUS_CONFIG.pending;
+    const currentPayConfig = PAYMENT_STATUS_CONFIG[currentPaymentStatus] || PAYMENT_STATUS_CONFIG.unpaid;
 
     // Reset khi mở dialog
     React.useEffect(() => {
-        if (open && allowedTransitions.length > 0) {
-            setNewStatus(allowedTransitions[0]);
+        if (open) {
+            if (allowedTransitions.length > 0) {
+                setNewStatus(allowedTransitions[0]);
+            }
+            setNewPaymentStatus(order?.payment_status || "unpaid");
         }
-    }, [open, allowedTransitions]);
+    }, [open, allowedTransitions, order?.payment_status]);
 
     if (!order) return null;
 
@@ -345,22 +351,28 @@ function StatusUpdateDialog({
                     </DialogDescription>
                 </DialogHeader>
 
-                <div className="py-4 space-y-4">
+                <div className="py-4 space-y-5">
                     {/* Current Status */}
                     <div>
                         <p className="text-xs font-medium text-slate-500 mb-2">Trạng thái hiện tại</p>
-                        <div className={cn(
-                            "inline-flex items-center gap-2 px-3 py-2 rounded-lg border text-sm font-semibold",
-                            currentConfig.bgColor, currentConfig.borderColor, currentConfig.color
-                        )}>
-                            {currentConfig.icon}
-                            {currentConfig.label}
+                        <div className="flex items-center gap-2 flex-wrap">
+                            <div className={cn(
+                                "inline-flex items-center gap-2 px-3 py-2 rounded-lg border text-sm font-semibold",
+                                currentConfig.bgColor, currentConfig.borderColor, currentConfig.color
+                            )}>
+                                {currentConfig.icon}
+                                {currentConfig.label}
+                            </div>
+                            <span className={cn("text-xs font-semibold px-2.5 py-1.5 rounded-lg border", currentPayConfig.className)}>
+                                {currentPayConfig.label}
+                            </span>
                         </div>
                     </div>
 
+                    {/* Order Status Change */}
                     {allowedTransitions.length > 0 ? (
                         <div>
-                            <p className="text-xs font-medium text-slate-500 mb-2">Chuyển sang</p>
+                            <p className="text-xs font-medium text-slate-500 mb-2">Chuyển trạng thái đơn hàng</p>
                             <Select value={newStatus} onValueChange={setNewStatus}>
                                 <SelectTrigger className="h-11">
                                     <SelectValue placeholder="Chọn trạng thái mới" />
@@ -398,10 +410,44 @@ function StatusUpdateDialog({
                             )}
                         </div>
                     ) : (
-                        <div className="bg-slate-50 rounded-lg p-4 text-center">
-                            <p className="text-sm text-slate-500">Đơn hàng đã ở trạng thái cuối, không thể thay đổi.</p>
+                        <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-4 text-center">
+                            <p className="text-sm text-slate-500 dark:text-slate-400">Đơn hàng đã ở trạng thái cuối, không thể thay đổi.</p>
                         </div>
                     )}
+
+                    {/* Payment Status */}
+                    <div>
+                        <p className="text-xs font-medium text-slate-500 mb-2">Trạng thái thanh toán</p>
+                        <Select value={newPaymentStatus} onValueChange={setNewPaymentStatus}>
+                            <SelectTrigger className="h-11">
+                                <SelectValue placeholder="Chọn trạng thái thanh toán" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {Object.entries(PAYMENT_STATUS_CONFIG).map(([key, config]) => (
+                                    <SelectItem key={key} value={key}>
+                                        <span className="flex items-center gap-2">
+                                            <span className={cn(
+                                                "w-2 h-2 rounded-full",
+                                                key === "paid" ? "bg-emerald-500" : key === "refunded" ? "bg-slate-500" : "bg-red-500"
+                                            )} />
+                                            {config.label}
+                                        </span>
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                        {newPaymentStatus !== currentPaymentStatus && (
+                            <div className="mt-3 flex items-center gap-2 text-sm">
+                                <span className={cn("px-2 py-1 rounded border text-xs font-semibold", currentPayConfig.className)}>
+                                    {currentPayConfig.label}
+                                </span>
+                                <ArrowRight className="h-4 w-4 text-slate-400" />
+                                <span className={cn("px-2 py-1 rounded border text-xs font-semibold", PAYMENT_STATUS_CONFIG[newPaymentStatus]?.className)}>
+                                    {PAYMENT_STATUS_CONFIG[newPaymentStatus]?.label}
+                                </span>
+                            </div>
+                        )}
+                    </div>
                 </div>
 
                 <DialogFooter className="gap-2">
@@ -410,8 +456,8 @@ function StatusUpdateDialog({
                     </Button>
                     <Button
                         className="bg-orange-600 hover:bg-orange-700"
-                        disabled={isUpdating || !newStatus || allowedTransitions.length === 0}
-                        onClick={() => onUpdate(order.id, newStatus)}
+                        disabled={isUpdating || (!newStatus && newPaymentStatus === currentPaymentStatus)}
+                        onClick={() => onUpdate(order.id, newStatus, newPaymentStatus)}
                     >
                         {isUpdating ? (
                             <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Đang cập nhật...</>
@@ -634,18 +680,25 @@ export function OrderTable({
     };
 
     // --- Status Update ---
-    const handleStatusUpdate = async (orderId: string, newStatus: string) => {
+    const handleStatusUpdate = async (orderId: string, newStatus: string, newPaymentStatus: string) => {
         setIsUpdating(true);
         try {
+            // Build update object
+            const updateData: any = { updated_at: new Date().toISOString() };
+            if (newStatus) updateData.status = newStatus;
+            if (newPaymentStatus) updateData.payment_status = newPaymentStatus;
+
             const { error } = await supabase
                 .from("orders")
-                .update({ status: newStatus, updated_at: new Date().toISOString() })
+                .update(updateData)
                 .eq("id", orderId);
 
             if (error) throw error;
 
+            const effectiveStatus = newStatus || orders.find(o => o.id === orderId)?.status;
+
             // Auto-create warranty cards when status changes to "delivered"
-            if (newStatus === "delivered") {
+            if (effectiveStatus === "delivered") {
                 try {
                     // Fetch order with items + product info
                     const { data: orderData } = await supabase
@@ -697,7 +750,7 @@ export function OrderTable({
             }
 
             // Auto-void warranty cards when order is cancelled
-            if (newStatus === "cancelled") {
+            if (effectiveStatus === "cancelled") {
                 try {
                     const { data: orderData } = await supabase
                         .from("orders")
@@ -738,9 +791,15 @@ export function OrderTable({
                 }
             }
 
+            const parts = [];
+            if (newStatus) parts.push(`trạng thái → "${STATUS_CONFIG[newStatus]?.label}"`);
+            if (newPaymentStatus && newPaymentStatus !== orders.find(o => o.id === orderId)?.payment_status) {
+                parts.push(`thanh toán → "${PAYMENT_STATUS_CONFIG[newPaymentStatus]?.label}"`);
+            }
+
             toast({
                 title: "✓ Cập nhật thành công",
-                description: `Đơn hàng chuyển sang "${STATUS_CONFIG[newStatus]?.label}"`,
+                description: parts.join(", ") || "Đã cập nhật đơn hàng",
             });
 
             setShowStatus(false);
