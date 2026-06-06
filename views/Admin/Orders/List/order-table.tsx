@@ -648,10 +648,12 @@ export function OrderTable({
 
             if (error) throw error;
 
-            const effectiveStatus = newStatus || orders.find(o => o.id === orderId)?.status;
+            // Chỉ chạy logic warranty khi STATUS ĐƠN HÀNG thực sự thay đổi
+            const currentOrderStatus = orders.find(o => o.id === orderId)?.status;
+            const statusActuallyChanged = newStatus && newStatus !== currentOrderStatus;
 
-            // Auto-create warranty cards when status changes to "delivered"
-            if (effectiveStatus === "delivered") {
+            // Auto-create warranty cards when status CHANGES to "delivered"
+            if (statusActuallyChanged && newStatus === "delivered") {
                 try {
                     // Fetch order with items + product info
                     const { data: orderData } = await supabase
@@ -702,8 +704,8 @@ export function OrderTable({
                 }
             }
 
-            // Auto-void warranty cards when order is cancelled
-            if (effectiveStatus === "cancelled") {
+            // Auto-void warranty cards when order status CHANGES to cancelled
+            if (statusActuallyChanged && newStatus === "cancelled") {
                 try {
                     const { data: orderData } = await supabase
                         .from("orders")
